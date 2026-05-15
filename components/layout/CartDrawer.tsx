@@ -4,16 +4,18 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { products } from "@/data/products";
-import { RazorpayButton } from "@/components/checkout/RazorpayButton";
 
 export function CartDrawer() {
   const {
     items, isDrawerOpen, closeDrawer,
     removeFromCart, updateQuantity, addToCart,
-    subtotal, amountToFreeShipping, freeShippingThreshold,
+    subtotal, discount, amountToFreeShipping, freeShippingThreshold,
   } = useCart();
 
-  const shippingProgress = Math.min(100, (subtotal / freeShippingThreshold) * 100);
+  const discountedSubtotal = subtotal - discount;
+  const shipping = discountedSubtotal >= freeShippingThreshold ? 0 : 60;
+  const total = discountedSubtotal + shipping;
+  const shippingProgress = Math.min(100, (discountedSubtotal / freeShippingThreshold) * 100);
   const upsellProduct = products.find((p) => !items.some((i) => i.product.id === p.id));
 
   if (!isDrawerOpen) return null;
@@ -22,6 +24,7 @@ export function CartDrawer() {
     <div className="fixed inset-0 z-50 flex">
       <div className="absolute inset-0 bg-black/40" onClick={closeDrawer} />
       <div className="relative ml-auto w-full max-w-[400px] h-full bg-white flex flex-col shadow-2xl animate-slide-in-right">
+
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-100">
           <h2 className="text-xl font-bold text-[#1C1C1C]">
@@ -38,7 +41,7 @@ export function CartDrawer() {
             </p>
           ) : (
             <p className="text-xs text-[#2D5016] font-medium mb-1.5">
-              You&apos;ve unlocked FREE shipping!
+              🎉 You&apos;ve unlocked FREE shipping!
             </p>
           )}
           <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
@@ -53,13 +56,14 @@ export function CartDrawer() {
         <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
-              <p className="text-[#6B6B6B]">Your cart is empty</p>
+              <div className="text-5xl">🛒</div>
+              <p className="text-[#6B6B6B] font-medium">Your cart is empty</p>
               <Link
                 href="/shop"
                 onClick={closeDrawer}
                 className="bg-[#2D5016] text-white px-6 py-3 rounded-full font-medium hover:bg-[#3D6B20] transition-colors"
               >
-                Shop Now
+                Start Shopping →
               </Link>
             </div>
           ) : (
@@ -125,24 +129,36 @@ export function CartDrawer() {
 
         {/* Footer */}
         {items.length > 0 && (
-          <div className="p-4 border-t border-gray-100 space-y-3">
+          <div className="p-4 border-t border-gray-100 space-y-2.5">
             <div className="flex justify-between text-sm text-[#6B6B6B]">
               <span>Subtotal</span>
               <span className="font-medium text-[#1C1C1C]">₹{subtotal}</span>
             </div>
+            {discount > 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-green-600 font-medium">Multi-item discount</span>
+                <span className="text-green-600 font-bold">−₹{discount}</span>
+              </div>
+            )}
             <div className="flex justify-between text-sm text-[#6B6B6B]">
               <span>Shipping</span>
-              <span className={subtotal >= freeShippingThreshold ? "text-green-600 font-medium" : "font-medium text-[#1C1C1C]"}>
-                {subtotal >= freeShippingThreshold ? "FREE" : "₹60"}
+              <span className={shipping === 0 ? "text-green-600 font-medium" : "font-medium text-[#1C1C1C]"}>
+                {shipping === 0 ? "FREE" : "₹60"}
               </span>
             </div>
             <div className="flex justify-between font-bold text-base pt-2 border-t border-gray-100">
               <span>Total</span>
-              <span>₹{subtotal >= freeShippingThreshold ? subtotal : subtotal + 60}</span>
+              <span>₹{total}</span>
             </div>
-            <div onClick={closeDrawer}>
-              <RazorpayButton amount={subtotal >= freeShippingThreshold ? subtotal : subtotal + 60} />
-            </div>
+
+            <Link
+              href="/checkout"
+              onClick={closeDrawer}
+              className="block w-full bg-[#C4622D] text-white font-bold py-4 rounded-xl text-base text-center hover:bg-[#D4734A] transition-colors"
+            >
+              Proceed to Checkout — ₹{total}
+            </Link>
+
             <button onClick={closeDrawer} className="block w-full text-center text-sm text-[#6B6B6B] hover:text-[#1C1C1C]">
               Continue Shopping
             </button>

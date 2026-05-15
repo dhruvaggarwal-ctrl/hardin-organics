@@ -23,3 +23,6 @@ next-env.d.ts
 # OS
 .DS_Store
 *.pem
+
+# Order data — contains customer PII, never commit
+/data/orders.json

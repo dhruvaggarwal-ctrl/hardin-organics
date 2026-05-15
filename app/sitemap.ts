@@ -11,5 +11,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: 'https://hardinorganics.com/blog/activated-charcoal-soap-benefits', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
     { url: 'https://hardinorganics.com/blog/haldi-chandan-soap-for-glowing-skin', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
     { url: 'https://hardinorganics.com/blog/natural-soap-vs-chemical-soap', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
+    { url: 'https://hardinorganics.com/skin-quiz', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
+    { url: 'https://hardinorganics.com/bogo', lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
   ]
 }
