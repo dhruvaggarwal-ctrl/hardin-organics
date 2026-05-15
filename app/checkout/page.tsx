@@ -45,9 +45,9 @@ function loadRazorpay(): Promise<boolean> {
   });
 }
 
-function Field({
-  label, required, error, children,
-}: { label: string; required?: boolean; error?: string; children: React.ReactNode }) {
+function Field({ label, required, error, children }: {
+  label: string; required?: boolean; error?: string; children: React.ReactNode;
+}) {
   return (
     <div>
       <label className="block text-sm font-medium text-[#1C1C1C] mb-1.5">
@@ -60,9 +60,7 @@ function Field({
   );
 }
 
-function Input({
-  value, onChange, placeholder, type = "text", error, maxLength,
-}: {
+function Input({ value, onChange, placeholder, type = "text", error, maxLength }: {
   value: string; onChange: (v: string) => void; placeholder?: string;
   type?: string; error?: boolean; maxLength?: number;
 }) {
@@ -90,7 +88,6 @@ export default function CheckoutPage() {
     city: "", state: "", pincode: "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
-  const [paymentMethod, setPaymentMethod] = useState<"razorpay" | "cod">("razorpay");
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
@@ -98,7 +95,6 @@ export default function CheckoutPage() {
   const shipping = discountedSubtotal >= 399 ? 0 : 60;
   const total = discountedSubtotal + shipping;
 
-  // Redirect to shop if cart is empty
   useEffect(() => {
     if (items.length === 0) router.replace("/shop");
   }, [items, router]);
@@ -135,35 +131,7 @@ export default function CheckoutPage() {
     price: i.price,
   }));
 
-  async function handleCOD() {
-    if (!validate()) return;
-    setLoading(true);
-    setSubmitError("");
-    try {
-      const res = await fetch("/api/orders/save", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          items: orderItems,
-          subtotal, discount, shipping, totalAmount: total,
-          paymentMethod: "COD", status: "pending",
-        }),
-      });
-      const data = await res.json();
-      if (!data.success) throw new Error(data.error || "Failed to place order");
-      clearCart();
-      router.push(
-        `/order-confirmation?orderId=${data.orderId}&method=cod` +
-        `&name=${encodeURIComponent(form.customerName)}&mobile=${form.mobile}&total=${total}`
-      );
-    } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : "Failed to place order. Please try again.");
-      setLoading(false);
-    }
-  }
-
-  async function handleRazorpay() {
+  async function handlePay() {
     if (!validate()) return;
     setLoading(true);
     setSubmitError("");
@@ -200,7 +168,6 @@ export default function CheckoutPage() {
             razorpay_order_id: string;
             razorpay_signature: string;
           }) => {
-            // Verify signature server-side
             const verifyRes = await fetch("/api/verify-payment", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -213,7 +180,6 @@ export default function CheckoutPage() {
             const { verified } = await verifyRes.json();
             if (!verified) { reject(new Error("Payment verification failed. Please contact support.")); return; }
 
-            // Save order with payment details
             const saveRes = await fetch("/api/orders/save", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -269,21 +235,14 @@ export default function CheckoutPage() {
         </div>
 
         <div className="grid md:grid-cols-[1fr_360px] gap-8 items-start">
-          {/* ── LEFT COLUMN ── */}
+          {/* ── LEFT: Delivery Address ── */}
           <div className="space-y-5">
-
-            {/* Delivery Address */}
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <h2 className="text-lg font-bold text-[#1C1C1C] mb-5">Delivery Address</h2>
               <div className="space-y-4">
 
                 <Field label="Full Name" required error={errors.customerName}>
-                  <Input
-                    value={form.customerName}
-                    onChange={set("customerName")}
-                    placeholder="Rahul Sharma"
-                    error={!!errors.customerName}
-                  />
+                  <Input value={form.customerName} onChange={set("customerName")} placeholder="Rahul Sharma" error={!!errors.customerName} />
                 </Field>
 
                 <div className="grid sm:grid-cols-2 gap-4">
@@ -291,55 +250,31 @@ export default function CheckoutPage() {
                     <Input
                       value={form.mobile}
                       onChange={(v) => set("mobile")(v.replace(/\D/g, "").slice(0, 10))}
-                      placeholder="9876543210"
-                      type="tel"
-                      error={!!errors.mobile}
-                      maxLength={10}
+                      placeholder="9876543210" type="tel" error={!!errors.mobile} maxLength={10}
                     />
                   </Field>
                   <Field label="Email" error={errors.email}>
-                    <Input
-                      value={form.email}
-                      onChange={set("email")}
-                      placeholder="rahul@email.com"
-                      type="email"
-                    />
+                    <Input value={form.email} onChange={set("email")} placeholder="rahul@email.com" type="email" />
                   </Field>
                 </div>
 
                 <Field label="Address Line 1" required error={errors.addressLine1}>
-                  <Input
-                    value={form.addressLine1}
-                    onChange={set("addressLine1")}
-                    placeholder="House / Flat No., Street Name"
-                    error={!!errors.addressLine1}
-                  />
+                  <Input value={form.addressLine1} onChange={set("addressLine1")} placeholder="House / Flat No., Street Name" error={!!errors.addressLine1} />
                 </Field>
 
                 <Field label="Address Line 2" error={errors.addressLine2}>
-                  <Input
-                    value={form.addressLine2}
-                    onChange={set("addressLine2")}
-                    placeholder="Landmark, Colony, Area"
-                  />
+                  <Input value={form.addressLine2} onChange={set("addressLine2")} placeholder="Landmark, Colony, Area" />
                 </Field>
 
                 <div className="grid sm:grid-cols-2 gap-4">
                   <Field label="City" required error={errors.city}>
-                    <Input
-                      value={form.city}
-                      onChange={set("city")}
-                      placeholder="Gurgaon"
-                      error={!!errors.city}
-                    />
+                    <Input value={form.city} onChange={set("city")} placeholder="Gurgaon" error={!!errors.city} />
                   </Field>
                   <Field label="Pincode" required error={errors.pincode}>
                     <Input
                       value={form.pincode}
                       onChange={(v) => set("pincode")(v.replace(/\D/g, "").slice(0, 6))}
-                      placeholder="122001"
-                      error={!!errors.pincode}
-                      maxLength={6}
+                      placeholder="122001" error={!!errors.pincode} maxLength={6}
                     />
                   </Field>
                 </div>
@@ -359,49 +294,14 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Payment Method */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-[#1C1C1C] mb-4">Payment Method</h2>
-              <div className="grid sm:grid-cols-2 gap-3">
-                {([
-                  { value: "razorpay", label: "Pay Online", sub: "UPI · Cards · NetBanking · Wallets" },
-                  { value: "cod", label: "Cash on Delivery", sub: "Pay when your order arrives" },
-                ] as const).map(({ value, label, sub }) => (
-                  <button
-                    key={value}
-                    onClick={() => setPaymentMethod(value)}
-                    className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left ${
-                      paymentMethod === value
-                        ? "border-[#A0522D] bg-orange-50"
-                        : "border-gray-200 hover:border-gray-300"
-                    }`}
-                  >
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                      paymentMethod === value ? "border-[#A0522D]" : "border-gray-300"
-                    }`}>
-                      {paymentMethod === value && (
-                        <div className="w-2.5 h-2.5 rounded-full bg-[#A0522D]" />
-                      )}
-                    </div>
-                    <div>
-                      <p className="font-semibold text-[#1C1C1C] text-sm">{label}</p>
-                      <p className="text-xs text-[#6B6B6B] mt-0.5">{sub}</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Error */}
             {submitError && (
               <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700">
                 {submitError}
               </div>
             )}
 
-            {/* Submit */}
             <button
-              onClick={paymentMethod === "razorpay" ? handleRazorpay : handleCOD}
+              onClick={handlePay}
               disabled={loading}
               className="w-full bg-[#A0522D] text-white font-bold py-4 rounded-xl text-base hover:bg-[#8B4513] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
@@ -411,11 +311,11 @@ export default function CheckoutPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                   </svg>
-                  {paymentMethod === "razorpay" ? "Opening Payment..." : "Placing Order..."}
+                  Opening Payment...
                 </>
               ) : (
                 <>
-                  {paymentMethod === "razorpay" ? `Pay ₹${total} Securely` : `Place Order — ₹${total} COD`}
+                  Pay ₹{total} Securely
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                     <path d="M5 12h14M12 5l7 7-7 7" />
                   </svg>
@@ -423,17 +323,15 @@ export default function CheckoutPage() {
               )}
             </button>
 
-            {paymentMethod === "razorpay" && (
-              <p className="text-center text-xs text-[#6B6B6B] flex items-center justify-center gap-1.5">
-                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
-                </svg>
-                Secured by Razorpay · 256-bit SSL encryption
-              </p>
-            )}
+            <p className="text-center text-xs text-[#6B6B6B] flex items-center justify-center gap-1.5">
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
+              </svg>
+              Secured by Razorpay · UPI · Cards · NetBanking · Wallets
+            </p>
           </div>
 
-          {/* ── RIGHT COLUMN: Order Summary ── */}
+          {/* ── RIGHT: Order Summary ── */}
           <div className="bg-white rounded-2xl p-6 shadow-sm md:sticky md:top-24">
             <h2 className="text-lg font-bold text-[#1C1C1C] mb-5">Order Summary</h2>
 

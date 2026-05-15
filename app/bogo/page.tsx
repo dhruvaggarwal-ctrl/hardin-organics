@@ -3,11 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useCart } from "@/context/CartContext";
 import { products } from "@/data/products";
 
-// ─── Countdown logic ──────────────────────────────────────────────────────────
-// Persists in localStorage so refreshing doesn't reset the timer
+// ─── Countdown ────────────────────────────────────────────────────────────────
 const OFFER_DURATION_HOURS = 24;
 const LS_KEY = "hardin_bogo_end";
 
@@ -26,37 +24,34 @@ function getEndTime(): number {
 function useCountdown() {
   const [timeLeft, setTimeLeft] = useState({ h: 23, m: 59, s: 59 });
   const endRef = useRef<number>(0);
-
   useEffect(() => {
     endRef.current = getEndTime();
     const tick = () => {
       const diff = Math.max(0, endRef.current - Date.now());
-      const h = Math.floor(diff / 3600000);
-      const m = Math.floor((diff % 3600000) / 60000);
-      const s = Math.floor((diff % 60000) / 1000);
-      setTimeLeft({ h, m, s });
+      setTimeLeft({
+        h: Math.floor(diff / 3600000),
+        m: Math.floor((diff % 3600000) / 60000),
+        s: Math.floor((diff % 60000) / 1000),
+      });
     };
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, []);
-
   return timeLeft;
 }
 
-// ─── Razorpay helpers (same pattern as RazorpayButton) ───────────────────────
+// ─── Razorpay ─────────────────────────────────────────────────────────────────
 declare global {
-  interface Window {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Razorpay: any;
-  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  interface Window { Razorpay: any; }
 }
 
 function loadRazorpay(): Promise<boolean> {
   return new Promise((resolve) => {
-    if (document.getElementById("razorpay-script")) { resolve(true); return; }
+    if (document.getElementById("rzp-sdk")) { resolve(true); return; }
     const s = document.createElement("script");
-    s.id = "razorpay-script";
+    s.id = "rzp-sdk";
     s.src = "https://checkout.razorpay.com/v1/checkout.js";
     s.onload = () => resolve(true);
     s.onerror = () => resolve(false);
@@ -64,7 +59,57 @@ function loadRazorpay(): Promise<boolean> {
   });
 }
 
-// ─── Social proof numbers ─────────────────────────────────────────────────────
+// ─── Form types ───────────────────────────────────────────────────────────────
+const INDIAN_STATES = [
+  "Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh","Goa",
+  "Gujarat","Haryana","Himachal Pradesh","Jharkhand","Karnataka","Kerala",
+  "Madhya Pradesh","Maharashtra","Manipur","Meghalaya","Mizoram","Nagaland",
+  "Odisha","Punjab","Rajasthan","Sikkim","Tamil Nadu","Telangana","Tripura",
+  "Uttar Pradesh","Uttarakhand","West Bengal","Andaman and Nicobar Islands",
+  "Chandigarh","Dadra and Nagar Haveli and Daman and Diu","Delhi",
+  "Jammu and Kashmir","Ladakh","Lakshadweep","Puducherry",
+];
+
+interface FormData {
+  customerName: string; mobile: string; email: string;
+  addressLine1: string; addressLine2: string;
+  city: string; state: string; pincode: string;
+}
+type FormErrors = Partial<Record<keyof FormData, string>>;
+
+// ─── Reusable field components ─────────────────────────────────────────────────
+function Field({ label, required, error, children }: {
+  label: string; required?: boolean; error?: string; children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-[#1C1C1C] mb-1.5">
+        {label}{required && " *"}
+        {!required && <span className="text-gray-400 font-normal"> (optional)</span>}
+      </label>
+      {children}
+      {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+    </div>
+  );
+}
+
+function Input({ value, onChange, placeholder, type = "text", error, maxLength }: {
+  value: string; onChange: (v: string) => void; placeholder?: string;
+  type?: string; error?: boolean; maxLength?: number;
+}) {
+  return (
+    <input
+      type={type} value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder} maxLength={maxLength}
+      className={`w-full px-4 py-3 rounded-xl border text-sm text-[#1C1C1C] placeholder-gray-400 focus:outline-none transition-colors bg-white ${
+        error ? "border-red-400 bg-red-50" : "border-gray-200 focus:border-[#8B1A1A]"
+      }`}
+    />
+  );
+}
+
+// ─── Reviews ──────────────────────────────────────────────────────────────────
 const REVIEWS = [
   { name: "Priya S.", city: "Delhi", text: "Ordered BOGO, gifted one to my mom. Both of us love it. Skin feels baby soft.", stars: 5 },
   { name: "Kavya R.", city: "Bangalore", text: "Can't believe I got 2 soaps for ₹149. The charcoal one cleared my skin in a week.", stars: 5 },
@@ -74,21 +119,57 @@ const REVIEWS = [
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function BogoPage() {
   const { h, m, s } = useCountdown();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const { clearCart } = useCart();
   const router = useRouter();
 
   const charcoal = products.find((p) => p.id === "charcoal-soap")!;
   const haldi = products.find((p) => p.id === "saffron-haldi-chandan")!;
 
-  const BOGO_PRICE = 149; // pay for 1, get both
+  const BOGO_PRICE = 149;
   const ORIGINAL_PRICE = 298;
   const SAVINGS = ORIGINAL_PRICE - BOGO_PRICE;
 
-  const handleCheckout = async () => {
+  const [form, setForm] = useState<FormData>({
+    customerName: "", mobile: "", email: "",
+    addressLine1: "", addressLine2: "",
+    city: "", state: "", pincode: "",
+  });
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+
+  const set = (field: keyof FormData) => (value: string) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) setErrors((prev) => { const e = { ...prev }; delete e[field]; return e; });
+  };
+
+  function validate(): boolean {
+    const e: FormErrors = {};
+    if (!form.customerName.trim()) e.customerName = "Full name is required";
+    if (!form.mobile.trim()) {
+      e.mobile = "Mobile number is required";
+    } else if (!/^[6-9]\d{9}$/.test(form.mobile.trim())) {
+      e.mobile = "Enter a valid 10-digit Indian mobile number";
+    }
+    if (!form.addressLine1.trim()) e.addressLine1 = "Address is required";
+    if (!form.city.trim()) e.city = "City is required";
+    if (!form.state) e.state = "Please select your state";
+    if (!form.pincode.trim()) {
+      e.pincode = "Pincode is required";
+    } else if (!/^\d{6}$/.test(form.pincode.trim())) {
+      e.pincode = "Enter a valid 6-digit pincode";
+    }
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  }
+
+  async function handleCheckout() {
+    if (!validate()) {
+      // Scroll to first error
+      document.getElementById("address-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
     setLoading(true);
-    setError("");
+    setSubmitError("");
     try {
       const loaded = await loadRazorpay();
       if (!loaded) throw new Error("Failed to load payment gateway. Please try again.");
@@ -99,20 +180,28 @@ export default function BogoPage() {
         body: JSON.stringify({ amount: BOGO_PRICE, receipt: `bogo_${Date.now()}` }),
       });
       if (!orderRes.ok) throw new Error("Could not initiate payment. Please try again.");
-      const { orderId, amount: orderAmount, currency } = await orderRes.json();
+      const { orderId: rzpOrderId, amount: orderAmount, currency } = await orderRes.json();
 
       await new Promise<void>((resolve, reject) => {
         const rzp = new window.Razorpay({
           key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-          order_id: orderId,
+          order_id: rzpOrderId,
           amount: orderAmount,
           currency,
           name: "Hardin Organics",
-          description: "BOGO Offer: Activated Charcoal Soap + Saffron Haldi Chandan Soap",
-          image: "/images/charcoal-1.png",
-          theme: { color: "#2D5016" },
-          prefill: {},
-          handler: async (response: { razorpay_payment_id: string; razorpay_order_id: string; razorpay_signature: string }) => {
+          description: "BOGO: Activated Charcoal + Saffron Haldi Chandan Soap",
+          theme: { color: "#8B1A1A" },
+          prefill: {
+            name: form.customerName,
+            contact: form.mobile,
+            email: form.email || undefined,
+          },
+          handler: async (response: {
+            razorpay_payment_id: string;
+            razorpay_order_id: string;
+            razorpay_signature: string;
+          }) => {
+            // Verify
             const verifyRes = await fetch("/api/verify-payment", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -124,29 +213,60 @@ export default function BogoPage() {
             });
             const { verified } = await verifyRes.json();
             if (!verified) { reject(new Error("Payment verification failed.")); return; }
-            clearCart();
-            router.push(`/order-success?paymentId=${response.razorpay_payment_id}&orderId=${response.razorpay_order_id}&offer=bogo`);
+
+            // Save order
+            const saveRes = await fetch("/api/orders/save", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                ...form,
+                items: [
+                  { id: charcoal.id, name: charcoal.name, quantity: 1, price: BOGO_PRICE },
+                  { id: haldi.id, name: haldi.name, quantity: 1, price: 0 },
+                ],
+                subtotal: BOGO_PRICE,
+                discount: 0,
+                shipping: 0,
+                totalAmount: BOGO_PRICE,
+                orderType: "BOGO",
+                paymentMethod: "Razorpay",
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                status: "paid",
+              }),
+            });
+            const saveData = await saveRes.json();
+            const hoOrderId = saveData.orderId || `HO-${Date.now()}`;
+
+            router.push(
+              `/order-confirmation?orderId=${hoOrderId}&method=paid` +
+              `&name=${encodeURIComponent(form.customerName)}&mobile=${form.mobile}&total=${BOGO_PRICE}`
+            );
             resolve();
           },
-          modal: { ondismiss: () => { setLoading(false); resolve(); } },
+          modal: {
+            ondismiss: () => { setLoading(false); resolve(); },
+          },
         });
+
         rzp.on("payment.failed", (r: { error: { description: string } }) => {
-          reject(new Error(r.error?.description || "Payment failed."));
+          reject(new Error(r.error?.description || "Payment failed. Please try again."));
         });
+
         rzp.open();
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
+      setSubmitError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
       setLoading(false);
     }
-  };
+  }
 
   const pad = (n: number) => String(n).padStart(2, "0");
 
   return (
     <div className="min-h-screen bg-[#F5F0E8] font-sans">
 
-      {/* ── Sticky urgency bar ── */}
+      {/* Sticky urgency bar */}
       <div className="sticky top-0 z-50 bg-[#8B1A1A] text-white py-2.5 text-center">
         <div className="flex items-center justify-center gap-3 text-sm font-semibold">
           <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 24 24">
@@ -160,66 +280,45 @@ export default function BogoPage() {
         </div>
       </div>
 
-      {/* ── Logo bar ── */}
+      {/* Logo bar */}
       <div className="bg-white border-b border-gray-100 py-3 text-center">
-        <Image
-          src="/images/hardin-logo.png"
-          alt="Hardin Organics"
-          width={140}
-          height={56}
-          className="h-9 w-auto object-contain inline-block"
-          priority
-        />
+        <Image src="/images/hardin-logo.png" alt="Hardin Organics" width={140} height={56}
+          className="h-9 w-auto object-contain inline-block" priority />
       </div>
 
-      {/* ── Hero ── */}
+      {/* Hero */}
       <div className="bg-[#2D5016] text-white text-center py-10 px-4">
         <p className="text-sm font-semibold tracking-widest uppercase text-[#A8C97A] mb-2">Limited Time Offer</p>
         <h1 className="text-4xl md:text-6xl font-bold mb-3 font-display">
           Buy 1, Get 1 <span className="text-[#D4A017]">FREE</span>
         </h1>
         <p className="text-lg text-white/80 max-w-md mx-auto">
-          Get both our handcrafted organic soaps — worth ₹{ORIGINAL_PRICE} — for just <strong className="text-white">₹{BOGO_PRICE}</strong>
+          Get both handcrafted soaps — worth ₹{ORIGINAL_PRICE} — for just <strong className="text-white">₹{BOGO_PRICE}</strong>
         </p>
         <div className="inline-flex items-center gap-2 bg-[#D4A017] text-[#1C1C1C] font-bold text-sm px-4 py-1.5 rounded-full mt-4">
           You save ₹{SAVINGS} — {Math.round((SAVINGS / ORIGINAL_PRICE) * 100)}% OFF
         </div>
       </div>
 
-      {/* ── Main content ── */}
-      <div className="max-w-2xl mx-auto px-4 py-8">
+      <div className="max-w-2xl mx-auto px-4 py-8 space-y-5">
 
         {/* Products */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="grid grid-cols-2 gap-4">
           {[charcoal, haldi].map((product, i) => (
             <div key={product.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-[#EDE6D6]">
               <div className="relative aspect-square bg-[#EDE6D6]">
-                <Image
-                  src={product.images[0]}
-                  alt={product.name}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 640px) 50vw, 300px"
-                />
-                {i === 1 && (
-                  <div className="absolute top-2 right-2 bg-[#8B1A1A] text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
-                    FREE
-                  </div>
-                )}
-                {i === 0 && (
-                  <div className="absolute top-2 right-2 bg-[#2D5016] text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
-                    You Pay
-                  </div>
-                )}
+                <Image src={product.images[0]} alt={product.name} fill className="object-cover"
+                  sizes="(max-width: 640px) 50vw, 300px" />
+                <div className={`absolute top-2 right-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${i === 1 ? "bg-[#8B1A1A]" : "bg-[#2D5016]"}`}>
+                  {i === 1 ? "FREE" : "You Pay"}
+                </div>
               </div>
               <div className="p-3 text-center">
                 <p className="text-xs font-semibold text-[#1C1C1C] leading-tight">{product.name}</p>
                 <div className="flex items-center justify-center gap-1.5 mt-1">
                   {i === 1 ? (
-                    <>
-                      <span className="text-xs text-gray-400 line-through">₹{product.price}</span>
-                      <span className="text-sm font-bold text-[#8B1A1A]">FREE</span>
-                    </>
+                    <><span className="text-xs text-gray-400 line-through">₹{product.price}</span>
+                    <span className="text-sm font-bold text-[#8B1A1A]">FREE</span></>
                   ) : (
                     <span className="text-sm font-bold text-[#2D5016]">₹{product.price}</span>
                   )}
@@ -229,8 +328,8 @@ export default function BogoPage() {
           ))}
         </div>
 
-        {/* Order summary card */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#EDE6D6] mb-5">
+        {/* Order summary */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#EDE6D6]">
           <h2 className="font-bold text-[#1C1C1C] mb-3 text-sm uppercase tracking-wide">Your Order</h2>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
@@ -254,6 +353,72 @@ export default function BogoPage() {
             </div>
           </div>
         </div>
+
+        {/* ── Address form ── */}
+        <div id="address-form" className="bg-white rounded-2xl p-5 shadow-sm border border-[#EDE6D6]">
+          <h2 className="font-bold text-[#1C1C1C] mb-1 text-base">Delivery Address</h2>
+          <p className="text-xs text-[#6B6B6B] mb-5">Where should we deliver your soaps?</p>
+
+          <div className="space-y-4">
+            <Field label="Full Name" required error={errors.customerName}>
+              <Input value={form.customerName} onChange={set("customerName")} placeholder="Rahul Sharma" error={!!errors.customerName} />
+            </Field>
+
+            <div className="grid sm:grid-cols-2 gap-4">
+              <Field label="Mobile Number" required error={errors.mobile}>
+                <Input
+                  value={form.mobile}
+                  onChange={(v) => set("mobile")(v.replace(/\D/g, "").slice(0, 10))}
+                  placeholder="9876543210" type="tel" error={!!errors.mobile} maxLength={10}
+                />
+              </Field>
+              <Field label="Email" error={errors.email}>
+                <Input value={form.email} onChange={set("email")} placeholder="rahul@email.com" type="email" />
+              </Field>
+            </div>
+
+            <Field label="Address Line 1" required error={errors.addressLine1}>
+              <Input value={form.addressLine1} onChange={set("addressLine1")} placeholder="House / Flat No., Street Name" error={!!errors.addressLine1} />
+            </Field>
+
+            <Field label="Address Line 2" error={errors.addressLine2}>
+              <Input value={form.addressLine2} onChange={set("addressLine2")} placeholder="Landmark, Colony, Area" />
+            </Field>
+
+            <div className="grid sm:grid-cols-2 gap-4">
+              <Field label="City" required error={errors.city}>
+                <Input value={form.city} onChange={set("city")} placeholder="Gurgaon" error={!!errors.city} />
+              </Field>
+              <Field label="Pincode" required error={errors.pincode}>
+                <Input
+                  value={form.pincode}
+                  onChange={(v) => set("pincode")(v.replace(/\D/g, "").slice(0, 6))}
+                  placeholder="122001" error={!!errors.pincode} maxLength={6}
+                />
+              </Field>
+            </div>
+
+            <Field label="State" required error={errors.state}>
+              <select
+                value={form.state}
+                onChange={(e) => set("state")(e.target.value)}
+                className={`w-full px-4 py-3 rounded-xl border text-sm text-[#1C1C1C] focus:outline-none bg-white transition-colors ${
+                  errors.state ? "border-red-400 bg-red-50" : "border-gray-200 focus:border-[#8B1A1A]"
+                }`}
+              >
+                <option value="">Select State</option>
+                {INDIAN_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </Field>
+          </div>
+        </div>
+
+        {/* Error */}
+        {submitError && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700">
+            {submitError}
+          </div>
+        )}
 
         {/* CTA */}
         <button
@@ -279,10 +444,8 @@ export default function BogoPage() {
           )}
         </button>
 
-        {error && <p className="mt-3 text-sm text-red-600 text-center bg-red-50 rounded-xl p-3">{error}</p>}
-
         {/* Reassurance row */}
-        <div className="grid grid-cols-3 gap-3 mt-5 text-center">
+        <div className="grid grid-cols-3 gap-3 text-center">
           {[
             { icon: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z", label: "100% Secure" },
             { icon: "M5 12h14M5 12l4-4m-4 4 4 4", label: "Free Delivery" },
@@ -297,13 +460,12 @@ export default function BogoPage() {
           ))}
         </div>
 
-        {/* Razorpay trust */}
-        <p className="text-center text-xs text-[#6B6B6B] mt-3">
+        <p className="text-center text-xs text-[#6B6B6B]">
           Secured by Razorpay · UPI · Cards · NetBanking · Wallets
         </p>
 
         {/* Social proof */}
-        <div className="mt-8">
+        <div className="pt-3">
           <p className="text-center text-xs uppercase tracking-widest text-[#6B6B6B] font-semibold mb-4">
             What customers are saying
           </p>
@@ -324,13 +486,13 @@ export default function BogoPage() {
           </div>
         </div>
 
-        {/* FAQ-style objection busters */}
-        <div className="mt-8 bg-white rounded-2xl p-5 border border-[#EDE6D6] space-y-4">
+        {/* FAQ */}
+        <div className="bg-white rounded-2xl p-5 border border-[#EDE6D6] space-y-4">
           <h3 className="font-bold text-[#1C1C1C] text-sm uppercase tracking-wide">Common Questions</h3>
           {[
             { q: "Is this offer real?", a: "Yes. Buy any 1 soap and we'll ship both to you. No tricks, no fine print. The offer expires when the timer hits zero." },
-            { q: "Both soaps in one delivery?", a: "Absolutely. Both the Activated Charcoal and Saffron Haldi Chandan soaps are packed together and shipped within 24 hours of ordering." },
-            { q: "What if I don't like it?", a: "We offer a 7-day hassle-free return policy. Not satisfied? We'll figure it out — just WhatsApp us." },
+            { q: "Both soaps in one delivery?", a: "Absolutely. Both soaps are packed together and shipped within 24 hours of ordering." },
+            { q: "What if I don't like it?", a: "We offer a 7-day hassle-free return policy. Not satisfied? Just WhatsApp us." },
           ].map((item) => (
             <div key={item.q}>
               <p className="text-sm font-semibold text-[#1C1C1C] mb-1">{item.q}</p>
@@ -340,7 +502,7 @@ export default function BogoPage() {
         </div>
 
         {/* Final CTA repeat */}
-        <div className="mt-6 text-center">
+        <div className="text-center">
           <button
             onClick={handleCheckout}
             disabled={loading}
@@ -353,7 +515,7 @@ export default function BogoPage() {
           </p>
         </div>
 
-        <p className="text-center text-xs text-[#6B6B6B] mt-6 pb-4">
+        <p className="text-center text-xs text-[#6B6B6B] pb-4">
           &copy; {new Date().getFullYear()} Hardin Organics · All rights reserved
         </p>
       </div>
