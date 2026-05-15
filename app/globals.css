@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cream: #F5F0E8;
+  --color-cream-dark: #EDE6D6;
+  --color-forest: #2D5016;
+  --color-forest-light: #3D6B20;
+  --color-forest-pale: #E8F0E0;
+  --color-terracotta: #C4622D;
+  --color-terracotta-light: #D4734A;
+  --color-gold: #D4A017;
+  --color-gold-light: #E8B52A;
+  --color-charcoal: #1C1C1C;
+  --color-muted: #6B6B6B;
+
+  --font-serif: 'Cormorant Garamond', serif;
+  --font-sans: 'DM Sans', sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans), 'DM Sans', system-ui, sans-serif;
+  background-color: #F5F0E8;
+  color: #1C1C1C;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* DM Sans everywhere by default — consistent, readable, trusted */
+h1, h2, h3, h4, h5, h6, button, input, label {
+  font-family: var(--font-sans), 'DM Sans', system-ui, sans-serif;
+}
+
+/* Use .font-display to opt into Cormorant Garamond for large display headings only */
+.font-display {
+  font-family: var(--font-serif), 'Cormorant Garamond', Georgia, serif;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+.animate-float { animation: float 3s ease-in-out infinite; }
+
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-ticker {
+  animation: ticker 30s linear infinite;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+@keyframes pulse-green {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.4); }
+  50% { box-shadow: 0 0 0 10px rgba(37, 211, 102, 0); }
+}
+.animate-pulse-green { animation: pulse-green 2s ease-in-out infinite; }
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+.animate-slide-in-right { animation: slideInRight 0.35s cubic-bezier(0.4, 0, 0.2, 1); }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #F5F0E8; }
+::-webkit-scrollbar-thumb { background: #2D5016; border-radius: 3px; }
