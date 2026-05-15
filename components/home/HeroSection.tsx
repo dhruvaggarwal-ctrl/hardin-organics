@@ -97,7 +97,7 @@ function Slide2() {
       {/* Big headline */}
       <div>
         <p className="text-2xl md:text-3xl font-bold text-white/70 uppercase tracking-[0.2em] mb-1">Buy 1 Get 1</p>
-        <h1 className="text-7xl sm:text-8xl md:text-9xl font-black text-[#C4622D] leading-none font-display">FREE</h1>
+        <h1 className="text-5xl sm:text-7xl md:text-9xl font-black text-[#C4622D] leading-none font-display">FREE</h1>
       </div>
 
       {/* Two products */}

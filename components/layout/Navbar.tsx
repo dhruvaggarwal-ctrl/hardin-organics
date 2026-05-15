@@ -138,6 +138,13 @@ export function Navbar() {
               <button onClick={() => setMenuOpen(false)} className="text-[#1C1C1C] text-2xl">×</button>
             </div>
             <nav className="flex flex-col gap-5">
+              <Link
+                href="/bogo"
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center justify-center gap-2 bg-[#C4622D] text-white font-bold px-5 py-3 rounded-xl text-base mb-2"
+              >
+                🔥 BOGO FREE — Buy 1 Get 1
+              </Link>
               {navLinks.map((l) => (
                 <Link
                   key={l.href}

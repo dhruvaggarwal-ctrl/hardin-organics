@@ -40,19 +40,22 @@ export const metadata: Metadata = {
     default: "Hardin Organics — Handcrafted Organic Soaps | Activated Charcoal, Saffron, Haldi & Chandan",
     template: "%s | Hardin Organics",
   },
-  description:
-    "Premium handcrafted organic soaps made in India with activated charcoal, saffron, haldi & chandan. No parabens. No SLS. 100% natural. Free shipping above ₹399.",
-  keywords: ["organic soap", "activated charcoal soap", "saffron soap", "haldi soap", "natural soap India", "handmade soap"],
+  description: "Premium handcrafted organic soaps made in India with activated charcoal, saffron, haldi & chandan. No parabens. No SLS. 100% natural. Free shipping above ₹399.",
+  keywords: ["organic soap", "activated charcoal soap", "saffron soap", "haldi soap", "chandan soap", "natural soap India", "handmade soap India", "ayurvedic soap", "anti acne soap", "glowing skin soap", "organic soap India buy online", "charcoal soap for acne", "turmeric soap", "sandalwood soap"],
+  metadataBase: new URL("https://hardinorganics.com"),
+  alternates: { canonical: "https://hardinorganics.com" },
   openGraph: {
     type: "website",
     locale: "en_IN",
     siteName: "Hardin Organics",
     title: "Hardin Organics — Handcrafted Organic Soaps",
     description: "Premium handcrafted organic soaps made in India. No parabens. No SLS. 100% natural.",
-    images: [{ url: "https://images.unsplash.com/photo-1607006344380-b6775a0824a7?w=1200&q=85", width: 1200, height: 630 }],
+    images: [{ url: "https://hardinorganics.com/images/charcoal-cover.png", width: 1200, height: 630, alt: "Hardin Organics organic soaps" }],
   },
-  twitter: { card: "summary_large_image" },
-  metadataBase: new URL("https://hardinorganics.com"),
+  twitter: { card: "summary_large_image", title: "Hardin Organics", description: "Handcrafted organic soaps — No parabens. No SLS. 100% natural." },
+  icons: { icon: '/icon.png', apple: '/apple-icon.png' },
+  verification: {},
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -28,6 +28,32 @@ export default function HomePage() {
       <BundleSection />
       <SkinQuizSection />
       <ExitIntentPopup />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "Organization",
+                "@id": "https://hardinorganics.com/#organization",
+                "name": "Hardin Organics",
+                "url": "https://hardinorganics.com",
+                "logo": "https://hardinorganics.com/images/hardin-logo.png",
+                "sameAs": ["https://www.instagram.com/hardin_organics/", "https://www.instagram.com/hardin_soaps/"],
+                "contactPoint": { "@type": "ContactPoint", "telephone": "+91-98719-00959", "contactType": "customer service", "availableLanguage": ["English", "Hindi"] }
+              },
+              {
+                "@type": "WebSite",
+                "@id": "https://hardinorganics.com/#website",
+                "url": "https://hardinorganics.com",
+                "name": "Hardin Organics",
+                "potentialAction": { "@type": "SearchAction", "target": "https://hardinorganics.com/shop?q={search_term_string}", "query-input": "required name=search_term_string" }
+              }
+            ]
+          })
+        }}
+      />
     </>
   );
 }
