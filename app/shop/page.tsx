@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { products } from "@/data/products";
@@ -147,8 +148,22 @@ export default function ShopPage() {
               </div>
             ) : (
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-5">
-                {filtered.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+                {filtered.map((product, i) => (
+                  <>
+                    <ProductCard key={product.id} product={product} />
+                    {/* Bundle banner after first product */}
+                    {i === 0 && (
+                      <div key="bundle-banner" className="col-span-2 lg:col-span-3 my-1">
+                        <Link href="/build-your-bundle" className="flex items-center justify-between bg-[#2D5016] text-white rounded-2xl px-6 py-4 hover:bg-[#3D6B20] transition-colors group">
+                          <div>
+                            <p className="font-bold text-base">Want a custom mix?</p>
+                            <p className="text-white/70 text-sm">Mix & match soaps and save up to ₹200</p>
+                          </div>
+                          <span className="text-white font-bold group-hover:translate-x-1 transition-transform">Build your own bundle →</span>
+                        </Link>
+                      </div>
+                    )}
+                  </>
                 ))}
               </div>
             )}

@@ -5,6 +5,8 @@ import Link from "next/link";
 import { StarRating } from "../ui/StarRating";
 import { useCart } from "@/context/CartContext";
 import { Product } from "@/data/products";
+import { useStock } from "@/hooks/useStock";
+import { NotifyModal } from "./NotifyModal";
 
 interface AddToCartSectionProps {
   product: Product;
@@ -51,6 +53,12 @@ export function AddToCartSection({ product }: AddToCartSectionProps) {
   const [selectedSize, setSelectedSize] = useState(product.sizes[0].label);
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
+  const [notifyOpen, setNotifyOpen] = useState(false);
+  const stockInfo = useStock(product.slug);
+
+  const isOutOfStock = stockInfo?.isOutOfStock ?? false;
+  const isLowStock = stockInfo?.isLowStock ?? false;
+  const liveStock = stockInfo?.stock ?? product.stockCount;
 
   const currentSize = product.sizes.find((s) => s.label === selectedSize) || product.sizes[0];
   const savings = product.originalPrice - currentSize.price;
@@ -100,14 +108,18 @@ export function AddToCartSection({ product }: AddToCartSectionProps) {
         {product.description}
       </p>
 
-      {/* Stock warning */}
-      {product.stockCount <= 10 && (
+      {/* Stock status */}
+      {isOutOfStock ? (
+        <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
+          <p className="text-sm text-[#6B6B6B] font-medium">Currently out of stock</p>
+        </div>
+      ) : isLowStock ? (
         <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl p-3">
           <span className="text-red-700 text-sm font-semibold">
-            Only {product.stockCount} left in stock! Order soon.
+            Only {liveStock} left in stock! Order soon.
           </span>
         </div>
-      )}
+      ) : null}
 
       {/* Size selector */}
       {product.sizes.length > 1 && (
@@ -154,24 +166,44 @@ export function AddToCartSection({ product }: AddToCartSectionProps) {
 
       {/* CTA buttons */}
       <div className="space-y-3 pt-2">
-        <button
-          onClick={handleAddToCart}
-          className={`w-full py-4 rounded-xl font-bold text-base transition-all duration-300 ${
-            added
-              ? "bg-green-600 text-white"
-              : "bg-[#C4622D] text-white hover:bg-[#D4734A] hover:shadow-lg"
-          }`}
-        >
-          {added ? "✓ Added to Cart!" : `Add to Cart — ₹${currentSize.price * quantity}`}
-        </button>
-        <Link
-          href="/cart"
-          onClick={handleBuyNow}
-          className="block w-full text-center py-4 rounded-xl font-bold text-base bg-[#2D5016] text-white hover:bg-[#3D6B20] transition-all duration-300 hover:shadow-lg"
-        >
-          Buy Now →
-        </Link>
+        {isOutOfStock ? (
+          <button
+            onClick={() => setNotifyOpen(true)}
+            className="w-full py-4 rounded-xl font-bold text-base border-2 border-[#A0522D] text-[#A0522D] hover:bg-[#A0522D] hover:text-white transition-all duration-300"
+          >
+            Notify Me When Available →
+          </button>
+        ) : (
+          <>
+            <button
+              onClick={handleAddToCart}
+              className={`w-full py-4 rounded-xl font-bold text-base transition-all duration-300 ${
+                added
+                  ? "bg-green-600 text-white"
+                  : "bg-[#C4622D] text-white hover:bg-[#D4734A] hover:shadow-lg"
+              }`}
+            >
+              {added ? "✓ Added to Cart!" : `Add to Cart — ₹${currentSize.price * quantity}`}
+            </button>
+            <Link
+              href="/cart"
+              onClick={handleBuyNow}
+              className="block w-full text-center py-4 rounded-xl font-bold text-base bg-[#2D5016] text-white hover:bg-[#3D6B20] transition-all duration-300 hover:shadow-lg"
+            >
+              Buy Now →
+            </Link>
+          </>
+        )}
       </div>
+
+      {/* Notify modal */}
+      {notifyOpen && (
+        <NotifyModal
+          productSlug={product.slug}
+          productName={product.name}
+          onClose={() => setNotifyOpen(false)}
+        />
+      )}
 
       {/* Trust strip — above Add to Cart */}
       <div className="overflow-x-auto scrollbar-hide -mx-1">

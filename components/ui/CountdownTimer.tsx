@@ -1,34 +1,42 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
-interface CountdownTimerProps {
-  endTime?: Date;
-  hoursFromNow?: number;
-  className?: string;
-}
+const SS_KEY = "hardin_bogo_expiry"; // shared with BOGO page — stays in sync
 
-export function CountdownTimer({ hoursFromNow = 6, className = "" }: CountdownTimerProps) {
+export function CountdownTimer({ className = "" }: { className?: string }) {
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
+  const endRef = useRef<number>(0);
 
   useEffect(() => {
-    const end = new Date();
-    end.setHours(end.getHours() + hoursFromNow);
+    // Use same sessionStorage key so homepage timer stays in sync with BOGO page
+    const stored = sessionStorage.getItem(SS_KEY);
+    if (stored) {
+      const end = parseInt(stored, 10);
+      if (end > Date.now()) {
+        endRef.current = end;
+      } else {
+        // Expired — start fresh 24hr window
+        endRef.current = Date.now() + 24 * 3600 * 1000;
+        sessionStorage.setItem(SS_KEY, String(endRef.current));
+      }
+    } else {
+      endRef.current = Date.now() + 24 * 3600 * 1000;
+      sessionStorage.setItem(SS_KEY, String(endRef.current));
+    }
 
     const tick = () => {
-      const now = new Date();
-      const diff = Math.max(0, end.getTime() - now.getTime());
+      const diff = Math.max(0, endRef.current - Date.now());
       setTimeLeft({
         hours: Math.floor(diff / 3600000),
         minutes: Math.floor((diff % 3600000) / 60000),
         seconds: Math.floor((diff % 60000) / 1000),
       });
     };
-
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, [hoursFromNow]);
+  }, []);
 
   const pad = (n: number) => String(n).padStart(2, "0");
 

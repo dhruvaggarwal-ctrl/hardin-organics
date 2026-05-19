@@ -2,27 +2,28 @@
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { products } from "@/data/products";
 
 // ─── Countdown ────────────────────────────────────────────────────────────────
 const OFFER_DURATION_HOURS = 24;
-const LS_KEY = "hardin_bogo_end";
+const SS_KEY = "hardin_bogo_expiry"; // sessionStorage — resets on browser close (intentional)
 
 function getEndTime(): number {
   if (typeof window === "undefined") return Date.now() + OFFER_DURATION_HOURS * 3600 * 1000;
-  const stored = localStorage.getItem(LS_KEY);
+  const stored = sessionStorage.getItem(SS_KEY);
   if (stored) {
     const end = parseInt(stored, 10);
     if (end > Date.now()) return end;
   }
   const end = Date.now() + OFFER_DURATION_HOURS * 3600 * 1000;
-  localStorage.setItem(LS_KEY, String(end));
+  sessionStorage.setItem(SS_KEY, String(end));
   return end;
 }
 
 function useCountdown() {
-  const [timeLeft, setTimeLeft] = useState({ h: 23, m: 59, s: 59 });
+  const [timeLeft, setTimeLeft] = useState({ h: 23, m: 59, s: 59, expired: false });
   const endRef = useRef<number>(0);
   useEffect(() => {
     endRef.current = getEndTime();
@@ -32,6 +33,7 @@ function useCountdown() {
         h: Math.floor(diff / 3600000),
         m: Math.floor((diff % 3600000) / 60000),
         s: Math.floor((diff % 60000) / 1000),
+        expired: diff === 0,
       });
     };
     tick();
@@ -118,7 +120,7 @@ const REVIEWS = [
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function BogoPage() {
-  const { h, m, s } = useCountdown();
+  const { h, m, s, expired } = useCountdown();
   const router = useRouter();
 
   const charcoal = products.find((p) => p.id === "charcoal-soap")!;
@@ -269,14 +271,20 @@ export default function BogoPage() {
       {/* Sticky urgency bar */}
       <div className="sticky top-0 z-50 bg-[#8B1A1A] text-white py-2.5 text-center">
         <div className="flex items-center justify-center gap-3 text-sm font-semibold">
-          <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/>
-          </svg>
-          <span>OFFER ENDS IN&nbsp;</span>
-          <span className="font-mono bg-white/20 px-2 py-0.5 rounded text-base tracking-widest">
-            {pad(h)}:{pad(m)}:{pad(s)}
-          </span>
-          <span className="hidden sm:inline">— Don&apos;t miss out</span>
+          {expired ? (
+            <span>This offer has ended.</span>
+          ) : (
+            <>
+              <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/>
+              </svg>
+              <span>OFFER ENDS IN&nbsp;</span>
+              <span className="font-mono bg-white/20 px-2 py-0.5 rounded text-base tracking-widest">
+                {pad(h)}:{pad(m)}:{pad(s)}
+              </span>
+              <span className="hidden sm:inline">— Don&apos;t miss out</span>
+            </>
+          )}
         </div>
       </div>
 
@@ -426,28 +434,34 @@ export default function BogoPage() {
         )}
 
         {/* CTA */}
-        <button
-          onClick={handleCheckout}
-          disabled={loading}
-          className="w-full bg-[#8B1A1A] hover:bg-[#A02020] text-white font-bold py-5 rounded-2xl text-lg transition-all duration-200 hover:shadow-xl disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3"
-        >
-          {loading ? (
-            <>
-              <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
-              </svg>
-              Opening Payment...
-            </>
-          ) : (
-            <>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                <path d="M5 12h14M12 5l7 7-7 7"/>
-              </svg>
-              Claim My Free Soap — Pay ₹{BOGO_PRICE}
-            </>
-          )}
-        </button>
+        {expired ? (
+          <Link href="/shop" className="block w-full bg-[#2D5016] text-white font-bold py-5 rounded-2xl text-lg text-center hover:bg-[#3D6B20] transition-colors">
+            See Current Offers →
+          </Link>
+        ) : (
+          <button
+            onClick={handleCheckout}
+            disabled={loading}
+            className="w-full bg-[#8B1A1A] hover:bg-[#A02020] text-white font-bold py-5 rounded-2xl text-lg transition-all duration-200 hover:shadow-xl disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+          >
+            {loading ? (
+              <>
+                <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                </svg>
+                Opening Payment...
+              </>
+            ) : (
+              <>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+                Claim My Free Soap — Pay ₹{BOGO_PRICE}
+              </>
+            )}
+          </button>
+        )}
 
         {/* Reassurance row */}
         <div className="grid grid-cols-3 gap-3 text-center">
@@ -508,16 +522,24 @@ export default function BogoPage() {
 
         {/* Final CTA repeat */}
         <div className="text-center">
-          <button
-            onClick={handleCheckout}
-            disabled={loading}
-            className="w-full bg-[#8B1A1A] hover:bg-[#A02020] text-white font-bold py-5 rounded-2xl text-lg transition-all duration-200 hover:shadow-xl disabled:opacity-70"
-          >
-            {loading ? "Opening Payment..." : `Claim My Free Soap — Pay ₹${BOGO_PRICE}`}
-          </button>
-          <p className="text-xs text-[#6B6B6B] mt-2">
-            Offer expires in {pad(h)}h {pad(m)}m {pad(s)}s
-          </p>
+          {expired ? (
+            <Link href="/shop" className="block w-full bg-[#2D5016] text-white font-bold py-5 rounded-2xl text-lg text-center hover:bg-[#3D6B20] transition-colors">
+              See Current Offers →
+            </Link>
+          ) : (
+            <>
+              <button
+                onClick={handleCheckout}
+                disabled={loading}
+                className="w-full bg-[#8B1A1A] hover:bg-[#A02020] text-white font-bold py-5 rounded-2xl text-lg transition-all duration-200 hover:shadow-xl disabled:opacity-70"
+              >
+                {loading ? "Opening Payment..." : `Claim My Free Soap — Pay ₹${BOGO_PRICE}`}
+              </button>
+              <p className="text-xs text-[#6B6B6B] mt-2">
+                Offer expires in {pad(h)}h {pad(m)}m {pad(s)}s
+              </p>
+            </>
+          )}
         </div>
 
         <p className="text-center text-xs text-[#6B6B6B] pb-4">
