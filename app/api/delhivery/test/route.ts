@@ -16,8 +16,10 @@ export async function GET(req: NextRequest) {
   const pickupState = process.env.DELHIVERY_PICKUP_STATE;
   const pickupPin = process.env.DELHIVERY_PICKUP_PINCODE;
 
+  const pickupLocationName = process.env.DELHIVERY_PICKUP_LOCATION_NAME;
   const envCheck = {
     DELHIVERY_API_TOKEN: token ? `set (${token.slice(0, 6)}...)` : "❌ NOT SET",
+    DELHIVERY_PICKUP_LOCATION_NAME: pickupLocationName || "❌ NOT SET — this must match exactly what's in your Delhivery dashboard",
     DELHIVERY_PICKUP_NAME: pickupName || "❌ NOT SET",
     DELHIVERY_PICKUP_ADDRESS: pickupAddress || "❌ NOT SET",
     DELHIVERY_PICKUP_CITY: pickupCity || "❌ NOT SET",

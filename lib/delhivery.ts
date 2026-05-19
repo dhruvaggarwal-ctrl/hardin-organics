@@ -107,10 +107,12 @@ export async function createDelhiveryShipment(
 
     // Delhivery's create endpoint requires application/x-www-form-urlencoded
     // with the payload as format=json&data=<JSON string>
+    const pickupLocationName = process.env.DELHIVERY_PICKUP_LOCATION_NAME || "Primary";
     const dataJson = JSON.stringify({
       shipments: [shipment],
-      pickup_location: { name: "Primary" },
+      pickup_location: { name: pickupLocationName },
     });
+    console.log("[Delhivery] Using pickup location name:", pickupLocationName);
 
     const formBody = `format=json&data=${encodeURIComponent(dataJson)}`;
 
