@@ -382,58 +382,74 @@ export default function BogoPage() {
 
         {/* Products with quantity selectors */}
         <div className="grid grid-cols-2 gap-4">
-          {[{ product: charcoal, qty: charcoalQty, key: "charcoal" as const },
-            { product: haldi, qty: haldiQty, key: "haldi" as const }].map(({ product, qty, key }) => (
-            <div key={product.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-[#EDE6D6]">
-              <div className="relative aspect-square bg-[#EDE6D6]">
-                <Image src={product.images[0]} alt={product.name} fill className="object-cover"
-                  sizes="(max-width: 640px) 50vw, 300px" />
-                <div className={`absolute top-2 right-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${qty === 0 ? "bg-gray-400" : qty === 2 ? "bg-[#8B1A1A]" : "bg-[#2D5016]"}`}>
-                  {qty === 0 ? "0" : qty === 2 ? "2×" : "1×"}
+          {([
+            { product: charcoal, qty: charcoalQty, key: "charcoal" as const },
+            { product: haldi,    qty: haldiQty,    key: "haldi"    as const },
+          ]).map(({ product, qty, key }) => {
+            // What role does this product play?
+            const role = qty === 0 ? "none"
+              : qty === 2 ? "both"       // user wants 2 of this → 1 paid + 1 free
+              : key === "charcoal" && charcoalQty === 1 ? "paid"
+              : "free";
+
+            return (
+              <div key={product.id} className={`bg-white rounded-2xl overflow-hidden shadow-sm border-2 transition-all ${qty === 0 ? "border-[#EDE6D6] opacity-60" : role === "paid" ? "border-[#2D5016]" : role === "free" ? "border-[#8B1A1A]" : "border-[#2D5016]"}`}>
+                <div className="relative aspect-square bg-[#EDE6D6]">
+                  <Image src={product.images[0]} alt={product.name} fill className="object-cover"
+                    sizes="(max-width: 640px) 50vw, 300px" />
+                </div>
+                <div className="p-3 text-center">
+                  <p className="text-xs font-semibold text-[#1C1C1C] leading-tight mb-1">{product.name}</p>
+
+                  {/* Role label */}
+                  <div className="mb-2 h-5">
+                    {role === "none" && <span className="text-[10px] text-gray-400">Not included</span>}
+                    {role === "paid" && <span className="text-[10px] font-bold text-[#2D5016]">YOU PAY — ₹{BOGO_PRICE}</span>}
+                    {role === "free" && <span className="text-[10px] font-bold text-[#8B1A1A]">FREE</span>}
+                    {role === "both" && <span className="text-[10px] font-bold text-[#2D5016]">×2 — Buy 1 Get 1 Free</span>}
+                  </div>
+
+                  {/* +/- selector */}
+                  <div className="flex items-center justify-center gap-3">
+                    <button onClick={() => changeQty(key, -1)} disabled={qty === 0}
+                      className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-base font-bold text-[#1C1C1C] disabled:opacity-25 hover:bg-gray-50 transition-colors">−</button>
+                    <span className="text-base font-bold text-[#1C1C1C] w-5 text-center">{qty}</span>
+                    <button onClick={() => changeQty(key, 1)} disabled={qty === 2}
+                      className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-base font-bold text-[#1C1C1C] disabled:opacity-25 hover:bg-gray-50 transition-colors">+</button>
+                  </div>
                 </div>
               </div>
-              <div className="p-3 text-center">
-                <p className="text-xs font-semibold text-[#1C1C1C] leading-tight mb-2">{product.name}</p>
-                {/* +/- selector */}
-                <div className="flex items-center justify-center gap-3">
-                  <button
-                    onClick={() => changeQty(key, -1)}
-                    disabled={qty === 0}
-                    className="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center text-lg font-bold text-[#1C1C1C] disabled:opacity-30 hover:border-[#8B1A1A] transition-colors"
-                  >−</button>
-                  <span className="text-base font-bold text-[#1C1C1C] w-4 text-center">{qty}</span>
-                  <button
-                    onClick={() => changeQty(key, 1)}
-                    disabled={qty === 2}
-                    className="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center text-lg font-bold text-[#1C1C1C] disabled:opacity-30 hover:border-[#2D5016] transition-colors"
-                  >+</button>
-                </div>
-                <p className="text-[10px] text-[#6B6B6B] mt-1.5">
-                  {qty === 0 ? "Not selected" : qty === 1 ? "1 included" : "Both yours!"}
-                </p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Order summary */}
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#EDE6D6]">
           <h2 className="font-bold text-[#1C1C1C] mb-3 text-sm uppercase tracking-wide">Your Order</h2>
           <div className="space-y-2 text-sm">
-            {/* Paid item — whichever has qty > 0, charcoal takes priority */}
-            <div className="flex justify-between">
-              <span className="text-[#6B6B6B]">
-                {charcoalQty > 0 ? charcoal.name : haldi.name} (100g) ×1
-              </span>
-              <span className="font-medium">₹{BOGO_PRICE}</span>
-            </div>
-            {/* Free item */}
-            <div className="flex justify-between">
-              <span className="text-[#6B6B6B]">
-                {charcoalQty === 2 ? charcoal.name : haldiQty === 2 ? haldi.name : charcoalQty === 0 ? charcoal.name : haldi.name} (100g) ×1
-              </span>
-              <span className="font-bold text-[#8B1A1A]">FREE</span>
-            </div>
+            {/* Smart line items — no duplicate names */}
+            {charcoalQty === 2 ? (
+              <div className="flex justify-between">
+                <span className="text-[#6B6B6B]">{charcoal.name} (100g) ×2 <span className="text-[#8B1A1A] font-medium">(1 free)</span></span>
+                <span className="font-medium">₹{BOGO_PRICE}</span>
+              </div>
+            ) : haldiQty === 2 ? (
+              <div className="flex justify-between">
+                <span className="text-[#6B6B6B]">{haldi.name} (100g) ×2 <span className="text-[#8B1A1A] font-medium">(1 free)</span></span>
+                <span className="font-medium">₹{BOGO_PRICE}</span>
+              </div>
+            ) : (
+              <>
+                <div className="flex justify-between">
+                  <span className="text-[#6B6B6B]">{charcoal.name} (100g)</span>
+                  <span className="font-medium">₹{BOGO_PRICE}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[#6B6B6B]">{haldi.name} (100g)</span>
+                  <span className="font-bold text-[#8B1A1A]">FREE</span>
+                </div>
+              </>
+            )}
             <div className="flex justify-between text-xs text-[#6B6B6B]">
               <span>Shipping</span>
               <span className="text-[#2D5016] font-medium">FREE</span>
