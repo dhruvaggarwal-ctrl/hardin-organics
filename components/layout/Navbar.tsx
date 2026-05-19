@@ -56,6 +56,11 @@ export function Navbar() {
               </Link>
             ))}
 
+            {/* Account link */}
+            <Link href="/account/dashboard" className="text-sm font-medium text-[#1C1C1C] hover:text-[#2D5016] transition-colors">
+              My Account
+            </Link>
+
             {/* BOGO animated button */}
             <Link
               href="/bogo"
@@ -155,6 +160,9 @@ export function Navbar() {
                   {l.label}
                 </Link>
               ))}
+              <Link href="/account/dashboard" onClick={() => setMenuOpen(false)} className="text-lg font-medium text-[#1C1C1C] hover:text-[#2D5016] border-b border-gray-200 pb-3">
+                My Account
+              </Link>
             </nav>
             <div className="mt-auto pt-6 border-t border-gray-200">
               <a

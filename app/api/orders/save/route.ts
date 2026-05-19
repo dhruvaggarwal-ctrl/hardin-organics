@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { createShiprocketOrder, buildShiprocketPayload } from "@/lib/shiprocket";
 
 // NOTE: Orders are saved to a local JSON file for development / MVP purposes.
 // On Vercel, /tmp is used but is ephemeral and resets on each deployment.
@@ -70,6 +71,37 @@ export async function POST(req: NextRequest) {
     const orders = readOrders();
     orders.push(order);
     writeOrders(orders);
+
+    // Create Shiprocket shipment (fire-and-forget — don't block the response)
+    if (process.env.SHIPROCKET_API_TOKEN) {
+      const payload = buildShiprocketPayload({
+        orderId,
+        customerName: body.customerName,
+        mobile: body.mobile,
+        email: body.email || null,
+        addressLine1: body.addressLine1,
+        addressLine2: body.addressLine2,
+        city: body.city,
+        state: body.state,
+        pincode: body.pincode,
+        items: body.items,
+        totalAmount: body.totalAmount,
+        paymentMethod: body.paymentMethod,
+      });
+      createShiprocketOrder(payload).then((sr) => {
+        if (sr) {
+          // Update the saved order with Shiprocket IDs
+          const updatedOrders = readOrders() as Array<Record<string, unknown>>;
+          const idx = updatedOrders.findIndex((o) => o.orderId === orderId);
+          if (idx !== -1) {
+            updatedOrders[idx].shiprocketShipmentId = sr.shipment_id;
+            if (sr.awb_code) updatedOrders[idx].awbCode = sr.awb_code;
+            writeOrders(updatedOrders);
+          }
+          console.log(`[Shiprocket] Order created: shipment_id=${sr.shipment_id}, awb=${sr.awb_code}`);
+        }
+      }).catch((e) => console.error("[Shiprocket] background error:", e));
+    }
 
     // Log WhatsApp notification (replace with WhatsApp Business API for production)
     const itemSummary = (body.items as Array<{ name: string; quantity: number }>)
