@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { motion } from "framer-motion";
 import { CountdownTimer } from "../ui/CountdownTimer";
 import { useCart } from "@/context/CartContext";
@@ -136,15 +135,6 @@ export function BundleSection() {
           ))}
         </div>
 
-        {/* Customise link */}
-        <div className="text-center mt-8">
-          <Link
-            href="/build-your-bundle"
-            className="inline-flex items-center gap-2 bg-white/15 hover:bg-white/25 text-white font-semibold px-6 py-3 rounded-full transition-colors text-sm"
-          >
-            ✏️ Customise Your Bundle →
-          </Link>
-        </div>
       </div>
     </section>
   );

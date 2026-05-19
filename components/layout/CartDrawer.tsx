@@ -104,17 +104,6 @@ export function CartDrawer() {
                 </div>
               ))}
 
-              {/* Bundle upsell — show when only 1 item in cart */}
-              {items.length === 1 && items[0].quantity === 1 && (
-                <Link
-                  href="/build-your-bundle"
-                  onClick={closeDrawer}
-                  className="block bg-[#F5F0E8] border border-[#EDE6D6] rounded-xl p-3 text-center hover:border-[#A0522D] transition-colors"
-                >
-                  <p className="text-sm font-semibold text-[#A0522D]">Add another soap and save ₹50 →</p>
-                  <p className="text-xs text-[#6B6B6B] mt-0.5">Build your custom bundle</p>
-                </Link>
-              )}
 
               {/* Upsell */}
               {upsellProduct && (
