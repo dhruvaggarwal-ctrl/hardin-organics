@@ -31,7 +31,7 @@ export function ProductGallery({ images, name }: ProductGalleryProps) {
     <div className="flex flex-col gap-3">
       {/* Main image */}
       <div
-        className="relative aspect-square rounded-3xl overflow-hidden bg-[#EDE6D6]"
+        className="relative aspect-[4/3] md:aspect-square rounded-none md:rounded-3xl overflow-hidden bg-[#EDE6D6]"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
@@ -66,7 +66,7 @@ export function ProductGallery({ images, name }: ProductGalleryProps) {
 
       {/* Thumbnails */}
       {images.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+        <div className="hidden md:flex gap-2 overflow-x-auto scrollbar-hide">
           {images.map((img, i) => (
             <button
               key={i}

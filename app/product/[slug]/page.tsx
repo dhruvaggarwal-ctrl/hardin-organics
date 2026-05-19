@@ -169,18 +169,39 @@ export default function ProductPage({ params }: PageProps) {
       </div>
 
       {/* Main product section */}
-      <div className="max-w-7xl mx-auto px-4 pb-20 md:pb-16">
-        <div className="grid md:grid-cols-2 gap-6 md:gap-10 lg:gap-16">
-          {/* Gallery */}
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+      <div className="pb-20 md:pb-16">
+
+        {/* ── MOBILE layout (stacked, gallery full-bleed) ─────────────────── */}
+        <div className="md:hidden">
+          {/* Gallery: full-bleed, no side padding */}
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
             <ProductGallery images={product.images} name={product.name} />
           </motion.div>
-
-          {/* Add to cart */}
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          {/* Product info below gallery */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.08 }}
+            className="px-4 pt-5"
+          >
             <AddToCartSection product={product} />
           </motion.div>
         </div>
+
+        {/* ── DESKTOP layout (two-column grid) ────────────────────────────── */}
+        <div className="hidden md:block max-w-7xl mx-auto px-4">
+          <div className="grid md:grid-cols-2 gap-10 lg:gap-16">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+              <ProductGallery images={product.images} name={product.name} />
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+              <AddToCartSection product={product} />
+            </motion.div>
+          </div>
+        </div>
+
+        {/* ── Tabs + rest of content ────────────────────────────────────────── */}
+        <div className="max-w-7xl mx-auto px-4">
 
         {/* Tabs */}
         <div className="mt-8 md:mt-16 bg-white rounded-3xl shadow-sm overflow-hidden">
@@ -266,13 +287,14 @@ export default function ProductPage({ params }: PageProps) {
         )}
 
         {/* Ingredient Comparison Table */}
-        <div className="mt-8 md:mt-12 -mx-4 md:mx-0">
+        <div className="mt-8 md:mt-12">
           <IngredientComparisonTable />
         </div>
 
         {/* Product-specific FAQ */}
         <ProductFAQ slug={slug} />
-      </div>
+        </div>{/* closes shared max-w-7xl px-4 wrapper */}
+      </div>{/* closes outer pb-20 md:pb-16 wrapper */}
 
     </div>
   );
