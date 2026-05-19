@@ -52,17 +52,38 @@ export function DashboardClient({ customer, orders }: { customer: Customer; orde
 
   async function saveProfile() {
     setSaving(true);
-    await fetch("/api/account/profile", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(profile) });
-    setSaving(false); setSaved("profile"); setTimeout(() => setSaved(""), 3000);
-    setNameSet(true);
+    const res = await fetch("/api/account/profile", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(profile),
+    });
+    setSaving(false);
+    if (res.ok) {
+      setSaved("profile");
+      setTimeout(() => setSaved(""), 3000);
+      setNameSet(true);
+    } else {
+      setSaved("error");
+      setTimeout(() => setSaved(""), 3000);
+    }
   }
 
   async function saveAddress() {
     setSaving(true);
-    await fetch("/api/account/address", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(address) });
-    setSaving(false); setSaved("address"); setTimeout(() => setSaved(""), 3000);
-    // Save to localStorage for checkout to read
-    localStorage.setItem("hardin_saved_address", JSON.stringify(address));
+    const res = await fetch("/api/account/address", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(address),
+    });
+    setSaving(false);
+    if (res.ok) {
+      setSaved("address");
+      setTimeout(() => setSaved(""), 3000);
+      localStorage.setItem("hardin_saved_address", JSON.stringify(address));
+    } else {
+      setSaved("error");
+      setTimeout(() => setSaved(""), 3000);
+    }
   }
 
   function reorder(order: Order) {
@@ -193,7 +214,7 @@ export function DashboardClient({ customer, orders }: { customer: Customer; orde
                 <input type="date" value={profile.birthday} onChange={(e) => setProfile({ ...profile, birthday: e.target.value })} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#A0522D]" />
               </div>
               <button onClick={saveProfile} disabled={saving} className="w-full bg-[#A0522D] text-white font-bold py-3 rounded-xl hover:bg-[#8B4513] transition-colors disabled:opacity-60">
-                {saved === "profile" ? "✓ Saved!" : saving ? "Saving…" : "Save Changes"}
+                {saved === "profile" ? "✓ Saved!" : saved === "error" ? "⚠ Save failed" : saving ? "Saving…" : "Save Changes"}
               </button>
             </div>
           </div>
@@ -216,7 +237,7 @@ export function DashboardClient({ customer, orders }: { customer: Customer; orde
                 </div>
               ))}
               <button onClick={saveAddress} disabled={saving} className="w-full bg-[#A0522D] text-white font-bold py-3 rounded-xl hover:bg-[#8B4513] transition-colors disabled:opacity-60">
-                {saved === "address" ? "✓ Saved!" : saving ? "Saving…" : "Save Address"}
+                {saved === "address" ? "✓ Saved!" : saved === "error" ? "⚠ Save failed" : saving ? "Saving…" : "Save Address"}
               </button>
               <p className="text-xs text-[#6B6B6B] text-center">This address will be pre-filled at checkout.</p>
             </div>

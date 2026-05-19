@@ -99,6 +99,26 @@ export default function CheckoutPage() {
     if (items.length === 0) router.replace("/shop");
   }, [items, router]);
 
+  // Auto-populate from saved profile on mount
+  useEffect(() => {
+    fetch("/api/account/profile")
+      .then((r) => r.ok ? r.json() : null)
+      .then((profile) => {
+        if (!profile) return;
+        setForm((prev) => ({
+          ...prev,
+          customerName: profile.name || prev.customerName,
+          mobile: profile.mobile || prev.mobile,
+          addressLine1: profile.address?.addressLine1 || prev.addressLine1,
+          addressLine2: profile.address?.addressLine2 || prev.addressLine2,
+          city: profile.address?.city || prev.city,
+          state: profile.address?.state || prev.state,
+          pincode: profile.address?.pincode || prev.pincode,
+        }));
+      })
+      .catch(() => {/* not logged in — ignore */});
+  }, []);
+
   const set = (field: keyof FormData) => (value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) setErrors((prev) => { const e = { ...prev }; delete e[field]; return e; });
