@@ -126,86 +126,28 @@ function Slide3() {
   );
 }
 
-// ─── Slide 4 — Haldi Chandan (warm, reversed, glow) ─────────────────────────
+// ─── Slide 4 — Haldi Chandan banner image ────────────────────────────────────
 function Slide4() {
   return (
-    <div className="max-w-7xl mx-auto px-4 w-full grid md:grid-cols-2 gap-12 items-center py-16 md:py-24">
-      {/* Image — LEFT (reversed from slide 1) */}
-      <div className="flex justify-center order-1">
-        <div className="relative">
-          <div className="absolute inset-0 bg-[#D4A017]/30 rounded-full scale-110 -z-10 blur-2xl" />
-          <div className="animate-float relative w-72 h-72 sm:w-96 sm:h-96 lg:w-[460px] lg:h-[460px] rounded-[40%_60%_55%_45%/45%_55%_60%_40%] overflow-hidden shadow-2xl bg-[#F5E6C0]">
-            <Image
-              src="/images/haldi-1.png"
-              alt="Saffron Haldi Chandan Soap"
-              fill
-              className="object-contain"
-              sizes="(max-width: 640px) 288px, (max-width: 1024px) 384px, 460px"
-            />
-          </div>
-          {/* Floating ingredient tags */}
-          <div className="absolute -top-2 -left-4 bg-white rounded-2xl shadow-lg px-3 py-2">
-            <span className="text-xs font-bold text-[#8B5E1A]">🌿 Saffron</span>
-          </div>
-          <div className="absolute top-1/2 -right-6 bg-white rounded-2xl shadow-lg px-3 py-2">
-            <span className="text-xs font-bold text-[#8B5E1A]">✨ Haldi</span>
-          </div>
-          <div className="absolute -bottom-3 -left-2 bg-white rounded-2xl shadow-lg px-3 py-2">
-            <span className="text-xs font-bold text-[#8B5E1A]">🪵 Chandan</span>
-          </div>
-        </div>
+    <Link href="/product/saffron-haldi-chandan-soap" className="block w-full group" aria-label="Shop Saffron Haldi Chandan Soap">
+      <div className="relative w-full">
+        <Image
+          src="/images/haldi-banner.jpg"
+          alt="Hardin Organics Saffron Haldi Chandan Soap"
+          width={1672}
+          height={941}
+          className="w-full h-auto object-cover"
+          priority
+          sizes="100vw"
+        />
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
       </div>
-
-      {/* Text — RIGHT */}
-      <div className="order-2 flex flex-col gap-5">
-        <div className="inline-flex items-center gap-2 bg-[#F5E0B0] text-[#8B5E1A] text-sm font-semibold px-4 py-2 rounded-full self-start">
-          ✨ Glow Edition
-        </div>
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#1C1C1C] leading-tight font-display">
-          Radiant Glow.{" "}
-          <span className="text-[#8B5E1A]">Natural Beauty.</span>
-        </h1>
-        <p className="text-lg text-[#6B6B6B] leading-relaxed">
-          Ancient Ayurvedic ingredients — saffron, turmeric &amp; sandalwood — in one luxurious handcrafted bar. Evens skin tone and reduces dullness in 2 weeks.
-        </p>
-
-        {/* Feature pills */}
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { icon: "☀️", label: "Brightens Skin" },
-            { icon: "🔸", label: "Evens Tone" },
-            { icon: "💧", label: "Hydrating" },
-            { icon: "🌿", label: "100% Natural" },
-          ].map((f) => (
-            <div key={f.label} className="flex items-center gap-2 bg-white/70 backdrop-blur-sm rounded-xl px-3 py-2.5 shadow-sm">
-              <span className="text-base">{f.icon}</span>
-              <span className="text-sm font-semibold text-[#1C1C1C]">{f.label}</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-4 pt-1">
-          <Link
-            href="/product/saffron-haldi-chandan-soap"
-            className="inline-flex items-center gap-2 bg-[#D4A017] text-white font-bold px-8 py-4 rounded-full text-lg hover:bg-[#E8B52A] transition-all duration-300 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
-          >
-            Shop Haldi Chandan
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </Link>
-          <div className="text-center">
-            <div className="text-xl font-bold text-[#1C1C1C]">₹199</div>
-            <div className="text-xs text-[#6B6B6B] line-through">₹349</div>
-          </div>
-        </div>
-      </div>
-    </div>
+    </Link>
   );
 }
 
 const SLIDES = [Slide1, Slide2, Slide3, Slide4];
-const SLIDE_BG = ["#F5F0E8", "#F5EDDA", "#EBEBEB", "#FDF3E3"];
+const SLIDE_BG = ["#F5F0E8", "#F5EDDA", "#EBEBEB", "#F5E6C0"];
 const DOT_ACCENT = ["#2D5016", "#2D5016", "#1C1C1C", "#D4A017"];
 
 export function HeroSection() {
