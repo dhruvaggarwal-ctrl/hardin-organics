@@ -172,12 +172,12 @@ export default function ProductPage({ params }: PageProps) {
       <div className="max-w-7xl mx-auto px-4 pb-20 md:pb-16">
         <div className="grid md:grid-cols-2 gap-6 md:gap-10 lg:gap-16">
           {/* Gallery */}
-          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
             <ProductGallery images={product.images} name={product.name} />
           </motion.div>
 
           {/* Add to cart */}
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
             <AddToCartSection product={product} />
           </motion.div>
         </div>
