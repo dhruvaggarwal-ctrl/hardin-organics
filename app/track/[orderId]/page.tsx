@@ -12,11 +12,12 @@ interface TrackingActivity {
 
 interface TrackingInfo {
   currentStatus: string;
-  courierName: string | null;
+  statusType?: string;
   origin: string | null;
   destination: string | null;
+  pickupDate: string | null;
   deliveredDate: string | null;
-  trackUrl: string | null;
+  scheduledDeliveryDate: string | null;
   activities: TrackingActivity[];
 }
 
@@ -28,7 +29,7 @@ interface OrderData {
   city: string;
   items: Array<{ name: string; quantity: number; price: number }>;
   totalAmount: number;
-  awbCode: string | null;
+  waybill: string | null;
   tracking: TrackingInfo | null;
 }
 
@@ -178,14 +179,17 @@ export default function TrackPage({ params }: { params: Promise<{ orderId: strin
           {/* Courier info */}
           {data.tracking && (
             <div className="mt-5 pt-4 border-t border-gray-100 space-y-1">
-              {data.tracking.courierName && (
+              <p className="text-sm text-[#6B6B6B]">
+                <span className="font-medium text-[#1C1C1A]">Courier:</span> Delhivery
+              </p>
+              {data.waybill && (
                 <p className="text-sm text-[#6B6B6B]">
-                  <span className="font-medium text-[#1C1C1A]">Courier:</span> {data.tracking.courierName}
+                  <span className="font-medium text-[#1C1C1A]">Waybill:</span> {data.waybill}
                 </p>
               )}
-              {data.awbCode && (
+              {data.tracking.scheduledDeliveryDate && !data.tracking.deliveredDate && (
                 <p className="text-sm text-[#6B6B6B]">
-                  <span className="font-medium text-[#1C1C1A]">AWB:</span> {data.awbCode}
+                  <span className="font-medium text-[#1C1C1A]">Expected:</span> {formatDate(data.tracking.scheduledDeliveryDate)}
                 </p>
               )}
               {data.tracking.deliveredDate && (
@@ -193,14 +197,14 @@ export default function TrackPage({ params }: { params: Promise<{ orderId: strin
                   ✓ Delivered on {formatDate(data.tracking.deliveredDate)}
                 </p>
               )}
-              {data.tracking.trackUrl && (
+              {data.waybill && (
                 <a
-                  href={data.tracking.trackUrl}
+                  href={`https://www.delhivery.com/track/package/${data.waybill}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-block mt-2 text-xs text-[#A0522D] underline hover:text-[#8B4513]"
                 >
-                  Track on courier website →
+                  Track on Delhivery website →
                 </a>
               )}
             </div>

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readFileSync, existsSync } from "fs";
 import path from "path";
-import { trackShipmentByAwb } from "@/lib/shiprocket";
+import { trackByWaybill } from "@/lib/delhivery";
 
 interface Order {
   orderId: string;
@@ -11,8 +11,7 @@ interface Order {
   city: string;
   status: string;
   createdAt: string;
-  awbCode?: string;
-  shiprocketShipmentId?: string;
+  waybill?: string;
   items: Array<{ name: string; quantity: number; price: number }>;
   totalAmount: number;
 }
@@ -45,7 +44,6 @@ export async function GET(
     return NextResponse.json({ error: "Order not found" }, { status: 404 });
   }
 
-  // Base response (no live tracking)
   const base = {
     orderId: order.orderId,
     customerName: order.customerName,
@@ -54,30 +52,30 @@ export async function GET(
     city: order.city,
     items: order.items,
     totalAmount: order.totalAmount,
-    awbCode: order.awbCode || null,
-    shiprocketShipmentId: order.shiprocketShipmentId || null,
+    waybill: order.waybill || null,
     tracking: null as null | object,
   };
 
-  // If we have an AWB code, fetch live tracking from Shiprocket
-  if (order.awbCode) {
-    const data = await trackShipmentByAwb(order.awbCode);
-    if (data?.tracking_data) {
-      const td = data.tracking_data;
-      const activities = (td.shipment_track_activities || []).map((a) => ({
-        date: a.date,
-        status: a["sr-status-label"] || a.status,
-        activity: a.activity,
-        location: a.location,
+  // Fetch live tracking from Delhivery if we have a waybill
+  if (order.waybill) {
+    const data = await trackByWaybill(order.waybill);
+    const shipment = data?.ShipmentData?.[0]?.Shipment;
+    if (shipment) {
+      const activities = (shipment.Scans || []).map((s) => ({
+        date: s.ScanDetail.StatusDateTime || s.ScanDetail.ScanDateTime,
+        status: s.ScanDetail.ScanType,
+        activity: s.ScanDetail.Instructions || s.ScanDetail.Scan,
+        location: s.ScanDetail.CityLocation || s.ScanDetail.ScannedLocation,
       }));
-      const latest = td.shipment_track?.[0];
+
       base.tracking = {
-        currentStatus: latest?.current_status || order.status,
-        courierName: latest?.courier_name || null,
-        origin: latest?.origin || null,
-        destination: latest?.destination || null,
-        deliveredDate: latest?.delivered_date || null,
-        trackUrl: td.track_url || null,
+        currentStatus: shipment.Status,
+        statusType: shipment.StatusType,
+        origin: shipment.Origin,
+        destination: shipment.Destination,
+        pickupDate: shipment.PickUpDate,
+        deliveredDate: shipment.DeliveryDate,
+        scheduledDeliveryDate: shipment.ScheduledDeliveryDate,
         activities,
       };
     }

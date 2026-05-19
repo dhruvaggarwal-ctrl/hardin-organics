@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
-import { createShiprocketOrder, buildShiprocketPayload } from "@/lib/shiprocket";
+import { createDelhiveryShipment, buildDelhiveryPayload } from "@/lib/delhivery";
 
 // NOTE: Orders are saved to a local JSON file for development / MVP purposes.
 // On Vercel, /tmp is used but is ephemeral and resets on each deployment.
@@ -72,9 +72,9 @@ export async function POST(req: NextRequest) {
     orders.push(order);
     writeOrders(orders);
 
-    // Create Shiprocket shipment (fire-and-forget — don't block the response)
-    if (process.env.SHIPROCKET_API_TOKEN) {
-      const payload = buildShiprocketPayload({
+    // Create Delhivery shipment (fire-and-forget — don't block the response)
+    if (process.env.DELHIVERY_API_TOKEN) {
+      const payload = buildDelhiveryPayload({
         orderId,
         customerName: body.customerName,
         mobile: body.mobile,
@@ -88,19 +88,20 @@ export async function POST(req: NextRequest) {
         totalAmount: body.totalAmount,
         paymentMethod: body.paymentMethod,
       });
-      createShiprocketOrder(payload).then((sr) => {
-        if (sr) {
-          // Update the saved order with Shiprocket IDs
-          const updatedOrders = readOrders() as Array<Record<string, unknown>>;
-          const idx = updatedOrders.findIndex((o) => o.orderId === orderId);
-          if (idx !== -1) {
-            updatedOrders[idx].shiprocketShipmentId = sr.shipment_id;
-            if (sr.awb_code) updatedOrders[idx].awbCode = sr.awb_code;
-            writeOrders(updatedOrders);
+      createDelhiveryShipment(payload).then((dl) => {
+        if (dl?.packages?.length) {
+          const waybill = dl.packages[0].waybill;
+          if (waybill) {
+            const updatedOrders = readOrders() as Array<Record<string, unknown>>;
+            const idx = updatedOrders.findIndex((o) => o.orderId === orderId);
+            if (idx !== -1) {
+              updatedOrders[idx].waybill = waybill;
+              writeOrders(updatedOrders);
+            }
+            console.log(`[Delhivery] Shipment created: waybill=${waybill}`);
           }
-          console.log(`[Shiprocket] Order created: shipment_id=${sr.shipment_id}, awb=${sr.awb_code}`);
         }
-      }).catch((e) => console.error("[Shiprocket] background error:", e));
+      }).catch((e) => console.error("[Delhivery] background error:", e));
     }
 
     // Log WhatsApp notification (replace with WhatsApp Business API for production)
