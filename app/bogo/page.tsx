@@ -280,24 +280,28 @@ export default function BogoPage() {
         </div>
       </div>
 
-      {/* Logo bar */}
-      <div className="bg-white border-b border-gray-100 py-3 text-center">
-        <Image src="/images/hardin-logo.png" alt="Hardin Organics" width={140} height={56}
-          className="h-9 w-auto object-contain inline-block" priority />
-      </div>
-
-      {/* Hero */}
-      <div className="bg-[#2D5016] text-white text-center py-10 px-4">
-        <p className="text-sm font-semibold tracking-widest uppercase text-[#A8C97A] mb-2">Limited Time Offer</p>
-        <h1 className="text-4xl md:text-6xl font-bold mb-3 font-display">
-          Buy 1, Get 1 <span className="text-[#D4A017]">FREE</span>
-        </h1>
-        <p className="text-lg text-white/80 max-w-md mx-auto">
-          Get both handcrafted soaps — worth ₹{ORIGINAL_PRICE} — for just <strong className="text-white">₹{BOGO_PRICE}</strong>
-        </p>
-        <div className="inline-flex items-center gap-2 bg-[#D4A017] text-[#1C1C1C] font-bold text-sm px-4 py-1.5 rounded-full mt-4">
-          You save ₹{SAVINGS} — {Math.round((SAVINGS / ORIGINAL_PRICE) * 100)}% OFF
-        </div>
+      {/* Hero banner */}
+      <div className="w-full">
+        {/* Desktop */}
+        <Image
+          src="/images/bogo-page-banner.jpg"
+          alt="Buy One Get One Free — Hardin Organics BOGO Sale"
+          width={2000}
+          height={694}
+          className="hidden md:block w-full h-auto object-cover"
+          priority
+          sizes="100vw"
+        />
+        {/* Mobile */}
+        <Image
+          src="/images/bogo-page-banner-mobile.jpg"
+          alt="Buy One Get One Free — Hardin Organics BOGO Sale"
+          width={1145}
+          height={1374}
+          className="block md:hidden w-full h-auto object-cover"
+          priority
+          sizes="100vw"
+        />
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-8 space-y-5">
