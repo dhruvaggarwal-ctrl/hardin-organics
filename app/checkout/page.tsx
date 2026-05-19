@@ -82,10 +82,14 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { items, subtotal, discount, clearCart } = useCart();
 
-  const [form, setForm] = useState<FormData>({
-    customerName: "", mobile: "", email: "",
-    addressLine1: "", addressLine2: "",
-    city: "", state: "", pincode: "",
+  const LS_KEY = "hardin_checkout_details";
+  const [form, setForm] = useState<FormData>(() => {
+    const empty: FormData = { customerName: "", mobile: "", email: "", addressLine1: "", addressLine2: "", city: "", state: "", pincode: "" };
+    if (typeof window === "undefined") return empty;
+    try {
+      const saved = localStorage.getItem(LS_KEY);
+      return saved ? { ...empty, ...JSON.parse(saved) } : empty;
+    } catch { return empty; }
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
@@ -140,6 +144,11 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (items.length === 0) router.replace("/shop");
   }, [items, router]);
+
+  // Persist form to localStorage so it survives page refreshes and return visits
+  useEffect(() => {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(form)); } catch { /* ignore */ }
+  }, [form]);
 
   // Auto-populate from saved profile on mount
   useEffect(() => {

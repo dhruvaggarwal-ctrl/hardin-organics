@@ -130,16 +130,25 @@ export default function BogoPage() {
   const ORIGINAL_PRICE = 298;
   const SAVINGS = ORIGINAL_PRICE - BOGO_PRICE;
 
-  const [form, setForm] = useState<FormData>({
-    customerName: "", mobile: "", email: "",
-    addressLine1: "", addressLine2: "",
-    city: "", state: "", pincode: "",
+  const LS_KEY = "hardin_checkout_details";
+  const [form, setForm] = useState<FormData>(() => {
+    const empty: FormData = { customerName: "", mobile: "", email: "", addressLine1: "", addressLine2: "", city: "", state: "", pincode: "" };
+    if (typeof window === "undefined") return empty;
+    try {
+      const saved = localStorage.getItem(LS_KEY);
+      return saved ? { ...empty, ...JSON.parse(saved) } : empty;
+    } catch { return empty; }
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
-  // Auto-fill saved profile/address if user is logged in
+  // Persist form to localStorage on every change
+  useEffect(() => {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(form)); } catch { /* ignore */ }
+  }, [form]);
+
+  // Auto-fill saved profile/address if user is logged in (overrides localStorage)
   useEffect(() => {
     fetch("/api/account/profile")
       .then((r) => (r.ok ? r.json() : null))
