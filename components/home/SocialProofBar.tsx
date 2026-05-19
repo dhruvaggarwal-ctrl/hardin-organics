@@ -23,20 +23,57 @@ export function SocialProofBar() {
   const review = microReviews[current];
 
   return (
-    <section className="bg-[#EDE6D6] py-8">
+    <section className="bg-[#EDE6D6] py-6 md:py-8">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex flex-col md:flex-row items-center justify-center gap-6 text-center">
+
+        {/* ── MOBILE layout ── */}
+        <div className="md:hidden space-y-4">
+          {/* Two stats side-by-side */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-white/60 rounded-2xl px-4 py-3 text-center">
+              <div className="text-2xl font-bold text-[#C4622D]">10,000+</div>
+              <div className="text-xs text-[#6B6B6B] font-medium mt-0.5">Happy Customers</div>
+            </div>
+            <div className="bg-white/60 rounded-2xl px-4 py-3 text-center">
+              <div className="flex items-center justify-center gap-1.5">
+                <span className="text-2xl font-bold text-[#1C1C1C]">4.8</span>
+                <span className="text-yellow-400 text-xl">★</span>
+              </div>
+              <div className="text-xs text-[#6B6B6B] font-medium mt-0.5">2,000+ Reviews</div>
+            </div>
+          </div>
+
+          {/* Rotating review */}
+          <div className="bg-white/60 rounded-2xl px-4 py-3">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={current}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.35 }}
+                className="text-sm italic text-[#1C1C1C] text-center"
+              >
+                &ldquo;{review.text}&rdquo;
+                <div className="text-xs text-[#6B6B6B] mt-1 not-italic">
+                  — {review.name}, {review.city}
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
+
+        {/* ── DESKTOP layout (unchanged) ── */}
+        <div className="hidden md:flex items-center justify-center gap-6 text-center">
           <div className="flex items-center gap-3">
-            <span className="text-3xl font-bold text-[#2D5016]">
-              Trusted by
-            </span>
+            <span className="text-3xl font-bold text-[#2D5016]">Trusted by</span>
             <div>
               <div className="text-3xl font-bold text-[#C4622D]">10,000+</div>
               <div className="text-xs text-[#6B6B6B] font-medium">Happy Customers</div>
             </div>
           </div>
 
-          <div className="hidden md:block w-px h-12 bg-gray-300" />
+          <div className="w-px h-12 bg-gray-300" />
 
           <div className="flex items-center gap-3">
             <StarRating rating={4.8} size="lg" />
@@ -44,9 +81,8 @@ export function SocialProofBar() {
             <span className="text-sm text-[#6B6B6B]">from 2,000+ verified reviews</span>
           </div>
 
-          <div className="hidden md:block w-px h-12 bg-gray-300" />
+          <div className="w-px h-12 bg-gray-300" />
 
-          {/* Rotating micro review */}
           <div className="max-w-sm">
             <AnimatePresence mode="wait">
               <motion.div
@@ -65,6 +101,7 @@ export function SocialProofBar() {
             </AnimatePresence>
           </div>
         </div>
+
       </div>
     </section>
   );
