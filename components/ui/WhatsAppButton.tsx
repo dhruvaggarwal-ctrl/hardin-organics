@@ -77,7 +77,7 @@ export function WhatsAppButton() {
   }
 
   return (
-    <div ref={ref} className="fixed bottom-6 right-4 z-50 flex flex-col items-end gap-3">
+    <div ref={ref} className="fixed bottom-20 md:bottom-6 right-4 z-50 flex flex-col items-end gap-3">
       {/* Menu card */}
       {open && (
         <div className="bg-[#F5F0E8] rounded-2xl shadow-2xl border-l-4 border-[#A0522D] w-72 overflow-hidden animate-wa-slide-up">

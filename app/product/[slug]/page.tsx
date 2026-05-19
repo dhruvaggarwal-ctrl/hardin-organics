@@ -10,9 +10,9 @@ import { ProductGallery } from "@/components/product/ProductGallery";
 import { AddToCartSection } from "@/components/product/AddToCartSection";
 import { ReviewList } from "@/components/product/ReviewList";
 import { ProductCard } from "@/components/ui/ProductCard";
-import { StarRating } from "@/components/ui/StarRating";
 import { IngredientComparisonTable } from "@/components/home/IngredientComparisonTable";
 import { AnimatePresence } from "framer-motion";
+import { useCart } from "@/context/CartContext";
 
 // ── Product-specific FAQs ────────────────────────────────────────────────────
 const productFaqs: Record<string, { q: string; a: string }[]> = {
@@ -98,11 +98,26 @@ export default function ProductPage({ params }: PageProps) {
   const { slug } = use(params);
   const product = getProductBySlug(slug);
   const [activeTab, setActiveTab] = useState("Description");
+  const [comboAdded, setComboAdded] = useState(false);
+  const { addToCart } = useCart();
 
   if (!product) notFound();
 
   const reviews = getReviewsByProduct(slug);
   const relatedProducts = products.filter((p) => p.slug !== slug).slice(0, 3);
+
+  // Frequently Bought Together helpers
+  const comboProduct = products.filter((p) => p.id !== product.id)[0];
+  const comboPrice = product.price + (comboProduct?.price ?? 0);
+  const comboMRP = product.originalPrice + (comboProduct?.originalPrice ?? 0);
+  const comboSaving = comboMRP - comboPrice;
+
+  function handleAddBoth() {
+    addToCart(product, product.sizes[0].label, product.sizes[0].price, 1);
+    if (comboProduct) addToCart(comboProduct, comboProduct.sizes[0].label, comboProduct.sizes[0].price, 1);
+    setComboAdded(true);
+    setTimeout(() => setComboAdded(false), 3000);
+  }
 
   const tabContent: Record<string, React.ReactNode> = {
     Description: (
@@ -190,50 +205,65 @@ export default function ProductPage({ params }: PageProps) {
         </div>
 
         {/* Frequently Bought Together */}
-        <div className="mt-8 md:mt-12">
-          <h2 className="text-3xl font-bold text-[#1C1C1C] mb-6 font-display">
-            Frequently Bought Together
-          </h2>
-          <div className="bg-white rounded-2xl p-6 shadow-sm">
-            <div className="flex flex-col sm:flex-row items-center gap-4 mb-6">
-              <div className="flex items-center gap-3">
-                {[product, ...products.filter((p) => p.id !== product.id).slice(0, 1)].map((p, i) => (
-                  <div key={p.id} className="flex items-center gap-3">
-                    {i > 0 && <span className="text-[#6B6B6B] font-bold text-xl">+</span>}
+        {comboProduct && (
+          <div className="mt-8 md:mt-12">
+            <h2 className="text-2xl md:text-3xl font-bold text-[#1C1C1C] mb-4 font-display">
+              Frequently Bought Together
+            </h2>
+            <div className="bg-white rounded-2xl p-5 shadow-sm">
+              {/* Products row */}
+              <div className="flex items-center gap-4 mb-5">
+                {[product, comboProduct].map((p, i) => (
+                  <div key={p.id} className="flex items-center gap-4">
+                    {i > 0 && <span className="text-[#6B6B6B] font-bold text-xl shrink-0">+</span>}
                     <div className="text-center">
-                      <div className="w-20 h-20 bg-[#EDE6D6] rounded-xl overflow-hidden relative">
+                      <div className="w-20 h-20 bg-[#EDE6D6] rounded-xl overflow-hidden">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
                       </div>
-                      <p className="text-xs text-[#6B6B6B] mt-1 max-w-[80px] leading-tight">{p.name.split(" ").slice(0, 2).join(" ")}</p>
+                      <p className="text-xs text-[#6B6B6B] mt-1.5 font-medium leading-tight max-w-[80px]">
+                        {p.name.split(" ").slice(0, 2).join(" ")}
+                      </p>
+                      <p className="text-xs font-bold text-[#1C1C1C]">₹{p.price}</p>
                     </div>
                   </div>
                 ))}
-              </div>
-              <div className="sm:ml-auto text-center sm:text-right">
-                <div className="text-2xl font-bold text-[#1C1C1C]">
-                  ₹{product.price + products.filter((p) => p.id !== product.id)[0].price}
+                <div className="ml-auto text-right shrink-0">
+                  <div className="text-2xl font-bold text-[#1C1C1C]">₹{comboPrice}</div>
+                  {comboSaving > 0 && (
+                    <div className="text-xs text-green-600 font-semibold">Save ₹{comboSaving} vs MRP</div>
+                  )}
                 </div>
-                <div className="text-sm text-green-600 font-medium">Save ₹50 vs buying separately</div>
               </div>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <StarRating rating={4.85} size="sm" showNumber />
-              <span className="text-sm text-[#6B6B6B]">Highly recommended combo by our customers</span>
+              {/* CTA */}
+              <button
+                onClick={handleAddBoth}
+                className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all duration-200 ${
+                  comboAdded
+                    ? "bg-green-600 text-white"
+                    : "bg-[#1C1C1C] text-white hover:bg-[#333]"
+                }`}
+              >
+                {comboAdded ? "✓ Both Added to Cart!" : `Add Both to Cart — ₹${comboPrice}`}
+              </button>
+              <p className="text-center text-xs text-[#6B6B6B] mt-2">Loved together by 1,400+ customers</p>
             </div>
           </div>
-        </div>
+        )}
 
         {/* You May Also Like */}
-        <div className="mt-8 md:mt-12">
-          <h2 className="text-3xl font-bold text-[#1C1C1C] mb-6 font-display">
-            You May Also Like
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
-            {relatedProducts.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
+        {relatedProducts.length > 0 && (
+          <div className="mt-8 md:mt-12">
+            <h2 className="text-2xl md:text-3xl font-bold text-[#1C1C1C] mb-4 font-display">
+              You May Also Like
+            </h2>
+            <div className={relatedProducts.length === 1 ? "max-w-xs" : "grid grid-cols-2 md:grid-cols-3 gap-5"}>
+              {relatedProducts.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Ingredient Comparison Table */}
         <div className="mt-8 md:mt-12 -mx-4 md:mx-0">

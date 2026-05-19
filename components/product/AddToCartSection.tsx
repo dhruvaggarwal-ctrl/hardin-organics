@@ -142,7 +142,7 @@ export function AddToCartSection({ product }: AddToCartSectionProps) {
               </p>
             )}
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+          <div className="flex flex-wrap gap-2">
             {product.sizes.map((size) => {
               const isSelected = selectedSize === size.label;
               return (
@@ -286,21 +286,21 @@ export function AddToCartSection({ product }: AddToCartSectionProps) {
 
       {/* Sticky mobile add-to-cart bar */}
       <div className="fixed bottom-0 left-0 right-0 z-30 md:hidden bg-white border-t border-gray-100 px-4 py-3 flex items-center gap-3 shadow-[0_-2px_12px_rgba(0,0,0,0.08)]">
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 mr-2">
           <div className="font-bold text-sm text-[#1C1C1C] truncate">{product.name}</div>
           <div className="text-[#C4622D] font-bold text-sm">₹{currentSize.price}</div>
         </div>
         {isOutOfStock ? (
           <button
             onClick={() => setNotifyOpen(true)}
-            className="bg-[#A0522D] text-white font-bold px-5 py-3 rounded-xl text-sm shrink-0"
+            className="bg-[#A0522D] text-white font-bold px-4 py-3 rounded-xl text-sm shrink-0 whitespace-nowrap"
           >
             Notify Me
           </button>
         ) : (
           <button
             onClick={handleAddToCart}
-            className={`font-bold px-5 py-3 rounded-xl text-sm shrink-0 transition-all duration-200 ${added ? "bg-green-600 text-white" : "bg-[#C4622D] text-white"}`}
+            className={`font-bold px-4 py-3 rounded-xl text-sm shrink-0 whitespace-nowrap transition-all duration-200 ${added ? "bg-green-600 text-white" : "bg-[#C4622D] text-white"}`}
           >
             {added ? "✓ Added!" : "Add to Cart →"}
           </button>
