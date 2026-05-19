@@ -125,27 +125,11 @@ export default function BogoPage() {
 
   const charcoal = products.find((p) => p.id === "charcoal-soap")!;
   const haldi = products.find((p) => p.id === "saffron-haldi-chandan")!;
-  const bogoProducts = [charcoal, haldi];
 
   const BOGO_PRICE = 149;
   const ORIGINAL_PRICE = 298;
   const SAVINGS = ORIGINAL_PRICE - BOGO_PRICE;
 
-  // Quantities — always total 2 (linked: increasing one decreases the other)
-  const [charcoalQty, setCharcoalQty] = useState(1);
-  const [haldiQty, setHaldiQty] = useState(1);
-
-  function changeQty(product: "charcoal" | "haldi", delta: number) {
-    if (product === "charcoal") {
-      const next = Math.min(2, Math.max(0, charcoalQty + delta));
-      setCharcoalQty(next);
-      setHaldiQty(2 - next);
-    } else {
-      const next = Math.min(2, Math.max(0, haldiQty + delta));
-      setHaldiQty(next);
-      setCharcoalQty(2 - next);
-    }
-  }
 
   const LS_KEY = "hardin_checkout_details";
   const [form, setForm] = useState<FormData>(() => {
@@ -238,11 +222,7 @@ export default function BogoPage() {
           amount: orderAmount,
           currency,
           name: "Hardin Organics",
-          description: charcoalQty === 2
-            ? "BOGO: 2× Activated Charcoal Soap"
-            : haldiQty === 2
-              ? "BOGO: 2× Saffron Haldi Chandan Soap"
-              : "BOGO: Activated Charcoal + Saffron Haldi Chandan Soap",
+          description: "BOGO: Activated Charcoal + Saffron Haldi Chandan Soap",
           theme: { color: "#8B1A1A" },
           prefill: {
             name: form.customerName,
@@ -274,18 +254,8 @@ export default function BogoPage() {
               body: JSON.stringify({
                 ...form,
                 items: [
-                  // Paid item (always 1 unit at ₹149)
-                  charcoalQty > 0
-                    ? { id: charcoal.id, name: charcoal.name, quantity: 1, price: BOGO_PRICE }
-                    : { id: haldi.id, name: haldi.name, quantity: 1, price: BOGO_PRICE },
-                  // Free item (always 1 unit at ₹0)
-                  charcoalQty === 2
-                    ? { id: charcoal.id, name: charcoal.name, quantity: 1, price: 0 }
-                    : haldiQty === 2
-                      ? { id: haldi.id, name: haldi.name, quantity: 1, price: 0 }
-                      : charcoalQty === 0
-                        ? { id: charcoal.id, name: charcoal.name, quantity: 1, price: 0 }
-                        : { id: haldi.id, name: haldi.name, quantity: 1, price: 0 },
+                  { id: charcoal.id, name: charcoal.name, quantity: 1, price: BOGO_PRICE },
+                  { id: haldi.id, name: haldi.name, quantity: 1, price: 0 },
                 ],
                 subtotal: BOGO_PRICE,
                 discount: 0,
@@ -380,76 +350,44 @@ export default function BogoPage() {
 
       <div className="max-w-2xl mx-auto px-4 py-8 space-y-5">
 
-        {/* Products with quantity selectors */}
+        {/* Products */}
         <div className="grid grid-cols-2 gap-4">
-          {([
-            { product: charcoal, qty: charcoalQty, key: "charcoal" as const },
-            { product: haldi,    qty: haldiQty,    key: "haldi"    as const },
-          ]).map(({ product, qty, key }) => {
-            // What role does this product play?
-            const role = qty === 0 ? "none"
-              : qty === 2 ? "both"       // user wants 2 of this → 1 paid + 1 free
-              : key === "charcoal" && charcoalQty === 1 ? "paid"
-              : "free";
-
-            return (
-              <div key={product.id} className={`bg-white rounded-2xl overflow-hidden shadow-sm border-2 transition-all ${qty === 0 ? "border-[#EDE6D6] opacity-60" : role === "paid" ? "border-[#2D5016]" : role === "free" ? "border-[#8B1A1A]" : "border-[#2D5016]"}`}>
-                <div className="relative aspect-square bg-[#EDE6D6]">
-                  <Image src={product.images[0]} alt={product.name} fill className="object-cover"
-                    sizes="(max-width: 640px) 50vw, 300px" />
-                </div>
-                <div className="p-3 text-center">
-                  <p className="text-xs font-semibold text-[#1C1C1C] leading-tight mb-1">{product.name}</p>
-
-                  {/* Role label */}
-                  <div className="mb-2 h-5">
-                    {role === "none" && <span className="text-[10px] text-gray-400">Not included</span>}
-                    {role === "paid" && <span className="text-[10px] font-bold text-[#2D5016]">YOU PAY — ₹{BOGO_PRICE}</span>}
-                    {role === "free" && <span className="text-[10px] font-bold text-[#8B1A1A]">FREE</span>}
-                    {role === "both" && <span className="text-[10px] font-bold text-[#2D5016]">×2 — Buy 1 Get 1 Free</span>}
-                  </div>
-
-                  {/* +/- selector */}
-                  <div className="flex items-center justify-center gap-3">
-                    <button onClick={() => changeQty(key, -1)} disabled={qty === 0}
-                      className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-base font-bold text-[#1C1C1C] disabled:opacity-25 hover:bg-gray-50 transition-colors">−</button>
-                    <span className="text-base font-bold text-[#1C1C1C] w-5 text-center">{qty}</span>
-                    <button onClick={() => changeQty(key, 1)} disabled={qty === 2}
-                      className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-base font-bold text-[#1C1C1C] disabled:opacity-25 hover:bg-gray-50 transition-colors">+</button>
-                  </div>
+          {[{ product: charcoal, isPaid: true }, { product: haldi, isPaid: false }].map(({ product, isPaid }) => (
+            <div key={product.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-[#EDE6D6]">
+              <div className="relative aspect-square bg-[#EDE6D6]">
+                <Image src={product.images[0]} alt={product.name} fill className="object-cover"
+                  sizes="(max-width: 640px) 50vw, 300px" />
+                <div className={`absolute top-2 right-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${isPaid ? "bg-[#2D5016]" : "bg-[#8B1A1A]"}`}>
+                  {isPaid ? "You Pay" : "FREE"}
                 </div>
               </div>
-            );
-          })}
+              <div className="p-3 text-center">
+                <p className="text-xs font-semibold text-[#1C1C1C] leading-tight">{product.name}</p>
+                <div className="flex items-center justify-center gap-1.5 mt-1">
+                  {isPaid ? (
+                    <span className="text-sm font-bold text-[#2D5016]">₹{BOGO_PRICE}</span>
+                  ) : (
+                    <><span className="text-xs text-gray-400 line-through">₹{product.price}</span>
+                    <span className="text-sm font-bold text-[#8B1A1A]">FREE</span></>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Order summary */}
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#EDE6D6]">
           <h2 className="font-bold text-[#1C1C1C] mb-3 text-sm uppercase tracking-wide">Your Order</h2>
           <div className="space-y-2 text-sm">
-            {/* Smart line items — no duplicate names */}
-            {charcoalQty === 2 ? (
-              <div className="flex justify-between">
-                <span className="text-[#6B6B6B]">{charcoal.name} (100g) ×2 <span className="text-[#8B1A1A] font-medium">(1 free)</span></span>
-                <span className="font-medium">₹{BOGO_PRICE}</span>
-              </div>
-            ) : haldiQty === 2 ? (
-              <div className="flex justify-between">
-                <span className="text-[#6B6B6B]">{haldi.name} (100g) ×2 <span className="text-[#8B1A1A] font-medium">(1 free)</span></span>
-                <span className="font-medium">₹{BOGO_PRICE}</span>
-              </div>
-            ) : (
-              <>
-                <div className="flex justify-between">
-                  <span className="text-[#6B6B6B]">{charcoal.name} (100g)</span>
-                  <span className="font-medium">₹{BOGO_PRICE}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#6B6B6B]">{haldi.name} (100g)</span>
-                  <span className="font-bold text-[#8B1A1A]">FREE</span>
-                </div>
-              </>
-            )}
+            <div className="flex justify-between">
+              <span className="text-[#6B6B6B]">Activated Charcoal Soap (100g)</span>
+              <span className="font-medium">₹{BOGO_PRICE}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[#6B6B6B]">Saffron Haldi Chandan Soap (100g)</span>
+              <span className="font-bold text-[#8B1A1A]">FREE</span>
+            </div>
             <div className="flex justify-between text-xs text-[#6B6B6B]">
               <span>Shipping</span>
               <span className="text-[#2D5016] font-medium">FREE</span>
