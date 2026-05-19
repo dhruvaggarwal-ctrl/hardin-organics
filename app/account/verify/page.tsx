@@ -1,59 +1,94 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { isSignInWithEmailLink, signInWithEmailLink } from "firebase/auth";
+import { firebaseAuth } from "@/lib/firebase/client";
+import { Suspense } from "react";
 
-export default function VerifyPage({ searchParams }: { searchParams: Promise<{ token?: string }> }) {
-  const { token } = use(searchParams);
+function VerifyInner() {
   const router = useRouter();
-  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
+  const searchParams = useSearchParams();
+  const [status, setStatus] = useState<"verifying" | "success" | "error">("verifying");
+  const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
-    if (!token) { setStatus("error"); return; }
-    fetch("/api/auth/verify", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token }),
-    })
-      .then(async (res) => {
-        if (res.ok) {
-          setStatus("success");
-          setTimeout(() => router.replace("/account/dashboard"), 1500);
-        } else {
-          setStatus("error");
-        }
-      })
-      .catch(() => setStatus("error"));
-  }, [token, router]);
+    async function verify() {
+      const url = window.location.href;
+      if (!isSignInWithEmailLink(firebaseAuth, url)) {
+        setStatus("error");
+        setErrorMsg("Invalid or expired sign-in link.");
+        return;
+      }
+
+      let email = searchParams.get("email") || window.localStorage.getItem("emailForSignIn") || "";
+      if (!email) {
+        email = window.prompt("Please enter your email to confirm sign-in:") || "";
+      }
+
+      try {
+        const result = await signInWithEmailLink(firebaseAuth, email, url);
+        window.localStorage.removeItem("emailForSignIn");
+        const idToken = await result.user.getIdToken();
+        const res = await fetch("/api/auth/session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ idToken }),
+        });
+        if (!res.ok) throw new Error("Session failed");
+        setStatus("success");
+        setTimeout(() => router.push("/account/dashboard"), 1000);
+      } catch (err) {
+        console.error(err);
+        setStatus("error");
+        setErrorMsg("Sign-in failed. The link may have expired. Please try again.");
+      }
+    }
+    verify();
+  }, [router, searchParams]);
 
   return (
     <div className="min-h-screen bg-[#F5F0E8] flex items-center justify-center px-4">
-      <div className="bg-white rounded-2xl shadow-sm p-8 max-w-sm w-full text-center">
-        {status === "loading" && (
+      <div className="bg-white rounded-3xl shadow-xl p-8 max-w-sm w-full text-center">
+        {status === "verifying" && (
           <>
-            <div className="animate-spin w-10 h-10 border-4 border-[#A0522D] border-t-transparent rounded-full mx-auto mb-4" />
-            <p className="text-[#6B6B6B]">Verifying your link…</p>
+            <div className="w-12 h-12 border-4 border-[#2D5016] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-[#6B6B6B] text-sm">Verifying your sign-in link…</p>
           </>
         )}
         {status === "success" && (
           <>
-            <div className="text-5xl mb-4">✅</div>
-            <h2 className="text-xl font-bold text-[#1C1C1A] mb-2">You&apos;re logged in!</h2>
-            <p className="text-[#6B6B6B] text-sm">Redirecting to your account…</p>
+            <div className="w-14 h-14 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-7 h-7 text-green-600" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <p className="font-bold text-[#1C1C1C]">Signed in! Redirecting…</p>
           </>
         )}
         {status === "error" && (
           <>
-            <div className="text-5xl mb-4">⚠️</div>
-            <h2 className="text-xl font-bold text-[#1C1C1A] mb-2">Link expired or invalid</h2>
-            <p className="text-[#6B6B6B] text-sm mb-6">This login link has expired or already been used. Request a new one.</p>
-            <Link href="/account/login" className="inline-block bg-[#A0522D] text-white font-bold px-6 py-3 rounded-xl hover:bg-[#8B4513] transition-colors">
-              Request new link
-            </Link>
+            <div className="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-7 h-7 text-red-500" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
+            <p className="font-bold text-[#1C1C1C] mb-2">Sign-in failed</p>
+            <p className="text-[#6B6B6B] text-sm mb-5">{errorMsg}</p>
+            <a href="/account/login" className="block w-full bg-[#2D5016] text-white font-bold py-3.5 rounded-2xl text-sm hover:bg-[#3D6B20] transition-colors">
+              Try Again
+            </a>
           </>
         )}
       </div>
     </div>
+  );
+}
+
+export default function VerifyPage() {
+  return (
+    <Suspense>
+      <VerifyInner />
+    </Suspense>
   );
 }

@@ -32,18 +32,7 @@ function readOrders(): Order[] {
   }
 }
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ orderId: string }> }
-) {
-  const { orderId } = await params;
-  const orders = readOrders();
-  const order = orders.find((o) => o.orderId === orderId);
-
-  if (!order) {
-    return NextResponse.json({ error: "Order not found" }, { status: 404 });
-  }
-
+async function buildTrackingResponse(order: Order) {
   const base = {
     orderId: order.orderId,
     customerName: order.customerName,
@@ -56,7 +45,6 @@ export async function GET(
     tracking: null as null | object,
   };
 
-  // Fetch live tracking from Delhivery if we have a waybill
   if (order.waybill) {
     const data = await trackByWaybill(order.waybill);
     const shipment = data?.ShipmentData?.[0]?.Shipment;
@@ -82,4 +70,33 @@ export async function GET(
   }
 
   return NextResponse.json(base);
+}
+
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ orderId: string }> }
+) {
+  const { orderId } = await params;
+
+  // Try Firestore first
+  try {
+    const { db } = await import("@/lib/firebase/admin");
+    const docSnap = await db.collection("orders").doc(orderId).get();
+    if (docSnap.exists) {
+      const order = docSnap.data() as Order;
+      return buildTrackingResponse(order);
+    }
+  } catch (firestoreErr) {
+    console.error("[track] Firestore read failed, falling back to JSON:", firestoreErr);
+  }
+
+  // Fall back to JSON file
+  const orders = readOrders();
+  const order = orders.find((o) => o.orderId === orderId);
+
+  if (!order) {
+    return NextResponse.json({ error: "Order not found" }, { status: 404 });
+  }
+
+  return buildTrackingResponse(order);
 }

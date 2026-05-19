@@ -72,6 +72,18 @@ export async function POST(req: NextRequest) {
     orders.push(order);
     writeOrders(orders);
 
+    // Also save to Firestore
+    try {
+      const { db } = await import("@/lib/firebase/admin");
+      const { FieldValue } = await import("firebase-admin/firestore");
+      await db.collection("orders").doc(order.orderId).set({
+        ...order,
+        createdAt: FieldValue.serverTimestamp(),
+      });
+    } catch (firestoreErr) {
+      console.error("[orders/save] Firestore write failed (non-fatal):", firestoreErr);
+    }
+
     // Create Delhivery shipment (fire-and-forget — don't block the response)
     if (process.env.DELHIVERY_API_TOKEN) {
       const payload = buildDelhiveryPayload({

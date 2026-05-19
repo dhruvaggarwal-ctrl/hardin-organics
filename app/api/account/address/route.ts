@@ -22,5 +22,19 @@ export async function PUT(req: NextRequest) {
 
   customers[idx] = { ...customers[idx], address: body };
   writeFileSync(customersPath(), JSON.stringify(customers, null, 2));
+
+  // After JSON write, update Firestore
+  try {
+    if (session?.customerId) {
+      const { db } = await import("@/lib/firebase/admin");
+      await db.collection("customers").doc(session.customerId).update({
+        address: body,
+        updatedAt: new Date().toISOString(),
+      });
+    }
+  } catch (e) {
+    console.error("[address] Firestore update failed (non-fatal):", e);
+  }
+
   return NextResponse.json({ success: true });
 }
