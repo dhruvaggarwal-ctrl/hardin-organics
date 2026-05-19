@@ -12,7 +12,6 @@ import { ReviewList } from "@/components/product/ReviewList";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { StarRating } from "@/components/ui/StarRating";
 import { IngredientComparisonTable } from "@/components/home/IngredientComparisonTable";
-import { CompleteYourRoutine } from "@/components/product/CompleteYourRoutine";
 import { AnimatePresence } from "framer-motion";
 
 // ── Product-specific FAQs ────────────────────────────────────────────────────
@@ -223,9 +222,6 @@ export default function ProductPage({ params }: PageProps) {
             </div>
           </div>
         </div>
-
-        {/* Complete Your Routine */}
-        <CompleteYourRoutine currentProductId={product.id} />
 
         {/* You May Also Like */}
         <div className="mt-12">
