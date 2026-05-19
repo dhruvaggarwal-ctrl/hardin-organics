@@ -125,10 +125,16 @@ export default function BogoPage() {
 
   const charcoal = products.find((p) => p.id === "charcoal-soap")!;
   const haldi = products.find((p) => p.id === "saffron-haldi-chandan")!;
+  const bogoProducts = [charcoal, haldi];
 
   const BOGO_PRICE = 149;
   const ORIGINAL_PRICE = 298;
   const SAVINGS = ORIGINAL_PRICE - BOGO_PRICE;
+
+  // Which product the user is paying for (the other is free)
+  const [paidId, setPaidId] = useState<string>(charcoal.id);
+  const paidProduct = bogoProducts.find((p) => p.id === paidId)!;
+  const freeProduct = bogoProducts.find((p) => p.id !== paidId)!;
 
   const LS_KEY = "hardin_checkout_details";
   const [form, setForm] = useState<FormData>(() => {
@@ -221,7 +227,7 @@ export default function BogoPage() {
           amount: orderAmount,
           currency,
           name: "Hardin Organics",
-          description: "BOGO: Activated Charcoal + Saffron Haldi Chandan Soap",
+          description: `BOGO: ${paidProduct.name} + ${freeProduct.name} (Free)`,
           theme: { color: "#8B1A1A" },
           prefill: {
             name: form.customerName,
@@ -253,8 +259,8 @@ export default function BogoPage() {
               body: JSON.stringify({
                 ...form,
                 items: [
-                  { id: charcoal.id, name: charcoal.name, quantity: 1, price: BOGO_PRICE },
-                  { id: haldi.id, name: haldi.name, quantity: 1, price: 0 },
+                  { id: paidProduct.id, name: paidProduct.name, quantity: 1, price: BOGO_PRICE },
+                  { id: freeProduct.id, name: freeProduct.name, quantity: 1, price: 0 },
                 ],
                 subtotal: BOGO_PRICE,
                 discount: 0,
@@ -318,8 +324,12 @@ export default function BogoPage() {
         </div>
       </div>
 
-      {/* Hero banner */}
-      <div className="w-full">
+      {/* Hero banner — clicking scrolls to order form */}
+      <button
+        className="w-full block cursor-pointer focus:outline-none"
+        onClick={() => document.getElementById("address-form")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+        aria-label="Claim this offer"
+      >
         {/* Desktop */}
         <Image
           src="/images/bogo-page-banner.jpg"
@@ -341,34 +351,49 @@ export default function BogoPage() {
           priority
           sizes="100vw"
         />
-      </div>
+      </button>
 
       <div className="max-w-2xl mx-auto px-4 py-8 space-y-5">
 
-        {/* Products */}
-        <div className="grid grid-cols-2 gap-4">
-          {[charcoal, haldi].map((product, i) => (
-            <div key={product.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-[#EDE6D6]">
-              <div className="relative aspect-square bg-[#EDE6D6]">
-                <Image src={product.images[0]} alt={product.name} fill className="object-cover"
-                  sizes="(max-width: 640px) 50vw, 300px" />
-                <div className={`absolute top-2 right-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${i === 1 ? "bg-[#8B1A1A]" : "bg-[#2D5016]"}`}>
-                  {i === 1 ? "FREE" : "You Pay"}
-                </div>
-              </div>
-              <div className="p-3 text-center">
-                <p className="text-xs font-semibold text-[#1C1C1C] leading-tight">{product.name}</p>
-                <div className="flex items-center justify-center gap-1.5 mt-1">
-                  {i === 1 ? (
-                    <><span className="text-xs text-gray-400 line-through">₹{product.price}</span>
-                    <span className="text-sm font-bold text-[#8B1A1A]">FREE</span></>
-                  ) : (
-                    <span className="text-sm font-bold text-[#2D5016]">₹{product.price}</span>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
+        {/* Products — tap to choose which one you pay for */}
+        <div>
+          <p className="text-center text-xs text-[#6B6B6B] mb-3 font-medium">Tap a soap to choose which one you&apos;d like to pay for</p>
+          <div className="grid grid-cols-2 gap-4">
+            {bogoProducts.map((product) => {
+              const isPaid = product.id === paidId;
+              return (
+                <button
+                  key={product.id}
+                  onClick={() => setPaidId(product.id)}
+                  className={`bg-white rounded-2xl overflow-hidden shadow-sm border-2 text-left transition-all ${
+                    isPaid ? "border-[#2D5016] ring-2 ring-[#2D5016]/20" : "border-[#EDE6D6]"
+                  }`}
+                >
+                  <div className="relative aspect-square bg-[#EDE6D6]">
+                    <Image src={product.images[0]} alt={product.name} fill className="object-cover"
+                      sizes="(max-width: 640px) 50vw, 300px" />
+                    <div className={`absolute top-2 right-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${isPaid ? "bg-[#2D5016]" : "bg-[#8B1A1A]"}`}>
+                      {isPaid ? "You Pay" : "FREE"}
+                    </div>
+                  </div>
+                  <div className="p-3 text-center">
+                    <p className="text-xs font-semibold text-[#1C1C1C] leading-tight">{product.name}</p>
+                    <div className="flex items-center justify-center gap-1.5 mt-1">
+                      {isPaid ? (
+                        <span className="text-sm font-bold text-[#2D5016]">₹{BOGO_PRICE}</span>
+                      ) : (
+                        <><span className="text-xs text-gray-400 line-through">₹{product.price}</span>
+                        <span className="text-sm font-bold text-[#8B1A1A]">FREE</span></>
+                      )}
+                    </div>
+                    {isPaid && (
+                      <p className="text-[10px] text-[#2D5016] font-semibold mt-1">✓ Selected</p>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Order summary */}
@@ -376,11 +401,11 @@ export default function BogoPage() {
           <h2 className="font-bold text-[#1C1C1C] mb-3 text-sm uppercase tracking-wide">Your Order</h2>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-[#6B6B6B]">Activated Charcoal Soap (100g)</span>
-              <span className="font-medium">₹149</span>
+              <span className="text-[#6B6B6B]">{paidProduct.name} (100g)</span>
+              <span className="font-medium">₹{BOGO_PRICE}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[#6B6B6B]">Saffron Haldi Chandan Soap (100g)</span>
+              <span className="text-[#6B6B6B]">{freeProduct.name} (100g)</span>
               <span className="font-bold text-[#8B1A1A]">FREE</span>
             </div>
             <div className="flex justify-between text-xs text-[#6B6B6B]">
