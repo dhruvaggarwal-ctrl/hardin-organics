@@ -272,9 +272,16 @@ export default function BogoPage() {
             const saveData = await saveRes.json();
             const hoOrderId = saveData.orderId || `HO-${Date.now()}`;
 
+            const bogoItemsParam = encodeURIComponent(
+              JSON.stringify([
+                { n: charcoal.name, q: 1, p: BOGO_PRICE, img: charcoal.images[0] ?? "", size: "1 Bar" },
+                { n: haldi.name, q: 1, p: 0, img: haldi.images[0] ?? "", size: "1 Bar" },
+              ])
+            );
             router.push(
               `/order-confirmation?orderId=${hoOrderId}&method=paid` +
-              `&name=${encodeURIComponent(form.customerName)}&mobile=${form.mobile}&total=${BOGO_PRICE}`
+              `&name=${encodeURIComponent(form.customerName)}&mobile=${form.mobile}&total=${BOGO_PRICE}` +
+              `&items=${bogoItemsParam}`
             );
             resolve();
           },

@@ -272,9 +272,21 @@ export default function CheckoutPage() {
             const hoOrderId = saveData.orderId || `HO-${Date.now()}`;
 
             clearCart();
+            const itemsParam = encodeURIComponent(
+              JSON.stringify(
+                items.map((i) => ({
+                  n: i.product.name,
+                  q: i.quantity,
+                  p: i.price,
+                  img: i.product.images[0] ?? "",
+                  size: i.selectedSize,
+                }))
+              )
+            );
             router.push(
               `/order-confirmation?orderId=${hoOrderId}&method=paid` +
-              `&name=${encodeURIComponent(form.customerName)}&mobile=${form.mobile}&total=${total}`
+              `&name=${encodeURIComponent(form.customerName)}&mobile=${form.mobile}&total=${total}` +
+              `&items=${itemsParam}`
             );
             resolve();
           },

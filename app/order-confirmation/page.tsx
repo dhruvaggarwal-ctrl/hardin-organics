@@ -5,6 +5,14 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { pixelPurchase } from "@/lib/pixel";
 
+interface OrderItem {
+  n: string;   // name
+  q: number;   // quantity
+  p: number;   // price
+  img: string; // image path
+  size: string;
+}
+
 interface PageProps {
   searchParams: Promise<{
     orderId?: string;
@@ -12,6 +20,7 @@ interface PageProps {
     name?: string;
     mobile?: string;
     total?: string;
+    items?: string;
   }>;
 }
 
@@ -52,8 +61,13 @@ const steps = [
 ];
 
 export default function OrderConfirmationPage({ searchParams }: PageProps) {
-  const { orderId, method, name, mobile, total } = use(searchParams);
+  const { orderId, method, name, mobile, total, items: itemsParam } = use(searchParams);
   const [copied, setCopied] = useState(false);
+
+  let orderItems: OrderItem[] = [];
+  try {
+    if (itemsParam) orderItems = JSON.parse(decodeURIComponent(itemsParam)) as OrderItem[];
+  } catch { /* ignore malformed param */ }
 
   const isPaid = method === "paid";
   const lastFour = mobile ? mobile.slice(-4) : "XXXX";
@@ -168,6 +182,43 @@ export default function OrderConfirmationPage({ searchParams }: PageProps) {
                 </p>
               </div>
             </div>
+
+            {/* Order items */}
+            {orderItems.length > 0 && (
+              <div>
+                <p className="text-[10px] font-bold text-[#6B6B6B] uppercase tracking-widest mb-3">Items Ordered</p>
+                <div className="divide-y divide-[#EDE6D6] border border-[#EDE6D6] rounded-2xl overflow-hidden">
+                  {orderItems.map((item, i) => (
+                    <div key={i} className="flex items-center gap-3 p-3">
+                      {item.img && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={item.img}
+                          alt={item.n}
+                          className="w-14 h-14 object-cover rounded-xl shrink-0 bg-[#F5F0E8]"
+                        />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-[#1C1C1C] leading-snug">{item.n}</p>
+                        <p className="text-xs text-[#6B6B6B] mt-0.5">{item.size} · Qty {item.q}</p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        {item.p === 0 ? (
+                          <span className="text-sm font-bold text-green-600">FREE</span>
+                        ) : (
+                          <span className="text-sm font-bold text-[#1C1C1C]">₹{item.p * item.q}</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  {/* Total row */}
+                  <div className="flex items-center justify-between px-3 py-2.5 bg-[#F5F0E8]">
+                    <span className="text-xs font-bold text-[#6B6B6B] uppercase tracking-wide">Total Paid</span>
+                    <span className="text-base font-bold text-[#2D5016]">₹{total}</span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Journey stepper */}
             <div>
