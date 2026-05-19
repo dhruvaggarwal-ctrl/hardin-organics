@@ -290,6 +290,7 @@ export default function BogoPage() {
           height={694}
           className="hidden md:block w-full h-auto object-cover"
           priority
+          quality={100}
           sizes="100vw"
         />
         {/* Mobile */}
