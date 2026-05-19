@@ -2,6 +2,7 @@
 
 import { use, useState } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 
 interface PageProps {
   searchParams: Promise<{
@@ -13,17 +14,20 @@ interface PageProps {
   }>;
 }
 
+const steps = [
+  { icon: "📦", label: "Order Confirmed", desc: "We've received your order" },
+  { icon: "🧼", label: "Being Packed", desc: "Handcrafted with care" },
+  { icon: "🚚", label: "Shipped", desc: "On its way to you" },
+  { icon: "🏠", label: "Delivered", desc: "Enjoy your soaps!" },
+];
+
 export default function OrderConfirmationPage({ searchParams }: PageProps) {
   const { orderId, method, name, mobile, total } = use(searchParams);
   const [copied, setCopied] = useState(false);
 
   const isPaid = method === "paid";
   const lastFour = mobile ? mobile.slice(-4) : "XXXX";
-  const firstName = name ? name.split(" ")[0] : "";
-
-  const waText = encodeURIComponent(
-    `Hi! I placed an order ${orderId || ""}. Can you share the tracking details?`
-  );
+  const firstName = name ? name.split(" ")[0] : "Friend";
 
   function copyOrderId() {
     if (orderId) {
@@ -35,120 +39,146 @@ export default function OrderConfirmationPage({ searchParams }: PageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F0E8] py-12 px-4">
-      {/* Inline keyframes for the checkmark draw animation */}
-      <style>{`
-        @keyframes drawCheck {
-          from { stroke-dashoffset: 50; }
-          to   { stroke-dashoffset: 0; }
-        }
-        .animate-check path {
-          stroke-dasharray: 50;
-          stroke-dashoffset: 50;
-          animation: drawCheck 0.55s 0.35s ease forwards;
-        }
-        @keyframes popIn {
-          0%   { transform: scale(0.6); opacity: 0; }
-          70%  { transform: scale(1.1); }
-          100% { transform: scale(1);   opacity: 1; }
-        }
-        .animate-pop { animation: popIn 0.45s ease forwards; }
-      `}</style>
-
-      <div className="max-w-md mx-auto">
-        {/* Checkmark */}
-        <div className="flex justify-center mb-8">
-          <div className="animate-pop w-24 h-24 rounded-full bg-[#A0522D]/12 flex items-center justify-center">
-            <svg
-              className="animate-check w-11 h-11 text-[#A0522D]"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2.5}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              viewBox="0 0 24 24"
-            >
-              <path d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
+    <div className="min-h-screen bg-[#F5F0E8]">
+      {/* Top success banner */}
+      <div className="bg-[#2D5016] pt-16 pb-24 px-4 text-center relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute inset-0 opacity-10">
+          {["🌿", "✨", "🧼", "🌿", "✨"].map((e, i) => (
+            <span key={i} className="absolute text-4xl" style={{ left: `${10 + i * 22}%`, top: `${20 + (i % 2) * 40}%` }}>{e}</span>
+          ))}
         </div>
 
-        <div className="bg-white rounded-3xl shadow-sm overflow-hidden">
-          {/* Top banner */}
-          <div className="bg-[#2D5016] px-8 py-6 text-center">
-            <h1 className="text-2xl md:text-3xl font-bold text-white font-display mb-1">
-              Order Placed Successfully!
-            </h1>
-            {firstName && (
-              <p className="text-green-200 text-sm">
-                Thank you, {firstName}! Your handcrafted soaps are being prepared.
-              </p>
-            )}
-          </div>
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
+          className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-5 shadow-lg"
+        >
+          <svg className="w-10 h-10 text-[#2D5016]" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </motion.div>
 
-          <div className="p-6 md:p-8 space-y-5">
-            {/* Order ID */}
-            {orderId && (
-              <div className="bg-[#F5F0E8] rounded-2xl p-4 text-center">
-                <p className="text-xs text-[#6B6B6B] mb-1 uppercase tracking-wide">Order ID</p>
-                <p className="font-mono font-bold text-[#1C1C1C] text-xl tracking-widest mb-2">
-                  {orderId}
-                </p>
-                <button
-                  onClick={copyOrderId}
-                  className="text-xs text-[#A0522D] hover:text-[#8B4513] transition-colors font-medium"
-                >
-                  {copied ? "✓ Copied!" : "Copy Order ID"}
-                </button>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+          <h1 className="text-3xl md:text-4xl font-bold text-white font-display mb-2">
+            Order Placed! 🎉
+          </h1>
+          <p className="text-white/75 text-base">
+            Thank you, <span className="text-white font-semibold">{firstName}</span>! Your soaps are being handcrafted with love.
+          </p>
+        </motion.div>
+      </div>
+
+      {/* Card pulled up over the banner */}
+      <div className="max-w-lg mx-auto px-4 -mt-12 pb-16">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          className="bg-white rounded-3xl shadow-xl overflow-hidden"
+        >
+          {/* Order ID */}
+          {orderId && (
+            <div className="bg-[#F5F0E8] px-6 py-5 flex items-center justify-between border-b border-[#EDE6D6]">
+              <div>
+                <p className="text-xs text-[#6B6B6B] uppercase tracking-wider mb-0.5">Order ID</p>
+                <p className="font-mono font-bold text-[#1C1C1C] text-lg tracking-wider">{orderId}</p>
               </div>
-            )}
+              <button
+                onClick={copyOrderId}
+                className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg transition-all ${
+                  copied ? "bg-green-100 text-green-700" : "bg-white text-[#A0522D] hover:bg-[#A0522D] hover:text-white border border-[#A0522D]"
+                }`}
+              >
+                {copied ? (
+                  <><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg> Copied!</>
+                ) : (
+                  <><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><rect x={9} y={9} width={13} height={13} rx={2}/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy</>
+                )}
+              </button>
+            </div>
+          )}
 
-            {/* Delivery status */}
-            <div className={`rounded-xl p-4 text-sm font-medium leading-relaxed ${
-              isPaid
-                ? "bg-green-50 border border-green-100 text-green-800"
-                : "bg-blue-50 border border-blue-100 text-blue-800"
+          <div className="p-6 md:p-8 space-y-6">
+            {/* Payment status */}
+            <div className={`rounded-2xl p-4 flex items-start gap-3 ${
+              isPaid ? "bg-green-50 border border-green-100" : "bg-amber-50 border border-amber-100"
             }`}>
-              {isPaid ? (
-                <>
-                  ✅ <strong>Payment confirmed.</strong> Your order will be shipped within 24 hours.
-                </>
-              ) : (
-                <>
-                  💰 <strong>Cash on Delivery.</strong>{" "}
-                  Pay ₹{total} when your order arrives. Delivery in 4–6 business days.
-                </>
-              )}
+              <span className="text-2xl shrink-0">{isPaid ? "✅" : "💵"}</span>
+              <div>
+                <p className={`font-bold text-sm ${isPaid ? "text-green-800" : "text-amber-800"}`}>
+                  {isPaid ? "Payment Confirmed" : "Cash on Delivery"}
+                </p>
+                <p className={`text-xs mt-0.5 ${isPaid ? "text-green-700" : "text-amber-700"}`}>
+                  {isPaid
+                    ? "Your order will be picked up & shipped within 24 hours."
+                    : `Pay ₹${total} when your order arrives. Delivery in 4–6 business days.`}
+                </p>
+              </div>
+            </div>
+
+            {/* Journey steps */}
+            <div>
+              <p className="text-xs font-bold text-[#6B6B6B] uppercase tracking-wider mb-4">Your Order Journey</p>
+              <div className="flex items-start justify-between relative">
+                <div className="absolute top-5 left-5 right-5 h-0.5 bg-[#EDE6D6]" />
+                <div className="absolute top-5 left-5 h-0.5 bg-[#2D5016] transition-all" style={{ width: "0%" }} />
+                {steps.map((step, i) => (
+                  <div key={i} className="flex flex-col items-center gap-2 z-10 flex-1">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg shadow-sm ${
+                      i === 0 ? "bg-[#2D5016]" : "bg-white border-2 border-[#EDE6D6]"
+                    }`}>
+                      {step.icon}
+                    </div>
+                    <div className="text-center">
+                      <p className={`text-[10px] font-bold leading-tight ${i === 0 ? "text-[#2D5016]" : "text-[#6B6B6B]"}`}>
+                        {step.label}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Mobile note */}
-            <p className="text-xs text-[#6B6B6B] text-center">
-              You&apos;ll receive updates on your mobile number ending in{" "}
-              <span className="font-semibold text-[#1C1C1C]">••••{lastFour}</span>
+            <p className="text-xs text-[#6B6B6B] text-center bg-[#F5F0E8] rounded-xl py-3 px-4">
+              📱 Shipping updates will be sent to your mobile ending in <strong className="text-[#1C1C1C]">••••{lastFour}</strong>
             </p>
 
             {/* CTAs */}
-            <div className="space-y-3 pt-1">
-              <a
-                href={`https://wa.me/919650595027?text=${waText}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2.5 w-full bg-[#25D366] text-white font-bold py-4 rounded-xl hover:bg-[#1EBD59] transition-colors text-sm"
-              >
-                <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current shrink-0">
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                </svg>
-                Track on WhatsApp →
-              </a>
+            <div className="space-y-3">
+              {orderId && (
+                <Link
+                  href={`/track/${orderId}`}
+                  className="flex items-center justify-center gap-2.5 w-full bg-[#2D5016] text-white font-bold py-4 rounded-2xl hover:bg-[#3D6B20] transition-colors text-sm"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                    <circle cx={12} cy={11} r={3}/>
+                  </svg>
+                  Track My Order
+                </Link>
+              )}
               <Link
                 href="/shop"
-                className="block w-full text-center border-2 border-[#2D5016] text-[#2D5016] font-bold py-3.5 rounded-xl hover:bg-[#2D5016] hover:text-white transition-all text-sm"
+                className="block w-full text-center border-2 border-[#EDE6D6] text-[#6B6B6B] font-semibold py-3.5 rounded-2xl hover:border-[#2D5016] hover:text-[#2D5016] transition-all text-sm"
               >
-                Shop More →
+                Continue Shopping →
               </Link>
             </div>
           </div>
-        </div>
+        </motion.div>
+
+        {/* What's next note */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          className="text-center text-xs text-[#6B6B6B] mt-6"
+        >
+          Questions? <a href="https://wa.me/919650595027" target="_blank" rel="noopener noreferrer" className="text-[#2D5016] font-semibold hover:underline">WhatsApp us</a>
+        </motion.p>
       </div>
     </div>
   );
