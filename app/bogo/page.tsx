@@ -139,6 +139,27 @@ export default function BogoPage() {
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
+  // Auto-fill saved profile/address if user is logged in
+  useEffect(() => {
+    fetch("/api/account/profile")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!data) return;
+        setForm((prev) => ({
+          ...prev,
+          customerName: data.name || prev.customerName,
+          mobile: data.mobile || prev.mobile,
+          email: data.email || prev.email,
+          addressLine1: data.address?.addressLine1 || prev.addressLine1,
+          addressLine2: data.address?.addressLine2 || prev.addressLine2,
+          city: data.address?.city || prev.city,
+          state: data.address?.state || prev.state,
+          pincode: data.address?.pincode || prev.pincode,
+        }));
+      })
+      .catch(() => {/* not logged in — ignore */});
+  }, []);
+
   const set = (field: keyof FormData) => (value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) setErrors((prev) => { const e = { ...prev }; delete e[field]; return e; });
