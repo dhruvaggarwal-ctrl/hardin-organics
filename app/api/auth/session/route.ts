@@ -36,28 +36,40 @@ export async function POST(req: NextRequest) {
         hasName = !!(snap.data()?.name);
       }
 
-      // Merge guest profile if this mobile has placed an order without being logged in
+      // On login, check if this mobile placed any orders before having an account.
+      // If so, a temporary customer doc exists at customers/mob_{mobile} — merge it in.
       if (mobile) {
-        const guestRef = db.collection("guest_profiles").doc(mobile);
-        const guestSnap = await guestRef.get();
-        if (guestSnap.exists) {
-          const guest = guestSnap.data()!;
+        const tempRef = db.collection("customers").doc(`mob_${mobile}`);
+        const tempSnap = await tempRef.get();
+        if (tempSnap.exists) {
+          const tempData = tempSnap.data()!;
           const customer = snap.exists ? snap.data()! : {};
 
-          // Only copy fields that aren't already set on the customer profile
+          // Only copy fields the real profile doesn't have yet
           const patch: Record<string, unknown> = {};
-          if (!customer.name    && guest.name)    { patch.name    = guest.name;    hasName = true; }
-          if (!customer.mobile  && guest.mobile)  patch.mobile  = guest.mobile;
-          if (!customer.email   && guest.email)   patch.email   = guest.email;
-          if (!customer.address && guest.address) patch.address = guest.address;
+          if (!customer.name    && tempData.name)    { patch.name    = tempData.name;    hasName = true; }
+          if (!customer.mobile  && tempData.mobile)  patch.mobile  = tempData.mobile;
+          if (!customer.email   && tempData.email)   patch.email   = tempData.email;
+          if (!customer.address && tempData.address) patch.address = tempData.address;
 
           if (Object.keys(patch).length > 0) {
             patch.updatedAt = FieldValue.serverTimestamp();
             await customerRef.set(patch, { merge: true });
           }
 
-          // Clean up — guest profile has been absorbed
-          await guestRef.delete();
+          // Also link any orders saved against the temp mobile key to this UID
+          try {
+            const ordersSnap = await db.collection("orders")
+              .where("mobile", "==", mobile)
+              .where("customerId", "==", null)
+              .get();
+            const batch = db.batch();
+            ordersSnap.docs.forEach((d) => batch.update(d.ref, { customerId: uid }));
+            if (!ordersSnap.empty) await batch.commit();
+          } catch { /* index may not exist yet — non-fatal */ }
+
+          // Delete the temp profile — it's been absorbed into the real account
+          await tempRef.delete();
         }
       }
     } catch (firestoreErr) {

@@ -117,17 +117,22 @@ export async function POST(req: NextRequest) {
         const existing = snap.exists ? snap.data()! : {};
 
         const patch: Record<string, unknown> = { updatedAt: FieldValue.serverTimestamp() };
-        if (!existing.name)    patch.name    = profileFromOrder.name;
-        if (!existing.mobile)  patch.mobile  = profileFromOrder.mobile;
+        if (!existing.name)   patch.name   = profileFromOrder.name;
+        if (!existing.mobile) patch.mobile = profileFromOrder.mobile;
         if (!existing.email && profileFromOrder.email) patch.email = profileFromOrder.email;
-        // Only update address if none is saved yet
         if (!existing.address) patch.address = profileFromOrder.address;
 
         await customerRef.set(patch, { merge: true });
       } else {
-        // Guest order: save to guest_profiles keyed by mobile.
-        // On next OTP login with this number the profile will be merged automatically.
-        await db.collection("guest_profiles").doc(order.mobile).set(profileFromOrder, { merge: true });
+        // Not logged in — create a real customer profile in the customers collection
+        // keyed by mobile (prefixed so it's easy to find on login).
+        // When they log in via OTP this doc is merged into customers/{uid} and deleted.
+        const tempId = `mob_${order.mobile}`;
+        await db.collection("customers").doc(tempId).set({
+          ...profileFromOrder,
+          tempMobileKey: order.mobile,   // flag so we can locate it on login
+          createdAt: FieldValue.serverTimestamp(),
+        }, { merge: true });
       }
     } catch (firestoreErr) {
       console.error("[orders/save] Firestore write failed (non-fatal):", firestoreErr);
