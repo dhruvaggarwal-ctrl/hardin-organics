@@ -84,14 +84,51 @@ export async function POST(req: NextRequest) {
     orders.push(order);
     writeOrders(orders);
 
-    // Also save to Firestore
+    // Save order to Firestore + auto-upsert customer profile
     try {
       const { db } = await import("@/lib/firebase/admin");
       const { FieldValue } = await import("firebase-admin/firestore");
+
+      // 1. Save the order document
       await db.collection("orders").doc(order.orderId).set({
         ...order,
         createdAt: FieldValue.serverTimestamp(),
       });
+
+      // 2. Build the profile payload from the order's shipping details
+      const profileFromOrder = {
+        name: order.customerName,
+        mobile: order.mobile,
+        ...(order.email ? { email: order.email } : {}),
+        address: {
+          addressLine1: order.addressLine1,
+          ...(order.addressLine2 ? { addressLine2: order.addressLine2 } : {}),
+          city: order.city,
+          state: order.state,
+          pincode: order.pincode,
+        },
+        updatedAt: FieldValue.serverTimestamp(),
+      };
+
+      if (customerId) {
+        // Logged-in user: fetch existing profile and only fill in empty fields
+        const customerRef = db.collection("customers").doc(customerId);
+        const snap = await customerRef.get();
+        const existing = snap.exists ? snap.data()! : {};
+
+        const patch: Record<string, unknown> = { updatedAt: FieldValue.serverTimestamp() };
+        if (!existing.name)    patch.name    = profileFromOrder.name;
+        if (!existing.mobile)  patch.mobile  = profileFromOrder.mobile;
+        if (!existing.email && profileFromOrder.email) patch.email = profileFromOrder.email;
+        // Only update address if none is saved yet
+        if (!existing.address) patch.address = profileFromOrder.address;
+
+        await customerRef.set(patch, { merge: true });
+      } else {
+        // Guest order: save to guest_profiles keyed by mobile.
+        // On next OTP login with this number the profile will be merged automatically.
+        await db.collection("guest_profiles").doc(order.mobile).set(profileFromOrder, { merge: true });
+      }
     } catch (firestoreErr) {
       console.error("[orders/save] Firestore write failed (non-fatal):", firestoreErr);
     }
