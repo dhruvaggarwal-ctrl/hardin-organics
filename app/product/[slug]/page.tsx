@@ -36,7 +36,7 @@ function ProductFAQ({ slug }: { slug: string }) {
   if (!faqs.length) return null;
 
   return (
-    <div className="mt-14">
+    <div className="mt-8 md:mt-14">
       <h2 className="text-2xl font-bold text-[#1C1C1C] mb-1">Common Questions</h2>
       <p className="text-sm text-[#6B6B6B] mb-6">Everything you want to know about this soap</p>
       <div className="space-y-2">
@@ -143,7 +143,7 @@ export default function ProductPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-[#F5F0E8]">
       {/* Breadcrumb */}
-      <div className="max-w-7xl mx-auto px-4 py-4">
+      <div className="max-w-7xl mx-auto px-4 py-3 md:py-4">
         <nav className="flex items-center gap-2 text-sm text-[#6B6B6B]">
           <Link href="/" className="hover:text-[#2D5016]">Home</Link>
           <span>›</span>
@@ -154,8 +154,8 @@ export default function ProductPage({ params }: PageProps) {
       </div>
 
       {/* Main product section */}
-      <div className="max-w-7xl mx-auto px-4 pb-16">
-        <div className="grid md:grid-cols-2 gap-10 lg:gap-16">
+      <div className="max-w-7xl mx-auto px-4 pb-20 md:pb-16">
+        <div className="grid md:grid-cols-2 gap-6 md:gap-10 lg:gap-16">
           {/* Gallery */}
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
             <ProductGallery images={product.images} name={product.name} />
@@ -168,7 +168,7 @@ export default function ProductPage({ params }: PageProps) {
         </div>
 
         {/* Tabs */}
-        <div className="mt-16 bg-white rounded-3xl shadow-sm overflow-hidden">
+        <div className="mt-8 md:mt-16 bg-white rounded-3xl shadow-sm overflow-hidden">
           <div className="flex border-b border-gray-100 overflow-x-auto scrollbar-hide">
             {tabs.map((tab) => (
               <button
@@ -190,7 +190,7 @@ export default function ProductPage({ params }: PageProps) {
         </div>
 
         {/* Frequently Bought Together */}
-        <div className="mt-12">
+        <div className="mt-8 md:mt-12">
           <h2 className="text-3xl font-bold text-[#1C1C1C] mb-6 font-display">
             Frequently Bought Together
           </h2>
@@ -224,7 +224,7 @@ export default function ProductPage({ params }: PageProps) {
         </div>
 
         {/* You May Also Like */}
-        <div className="mt-12">
+        <div className="mt-8 md:mt-12">
           <h2 className="text-3xl font-bold text-[#1C1C1C] mb-6 font-display">
             You May Also Like
           </h2>
@@ -236,7 +236,7 @@ export default function ProductPage({ params }: PageProps) {
         </div>
 
         {/* Ingredient Comparison Table */}
-        <div className="mt-12 -mx-4 md:mx-0">
+        <div className="mt-8 md:mt-12 -mx-4 md:mx-0">
           <IngredientComparisonTable />
         </div>
 
@@ -244,19 +244,6 @@ export default function ProductPage({ params }: PageProps) {
         <ProductFAQ slug={slug} />
       </div>
 
-      {/* Sticky mobile add-to-cart bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 md:hidden bg-white border-t border-gray-100 p-3 flex items-center gap-3 shadow-lg">
-        <div className="flex-1 min-w-0">
-          <div className="font-bold text-sm text-[#1C1C1C] truncate">{product.name}</div>
-          <div className="text-[#C4622D] font-bold">₹{product.price}</div>
-        </div>
-        <Link
-          href="/cart"
-          className="bg-[#C4622D] text-white font-bold px-6 py-3 rounded-xl text-sm hover:bg-[#D4734A] transition-colors shrink-0"
-        >
-          Add to Cart →
-        </Link>
-      </div>
     </div>
   );
 }
