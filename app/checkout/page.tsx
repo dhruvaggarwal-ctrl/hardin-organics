@@ -485,8 +485,7 @@ export default function CheckoutPage() {
             </div>
 
             <p className="text-xs text-[#6B6B6B] mt-4 text-center leading-relaxed">
-              Estimated delivery: 4–6 business days<br />
-              Free returns within 7 days
+              Estimated delivery: 4–6 business days
             </p>
           </div>
         </div>

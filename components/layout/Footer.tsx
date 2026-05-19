@@ -72,7 +72,6 @@ export function Footer() {
               { label: "Track My Order", href: "/track" },
               { label: "FAQ", href: "/#faq" },
               { label: "Shipping Policy", href: "/shipping" },
-              { label: "Return & Refund Policy", href: "/returns" },
               { label: "Privacy Policy", href: "/privacy" },
               { label: "Terms & Conditions", href: "/terms" },
             ].map((l) => (
@@ -129,7 +128,7 @@ export function Footer() {
             ))}
           </div>
           <div className="flex items-center gap-3 flex-wrap justify-center">
-            {["SSL Secured", "100% Natural", "Easy Returns"].map((badge) => (
+            {["SSL Secured", "100% Natural", "Made in India"].map((badge) => (
               <span key={badge} className="text-gray-400 text-xs">{badge}</span>
             ))}
           </div>

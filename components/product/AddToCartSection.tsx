@@ -31,7 +31,7 @@ const trustItems = [
     ),
   },
   {
-    label: "Full Refund if Unhappy",
+    label: "100% Natural Ingredients",
     icon: (
       <svg className="w-4 h-4 shrink-0 text-[#2D5016]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
         <path d="M3 10h10a8 8 0 0 1 8 8v2M3 10l4-4M3 10l4 4" strokeLinecap="round" strokeLinejoin="round"/>

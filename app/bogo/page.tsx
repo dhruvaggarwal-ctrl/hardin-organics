@@ -489,7 +489,7 @@ export default function BogoPage() {
           {[
             { icon: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z", label: "100% Secure" },
             { icon: "M5 12h14M5 12l4-4m-4 4 4 4", label: "Free Delivery" },
-            { icon: "M3 10h10a8 8 0 0 1 8 8v2M3 10l4-4M3 10l4 4", label: "Easy Returns" },
+            { icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z", label: "100% Natural" },
           ].map((item) => (
             <div key={item.label} className="bg-white rounded-xl p-3 border border-[#EDE6D6]">
               <svg className="w-5 h-5 mx-auto mb-1.5 text-[#2D5016]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -532,7 +532,7 @@ export default function BogoPage() {
           {[
             { q: "Is this offer real?", a: "Yes. Buy any 1 soap and we'll ship both to you. No tricks, no fine print. The offer expires when the timer hits zero." },
             { q: "Both soaps in one delivery?", a: "Absolutely. Both soaps are packed together and shipped within 24 hours of ordering." },
-            { q: "What if I don't like it?", a: "We offer a 7-day hassle-free return policy. Not satisfied? Just WhatsApp us." },
+            { q: "What if I have a question about my order?", a: "We're always happy to help. Just WhatsApp us and our team will get back to you quickly." },
           ].map((item) => (
             <div key={item.q}>
               <p className="text-sm font-semibold text-[#1C1C1C] mb-1">{item.q}</p>

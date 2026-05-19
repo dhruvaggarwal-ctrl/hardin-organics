@@ -17,8 +17,8 @@ const faqs = [
     a: "Yes! We offer Cash on Delivery across India. Simply select COD at checkout. We also accept UPI, Credit/Debit cards, and Net Banking through Razorpay — all fully secure.",
   },
   {
-    q: "What is your return and refund policy?",
-    a: "We stand behind every bar we make. If you're unhappy for any reason, contact us within 7 days of delivery and we'll either replace the product or issue a full refund — no questions asked. Your satisfaction is our promise.",
+    q: "How do I contact you if I have an issue with my order?",
+    a: "We're always here to help! Reach us on WhatsApp at +91 96505 95027 or email us and our team will respond quickly to sort out any concerns.",
   },
   {
     q: "Are your ingredients sourced from India?",

@@ -211,7 +211,7 @@ export default function CartPage() {
 
                 {/* Trust */}
                 <div className="mt-5 pt-5 border-t border-gray-100 space-y-2">
-                  {["Secure Payment", "Free shipping above ₹399", "7-day easy returns", "COD Available"].map((t) => (
+                  {["Secure Payment", "Free shipping above ₹399", "100% Natural", "COD Available"].map((t) => (
                     <div key={t} className="flex items-center gap-2 text-xs text-[#6B6B6B]">{t}</div>
                   ))}
                 </div>
