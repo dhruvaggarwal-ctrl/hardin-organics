@@ -16,7 +16,7 @@ interface Order {
   awbCode?: string;
 }
 interface Customer {
-  id: string; email: string; name?: string; mobile?: string; birthday?: string;
+  id: string; mobile?: string; email?: string; name?: string; birthday?: string;
   address?: { addressLine1?: string; addressLine2?: string; city?: string; state?: string; pincode?: string };
 }
 
@@ -43,7 +43,7 @@ export function DashboardClient({ customer, orders }: { customer: Customer; orde
   const [saved, setSaved] = useState("");
   const [nameSet, setNameSet] = useState(!!customer.name);
 
-  const firstName = (customer.name || customer.email.split("@")[0]).split(" ")[0];
+  const firstName = (customer.name || customer.mobile || "Friend").split(" ")[0];
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -78,7 +78,11 @@ export function DashboardClient({ customer, orders }: { customer: Customer; orde
     return (
       <div className="min-h-screen bg-[#F5F0E8] flex items-center justify-center px-4">
         <div className="bg-white rounded-2xl shadow-sm p-8 max-w-sm w-full text-center">
-          <div className="text-4xl mb-4">👋</div>
+          <div className="w-14 h-14 bg-[#F5F0E8] rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <svg className="w-7 h-7 text-[#2D5016]" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+          </div>
           <h2 className="text-xl font-bold text-[#1C1C1A] mb-2">Welcome to Hardin Organics!</h2>
           <p className="text-[#6B6B6B] text-sm mb-6">What should we call you?</p>
           <input
@@ -107,7 +111,11 @@ export function DashboardClient({ customer, orders }: { customer: Customer; orde
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <div>
             <p className="text-white/70 text-sm">Welcome back,</p>
-            <h1 className="text-2xl font-bold font-display">{firstName} 🌿</h1>
+            <h1 className="text-2xl font-bold font-display flex items-center gap-2">{firstName}
+              <svg className="w-5 h-5 text-green-300 inline" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 3s0 8 7 13C19 11 19 3 19 3s-7 2-14 0z" />
+              </svg>
+            </h1>
           </div>
           <button onClick={logout} className="text-sm text-white/70 hover:text-white transition-colors">Log out</button>
         </div>
@@ -132,7 +140,11 @@ export function DashboardClient({ customer, orders }: { customer: Customer; orde
           <div className="space-y-4">
             {orders.length === 0 ? (
               <div className="bg-white rounded-2xl p-8 text-center shadow-sm">
-                <div className="text-4xl mb-3">🛒</div>
+                <div className="w-14 h-14 bg-[#F5F0E8] rounded-2xl flex items-center justify-center mx-auto mb-3">
+                  <svg className="w-7 h-7 text-[#A0522D]" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                </div>
                 <p className="text-[#6B6B6B] mb-4">No orders yet. Your first order is just a click away.</p>
                 <Link href="/shop" className="inline-block bg-[#A0522D] text-white font-bold px-6 py-3 rounded-xl hover:bg-[#8B4513] transition-colors">Shop Now →</Link>
               </div>
@@ -173,12 +185,8 @@ export function DashboardClient({ customer, orders }: { customer: Customer; orde
                 <input type="text" value={profile.name} onChange={(e) => setProfile({ ...profile, name: e.target.value })} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#A0522D]" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#1C1C1A] mb-1.5">Email <span className="text-[#6B6B6B] font-normal">(read-only)</span></label>
-                <input type="email" value={customer.email} readOnly className="w-full px-4 py-3 border border-gray-100 rounded-xl text-sm bg-gray-50 text-[#6B6B6B]" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[#1C1C1A] mb-1.5">Mobile</label>
-                <input type="tel" value={profile.mobile} onChange={(e) => setProfile({ ...profile, mobile: e.target.value.replace(/\D/g, "").slice(0, 10) })} maxLength={10} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#A0522D]" />
+                <label className="block text-sm font-medium text-[#1C1C1A] mb-1.5">Mobile <span className="text-[#6B6B6B] font-normal">(read-only)</span></label>
+                <input type="tel" value={customer.mobile ? `+91 ${customer.mobile}` : customer.email || ""} readOnly className="w-full px-4 py-3 border border-gray-100 rounded-xl text-sm bg-gray-50 text-[#6B6B6B]" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-[#1C1C1A] mb-1.5">Birthday <span className="text-[#6B6B6B] font-normal">(optional)</span></label>

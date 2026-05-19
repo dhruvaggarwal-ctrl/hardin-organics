@@ -13,11 +13,10 @@ interface Order {
   totalAmount: number;
   status: string;
   createdAt: string;
-  shiprocketShipmentId?: string;
-  awbCode?: string;
+  waybill?: string;
 }
 interface Customer {
-  id: string; email: string; name?: string; mobile?: string; birthday?: string;
+  id: string; mobile?: string; email?: string; name?: string; birthday?: string;
   address?: { addressLine1?: string; addressLine2?: string; city?: string; state?: string; pincode?: string };
 }
 
@@ -34,12 +33,23 @@ export default async function DashboardPage() {
   if (!session) redirect("/account/login");
 
   const customers = readJson<Customer[]>(path.join(process.cwd(), "data", "customers.json"), []);
-  const customer = customers.find((c) => c.email === session.email) || { id: session.customerId, email: session.email };
+
+  // Find by mobile first (new auth), then fall back to email (old auth)
+  const customer: Customer = customers.find((c) =>
+    (session.mobile && c.mobile === session.mobile) ||
+    (session.email && c.email === session.email)
+  ) || {
+    id: session.customerId,
+    mobile: session.mobile,
+    email: session.email,
+  };
 
   const orders = readJson<Order[]>(getOrdersPath(), []);
-  const myOrders = orders.filter(
-    (o) => o.email === session.email || (customer as Customer).mobile && o.mobile === (customer as Customer).mobile
+  const myOrders = orders.filter((o) =>
+    (session.mobile && o.mobile === session.mobile) ||
+    (session.email && o.email === session.email) ||
+    (customer.mobile && o.mobile === customer.mobile)
   ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-  return <DashboardClient customer={customer as Customer} orders={myOrders} />;
+  return <DashboardClient customer={customer} orders={myOrders} />;
 }

@@ -8,8 +8,9 @@ export const COOKIE_NAME = "hardin_session";
 const COOKIE_MAX_AGE = 7 * 24 * 60 * 60; // 7 days
 
 export interface SessionPayload {
-  email: string;
   customerId: string;
+  mobile?: string;
+  email?: string;
 }
 
 export async function signSession(payload: SessionPayload): Promise<string> {
