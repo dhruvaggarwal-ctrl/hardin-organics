@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { DM_Sans, Cormorant_Garamond, Dancing_Script } from "next/font/google";
 
@@ -36,6 +36,11 @@ import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/layout/CartDrawer";
 import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
+
 export const metadata: Metadata = {
   title: {
     default: "Hardin Organics — Handcrafted Organic Soaps | Activated Charcoal, Saffron, Haldi & Chandan",
@@ -62,8 +67,8 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${dmSans.variable} ${cormorant.variable} ${dancingScript.variable}`}>
-      <head>
-        {/* Meta Pixel */}
+      <body>
+        {/* Meta Pixel — strategy="afterInteractive" works fine in body */}
         <Script id="meta-pixel" strategy="afterInteractive">{`
           !function(f,b,e,v,n,t,s)
           {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -83,8 +88,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             alt=""
           />
         </noscript>
-      </head>
-      <body>
         <CartProvider>
           <AnnouncementBar />
           <Navbar />
