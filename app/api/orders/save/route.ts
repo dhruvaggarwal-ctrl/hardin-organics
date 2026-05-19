@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 import { createDelhiveryShipment, buildDelhiveryPayload } from "@/lib/delhivery";
+import { verifySession } from "@/lib/auth";
 
 // NOTE: Orders are saved to a local JSON file for development / MVP purposes.
 // On Vercel, /tmp is used but is ephemeral and resets on each deployment.
@@ -45,8 +46,16 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const orderId = generateOrderId();
 
+    // Attach customerId from session if the user is logged in (optional — guest checkouts are fine)
+    let customerId: string | null = null;
+    try {
+      const session = await verifySession();
+      if (session?.customerId) customerId = session.customerId;
+    } catch { /* not logged in — ignore */ }
+
     const order = {
       orderId,
+      customerId,                                      // FIX: link order to logged-in user
       customerName: body.customerName,
       mobile: body.mobile,
       email: body.email || null,
@@ -58,8 +67,11 @@ export async function POST(req: NextRequest) {
       items: body.items,
       subtotal: body.subtotal,
       discount: body.discount,
+      couponCode: body.couponCode || null,             // FIX: save coupon info
+      couponDiscount: body.couponDiscount || 0,        // FIX: save coupon discount
       shipping: body.shipping,
       totalAmount: body.totalAmount,
+      orderType: body.orderType || "regular",
       paymentMethod: body.paymentMethod,
       razorpayOrderId: body.razorpayOrderId || null,
       razorpayPaymentId: body.razorpayPaymentId || null,
@@ -100,15 +112,23 @@ export async function POST(req: NextRequest) {
         totalAmount: body.totalAmount,
         paymentMethod: body.paymentMethod,
       });
-      createDelhiveryShipment(payload).then((dl) => {
+      createDelhiveryShipment(payload).then(async (dl) => {
         if (dl?.packages?.length) {
           const waybill = dl.packages[0].waybill;
           if (waybill) {
+            // Write waybill back to JSON file
             const updatedOrders = readOrders() as Array<Record<string, unknown>>;
             const idx = updatedOrders.findIndex((o) => o.orderId === orderId);
             if (idx !== -1) {
               updatedOrders[idx].waybill = waybill;
               writeOrders(updatedOrders);
+            }
+            // FIX: Also write waybill back to Firestore so tracking works in production
+            try {
+              const { db } = await import("@/lib/firebase/admin");
+              await db.collection("orders").doc(orderId).update({ waybill });
+            } catch (e) {
+              console.error("[Delhivery] Firestore waybill update failed:", e);
             }
             console.log(`[Delhivery] Shipment created: waybill=${waybill}`);
           }

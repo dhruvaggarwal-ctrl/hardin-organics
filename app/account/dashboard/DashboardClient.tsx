@@ -13,7 +13,7 @@ interface Order {
   totalAmount: number;
   status: string;
   createdAt: string;
-  awbCode?: string;
+  waybill?: string;
 }
 interface Customer {
   id: string; mobile?: string; email?: string; name?: string; birthday?: string;
