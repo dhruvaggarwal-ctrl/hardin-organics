@@ -15,10 +15,39 @@ interface PageProps {
 }
 
 const steps = [
-  { icon: "📦", label: "Order Confirmed", desc: "We've received your order" },
-  { icon: "🧼", label: "Being Packed", desc: "Handcrafted with care" },
-  { icon: "🚚", label: "Shipped", desc: "On its way to you" },
-  { icon: "🏠", label: "Delivered", desc: "Enjoy your soaps!" },
+  {
+    label: "Confirmed",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+  },
+  {
+    label: "Packing",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10" />
+      </svg>
+    ),
+  },
+  {
+    label: "Shipped",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0" />
+      </svg>
+    ),
+  },
+  {
+    label: "Delivered",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+      </svg>
+    ),
+  },
 ];
 
 export default function OrderConfirmationPage({ searchParams }: PageProps) {
@@ -40,12 +69,11 @@ export default function OrderConfirmationPage({ searchParams }: PageProps) {
 
   return (
     <div className="min-h-screen bg-[#F5F0E8]">
-      {/* Top success banner */}
-      <div className="bg-[#2D5016] pt-16 pb-24 px-4 text-center relative overflow-hidden">
-        {/* Background decoration */}
-        <div className="absolute inset-0 opacity-10">
-          {["🌿", "✨", "🧼", "🌿", "✨"].map((e, i) => (
-            <span key={i} className="absolute text-4xl" style={{ left: `${10 + i * 22}%`, top: `${20 + (i % 2) * 40}%` }}>{e}</span>
+      {/* Banner — tall enough so card floats clearly over it */}
+      <div className="bg-[#2D5016] pt-14 pb-32 px-4 text-center relative overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.07] pointer-events-none select-none">
+          {["🌿", "✨", "🌿", "✨", "🌿"].map((e, i) => (
+            <span key={i} className="absolute text-5xl" style={{ left: `${8 + i * 21}%`, top: `${15 + (i % 2) * 45}%` }}>{e}</span>
           ))}
         </div>
 
@@ -53,48 +81,50 @@ export default function OrderConfirmationPage({ searchParams }: PageProps) {
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
-          className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-5 shadow-lg"
+          className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg"
         >
-          <svg className="w-10 h-10 text-[#2D5016]" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+          <svg className="w-8 h-8 text-[#2D5016]" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-          <h1 className="text-3xl md:text-4xl font-bold text-white font-display mb-2">
-            Order Placed! 🎉
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+          <h1 className="text-3xl md:text-4xl font-bold text-white font-display mb-1">
+            Order Placed!
           </h1>
-          <p className="text-white/75 text-base">
+          <p className="text-white/70 text-sm">
             Thank you, <span className="text-white font-semibold">{firstName}</span>! Your soaps are being handcrafted with love.
           </p>
         </motion.div>
       </div>
 
-      {/* Card pulled up over the banner */}
-      <div className="max-w-lg mx-auto px-4 -mt-12 pb-16">
+      {/* Card floats up over banner */}
+      <div className="max-w-lg mx-auto px-4 -mt-20 pb-16 relative z-10">
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
+          transition={{ delay: 0.3 }}
           className="bg-white rounded-3xl shadow-xl overflow-hidden"
         >
-          {/* Order ID */}
+          {/* Order ID strip */}
           {orderId && (
-            <div className="bg-[#F5F0E8] px-6 py-5 flex items-center justify-between border-b border-[#EDE6D6]">
+            <div className="bg-[#F5F0E8] px-6 py-4 flex items-center justify-between border-b border-[#EDE6D6]">
               <div>
-                <p className="text-xs text-[#6B6B6B] uppercase tracking-wider mb-0.5">Order ID</p>
-                <p className="font-mono font-bold text-[#1C1C1C] text-lg tracking-wider">{orderId}</p>
+                <p className="text-[10px] text-[#6B6B6B] uppercase tracking-widest mb-0.5">Order ID</p>
+                <p className="font-mono font-bold text-[#1C1C1C] text-base tracking-wider">{orderId}</p>
               </div>
               <button
                 onClick={copyOrderId}
-                className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg transition-all ${
-                  copied ? "bg-green-100 text-green-700" : "bg-white text-[#A0522D] hover:bg-[#A0522D] hover:text-white border border-[#A0522D]"
+                className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border transition-all ${
+                  copied
+                    ? "bg-green-50 border-green-200 text-green-700"
+                    : "bg-white border-[#EDE6D6] text-[#6B6B6B] hover:border-[#2D5016] hover:text-[#2D5016]"
                 }`}
               >
                 {copied ? (
-                  <><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg> Copied!</>
+                  <><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>Copied</>
                 ) : (
-                  <><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><rect x={9} y={9} width={13} height={13} rx={2}/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy</>
+                  <><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><rect x={9} y={9} width={13} height={13} rx={2}/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy</>
                 )}
               </button>
             </div>
@@ -105,12 +135,22 @@ export default function OrderConfirmationPage({ searchParams }: PageProps) {
             <div className={`rounded-2xl p-4 flex items-start gap-3 ${
               isPaid ? "bg-green-50 border border-green-100" : "bg-amber-50 border border-amber-100"
             }`}>
-              <span className="text-2xl shrink-0">{isPaid ? "✅" : "💵"}</span>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${isPaid ? "bg-green-100" : "bg-amber-100"}`}>
+                {isPaid ? (
+                  <svg className="w-4 h-4 text-green-700" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4 text-amber-700" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                )}
+              </div>
               <div>
                 <p className={`font-bold text-sm ${isPaid ? "text-green-800" : "text-amber-800"}`}>
                   {isPaid ? "Payment Confirmed" : "Cash on Delivery"}
                 </p>
-                <p className={`text-xs mt-0.5 ${isPaid ? "text-green-700" : "text-amber-700"}`}>
+                <p className={`text-xs mt-0.5 leading-relaxed ${isPaid ? "text-green-700" : "text-amber-700"}`}>
                   {isPaid
                     ? "Your order will be picked up & shipped within 24 hours."
                     : `Pay ₹${total} when your order arrives. Delivery in 4–6 business days.`}
@@ -118,66 +158,72 @@ export default function OrderConfirmationPage({ searchParams }: PageProps) {
               </div>
             </div>
 
-            {/* Journey steps */}
+            {/* Journey stepper */}
             <div>
-              <p className="text-xs font-bold text-[#6B6B6B] uppercase tracking-wider mb-4">Your Order Journey</p>
-              <div className="flex items-start justify-between relative">
-                <div className="absolute top-5 left-5 right-5 h-0.5 bg-[#EDE6D6]" />
-                <div className="absolute top-5 left-5 h-0.5 bg-[#2D5016] transition-all" style={{ width: "0%" }} />
+              <p className="text-[10px] font-bold text-[#6B6B6B] uppercase tracking-widest mb-5">Your Order Journey</p>
+              <div className="relative flex items-start justify-between">
+                {/* connector line */}
+                <div className="absolute top-5 left-5 right-5 h-px bg-[#EDE6D6]" />
                 {steps.map((step, i) => (
                   <div key={i} className="flex flex-col items-center gap-2 z-10 flex-1">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg shadow-sm ${
-                      i === 0 ? "bg-[#2D5016]" : "bg-white border-2 border-[#EDE6D6]"
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-sm border-2 transition-colors ${
+                      i === 0
+                        ? "bg-[#2D5016] border-[#2D5016] text-white"
+                        : "bg-white border-[#EDE6D6] text-[#C4C4C4]"
                     }`}>
                       {step.icon}
                     </div>
-                    <div className="text-center">
-                      <p className={`text-[10px] font-bold leading-tight ${i === 0 ? "text-[#2D5016]" : "text-[#6B6B6B]"}`}>
-                        {step.label}
-                      </p>
-                    </div>
+                    <p className={`text-[10px] font-semibold text-center ${i === 0 ? "text-[#2D5016]" : "text-[#BBBBBB]"}`}>
+                      {step.label}
+                    </p>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Mobile note */}
-            <p className="text-xs text-[#6B6B6B] text-center bg-[#F5F0E8] rounded-xl py-3 px-4">
-              📱 Shipping updates will be sent to your mobile ending in <strong className="text-[#1C1C1C]">••••{lastFour}</strong>
-            </p>
+            <div className="flex items-center gap-2.5 bg-[#F5F0E8] rounded-xl py-3 px-4">
+              <svg className="w-4 h-4 text-[#6B6B6B] shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              <p className="text-xs text-[#6B6B6B]">
+                Shipping updates to mobile ending in <strong className="text-[#1C1C1C]">••••{lastFour}</strong>
+              </p>
+            </div>
 
             {/* CTAs */}
-            <div className="space-y-3">
+            <div className="space-y-3 pt-1">
               {orderId && (
                 <Link
                   href={`/track/${orderId}`}
                   className="flex items-center justify-center gap-2.5 w-full bg-[#2D5016] text-white font-bold py-4 rounded-2xl hover:bg-[#3D6B20] transition-colors text-sm"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                    <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                    <circle cx={12} cy={11} r={3}/>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
                   </svg>
                   Track My Order
                 </Link>
               )}
               <Link
                 href="/shop"
-                className="block w-full text-center border-2 border-[#EDE6D6] text-[#6B6B6B] font-semibold py-3.5 rounded-2xl hover:border-[#2D5016] hover:text-[#2D5016] transition-all text-sm"
+                className="block w-full text-center border border-[#EDE6D6] text-[#6B6B6B] font-semibold py-3.5 rounded-2xl hover:border-[#2D5016] hover:text-[#2D5016] transition-all text-sm"
               >
-                Continue Shopping →
+                Continue Shopping
               </Link>
             </div>
           </div>
         </motion.div>
 
-        {/* What's next note */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
           className="text-center text-xs text-[#6B6B6B] mt-6"
         >
-          Questions? <a href="https://wa.me/919650595027" target="_blank" rel="noopener noreferrer" className="text-[#2D5016] font-semibold hover:underline">WhatsApp us</a>
+          Questions?{" "}
+          <a href="https://wa.me/919650595027" target="_blank" rel="noopener noreferrer" className="text-[#2D5016] font-semibold hover:underline">
+            WhatsApp us
+          </a>
         </motion.p>
       </div>
     </div>
