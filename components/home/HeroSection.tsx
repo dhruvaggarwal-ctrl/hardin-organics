@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const INTERVAL = 2000;
+const INTERVAL = 4000;
 
 // ─── Direction-aware slide variants ─────────────────────────────────────────
 const slideVariants = {
@@ -85,38 +85,59 @@ function Slide1() {
   );
 }
 
-// ─── Slide 2 — BOGO banner image ─────────────────────────────────────────────
+// ─── Slide 2 — BOGO banner (desktop + mobile) ────────────────────────────────
 function Slide2() {
   return (
     <Link href="/bogo" className="block w-full group" aria-label="Shop BOGO offer">
       <div className="relative w-full">
+        {/* Desktop */}
         <Image
           src="/images/bogo-banner.jpg"
           alt="Buy One Get One Free — Hardin Organics"
           width={1717}
           height={916}
-          className="w-full h-auto object-cover"
+          className="hidden md:block w-full h-auto object-cover"
           priority
           sizes="100vw"
         />
-        {/* Subtle hover overlay */}
+        {/* Mobile */}
+        <Image
+          src="/images/bogo-banner-mobile.jpg"
+          alt="Buy One Get One Free — Hardin Organics"
+          width={1122}
+          height={1402}
+          className="block md:hidden w-full h-auto object-cover"
+          priority
+          sizes="100vw"
+        />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
       </div>
     </Link>
   );
 }
 
-// ─── Slide 3 — Charcoal banner image ─────────────────────────────────────────
+// ─── Slide 3 — Charcoal banner (desktop + mobile) ────────────────────────────
 function Slide3() {
   return (
     <Link href="/product/activated-charcoal-soap" className="block w-full group" aria-label="Shop Charcoal Anti-Acne Soap">
       <div className="relative w-full">
+        {/* Desktop */}
         <Image
           src="/images/charcoal-banner.jpg"
           alt="Hardin Organics Charcoal Anti-Acne Soap"
           width={1717}
           height={916}
-          className="w-full h-auto object-cover"
+          className="hidden md:block w-full h-auto object-cover"
+          priority
+          sizes="100vw"
+        />
+        {/* Mobile */}
+        <Image
+          src="/images/charcoal-banner-mobile.jpg"
+          alt="Hardin Organics Charcoal Anti-Acne Soap"
+          width={1092}
+          height={1440}
+          className="block md:hidden w-full h-auto object-cover"
           priority
           sizes="100vw"
         />
@@ -126,17 +147,28 @@ function Slide3() {
   );
 }
 
-// ─── Slide 4 — Haldi Chandan banner image ────────────────────────────────────
+// ─── Slide 4 — Haldi Chandan banner (desktop + mobile) ───────────────────────
 function Slide4() {
   return (
     <Link href="/product/saffron-haldi-chandan-soap" className="block w-full group" aria-label="Shop Saffron Haldi Chandan Soap">
       <div className="relative w-full">
+        {/* Desktop */}
         <Image
           src="/images/haldi-banner.jpg"
           alt="Hardin Organics Saffron Haldi Chandan Soap"
           width={1672}
           height={941}
-          className="w-full h-auto object-cover"
+          className="hidden md:block w-full h-auto object-cover"
+          priority
+          sizes="100vw"
+        />
+        {/* Mobile */}
+        <Image
+          src="/images/haldi-banner-mobile.jpg"
+          alt="Hardin Organics Saffron Haldi Chandan Soap"
+          width={1122}
+          height={1402}
+          className="block md:hidden w-full h-auto object-cover"
           priority
           sizes="100vw"
         />
@@ -148,12 +180,10 @@ function Slide4() {
 
 const SLIDES = [Slide1, Slide2, Slide3, Slide4];
 const SLIDE_BG = ["#F5F0E8", "#F5EDDA", "#EBEBEB", "#F5E6C0"];
-const DOT_ACCENT = ["#2D5016", "#2D5016", "#1C1C1C", "#D4A017"];
 
 export function HeroSection() {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
-  const [paused, setPaused] = useState(false);
 
   const go = useCallback((index: number, dir: number) => {
     setDirection(dir);
@@ -161,13 +191,11 @@ export function HeroSection() {
   }, []);
 
   const next = useCallback(() => go((current + 1) % SLIDES.length, 1), [current, go]);
-  const prev = useCallback(() => go((current - 1 + SLIDES.length) % SLIDES.length, -1), [current, go]);
 
   useEffect(() => {
-    if (paused) return;
     const id = setInterval(next, INTERVAL);
     return () => clearInterval(id);
-  }, [paused, next]);
+  }, [next]);
 
   const SlideContent = SLIDES[current];
 
@@ -175,10 +203,7 @@ export function HeroSection() {
     <section
       className="relative overflow-hidden transition-colors duration-700"
       style={{ backgroundColor: SLIDE_BG[current] }}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
     >
-      {/* Slide area */}
       <AnimatePresence mode="wait" custom={direction}>
         <motion.div
           key={current}
@@ -193,60 +218,6 @@ export function HeroSection() {
           <SlideContent />
         </motion.div>
       </AnimatePresence>
-
-      {/* ── Controls ─────────────────────────────────────── */}
-      <div className="absolute bottom-5 left-0 right-0 flex items-center justify-center gap-3 z-10">
-        {/* Prev arrow */}
-        <button
-          onClick={() => { prev(); setPaused(true); }}
-          className="w-7 h-7 rounded-full bg-black/20 backdrop-blur-sm flex items-center justify-center hover:bg-black/40 transition-colors"
-          aria-label="Previous"
-        >
-          <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
-        </button>
-
-        {/* Dots */}
-        {SLIDES.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => { go(i, i > current ? 1 : -1); setPaused(true); }}
-            aria-label={`Slide ${i + 1}`}
-            className="rounded-full transition-all duration-300"
-            style={{
-              height: 8,
-              width: current === i ? 28 : 8,
-              backgroundColor: current === i ? DOT_ACCENT[i] : "rgba(255,255,255,0.45)",
-            }}
-          />
-        ))}
-
-        {/* Next arrow */}
-        <button
-          onClick={() => { next(); setPaused(true); }}
-          className="w-7 h-7 rounded-full bg-black/20 backdrop-blur-sm flex items-center justify-center hover:bg-black/40 transition-colors"
-          aria-label="Next"
-        >
-          <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-            <path d="M9 18l6-6-6-6" />
-          </svg>
-        </button>
-      </div>
-
-      {/* Progress bar */}
-      {!paused && (
-        <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-black/10">
-          <motion.div
-            key={`bar-${current}`}
-            className="h-full"
-            style={{ backgroundColor: DOT_ACCENT[current] }}
-            initial={{ width: "0%" }}
-            animate={{ width: "100%" }}
-            transition={{ duration: INTERVAL / 1000, ease: "linear" }}
-          />
-        </div>
-      )}
     </section>
   );
 }
