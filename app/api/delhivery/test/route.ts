@@ -31,17 +31,17 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "DELHIVERY_API_TOKEN not set", envCheck });
   }
 
-  // Build a dummy test shipment
+  // Build a realistic test shipment (Delhivery flags obviously fake names/phones)
   const payload = buildDelhiveryPayload({
     orderId: `TEST-${Date.now()}`,
-    customerName: "Test Customer",
-    mobile: "9999999999",
-    email: "test@hardinorganics.com",
-    addressLine1: "123 Test Street",
-    addressLine2: "Test Area",
-    city: "Delhi",
-    state: "Delhi",
-    pincode: "110001",
+    customerName: "Dhruv Aggarwal",
+    mobile: "9650595027",
+    email: "dhruvaggarwal98760@gmail.com",
+    addressLine1: "B-703 7th Floor HPCL Housing Society Sector Pi-1",
+    addressLine2: "Amit Nagar Greater Noida",
+    city: "Greater Noida",
+    state: "Uttar Pradesh",
+    pincode: "201308",
     items: [{ name: "Activated Charcoal Soap", quantity: 1, price: 149 }],
     totalAmount: 149,
     paymentMethod: "Prepaid",
