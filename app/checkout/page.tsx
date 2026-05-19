@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
+import { pixelInitiateCheckout } from "@/lib/pixel";
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -286,6 +287,11 @@ export default function CheckoutPage() {
           reject(new Error(r.error?.description || "Payment failed. Please try again."));
         });
 
+        pixelInitiateCheckout({
+          value: total,
+          numItems: items.reduce((s, i) => s + i.quantity, 0),
+          contentIds: items.map((i) => i.product.id),
+        });
         rzp.open();
       });
     } catch (err) {

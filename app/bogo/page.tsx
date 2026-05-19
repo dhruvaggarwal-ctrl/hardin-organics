@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { products } from "@/data/products";
+import { pixelInitiateCheckout } from "@/lib/pixel";
 
 // ─── Countdown ────────────────────────────────────────────────────────────────
 const OFFER_DURATION_HOURS = 24;
@@ -286,6 +287,11 @@ export default function BogoPage() {
           reject(new Error(r.error?.description || "Payment failed. Please try again."));
         });
 
+        pixelInitiateCheckout({
+          value: BOGO_PRICE,
+          numItems: 2,
+          contentIds: [charcoal.id, haldi.id],
+        });
         rzp.open();
       });
     } catch (err) {

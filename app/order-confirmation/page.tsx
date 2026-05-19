@@ -1,8 +1,9 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { pixelPurchase } from "@/lib/pixel";
 
 interface PageProps {
   searchParams: Promise<{
@@ -57,6 +58,16 @@ export default function OrderConfirmationPage({ searchParams }: PageProps) {
   const isPaid = method === "paid";
   const lastFour = mobile ? mobile.slice(-4) : "XXXX";
   const firstName = name ? name.split(" ")[0] : "Friend";
+
+  // Fire Purchase pixel once per order (sessionStorage dedupes refreshes)
+  useEffect(() => {
+    if (!orderId || !total) return;
+    pixelPurchase({
+      orderId,
+      value: Number(total),
+      contentIds: [], // we don't have product IDs here; value+orderId is what matters
+    });
+  }, [orderId, total]);
 
   function copyOrderId() {
     if (orderId) {

@@ -7,6 +7,7 @@ import { useCart } from "@/context/CartContext";
 import { Product } from "@/data/products";
 import { useStock } from "@/hooks/useStock";
 import { NotifyModal } from "./NotifyModal";
+import { pixelAddToCart } from "@/lib/pixel";
 
 interface AddToCartSectionProps {
   product: Product;
@@ -68,6 +69,11 @@ export function AddToCartSection({ product }: AddToCartSectionProps) {
     addToCart(product, selectedSize, currentSize.price, quantity);
     setAdded(true);
     setTimeout(() => setAdded(false), 3000);
+    pixelAddToCart({
+      productId: product.id,
+      productName: product.name,
+      value: currentSize.price * quantity,
+    });
   };
 
   const handleBuyNow = () => {
