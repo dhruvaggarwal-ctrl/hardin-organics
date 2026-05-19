@@ -127,10 +127,10 @@ export default function ProductPage({ params }: PageProps) {
     ),
     Ingredients: (
       <div>
-        <div className="grid grid-cols-2 gap-3 mb-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-5">
           {product.ingredients.map((ing) => (
-            <div key={ing} className="flex items-center gap-2 bg-[#F5F0E8] rounded-xl p-3">
-              <span className="text-[#2D5016]">✓</span>
+            <div key={ing} className="flex items-center gap-2.5 bg-[#F5F0E8] rounded-xl px-4 py-3">
+              <span className="text-[#2D5016] font-bold shrink-0">✓</span>
               <span className="text-sm font-medium text-[#1C1C1C]">{ing}</span>
             </div>
           ))}
@@ -204,13 +204,13 @@ export default function ProductPage({ params }: PageProps) {
         <div className="max-w-7xl mx-auto px-4">
 
         {/* Tabs */}
-        <div className="mt-8 md:mt-16 bg-white rounded-3xl shadow-sm overflow-hidden">
+        <div className="mt-6 md:mt-16 bg-white rounded-2xl md:rounded-3xl shadow-sm overflow-hidden">
           <div className="flex border-b border-gray-100 overflow-x-auto scrollbar-hide">
             {tabs.map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-6 py-4 font-semibold text-sm whitespace-nowrap transition-all duration-200 border-b-2 ${
+                className={`px-4 py-3.5 md:px-6 md:py-4 font-semibold text-sm whitespace-nowrap transition-all duration-200 border-b-2 ${
                   activeTab === tab
                     ? "border-[#2D5016] text-[#2D5016] bg-[#F5F0E8]/50"
                     : "border-transparent text-[#6B6B6B] hover:text-[#1C1C1C]"
@@ -220,7 +220,7 @@ export default function ProductPage({ params }: PageProps) {
               </button>
             ))}
           </div>
-          <div className="p-6 md:p-8">
+          <div className="p-4 md:p-8">
             {tabContent[activeTab]}
           </div>
         </div>

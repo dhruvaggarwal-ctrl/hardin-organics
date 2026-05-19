@@ -243,16 +243,14 @@ export function AddToCartSection({ product }: AddToCartSectionProps) {
         />
       )}
 
-      {/* Trust strip — above Add to Cart */}
-      <div className="overflow-x-auto scrollbar-hide -mx-1">
-        <div className="flex gap-2 min-w-max px-1 pb-1">
-          {trustItems.map((item) => (
-            <div key={item.label} className="flex items-center gap-1.5 bg-[#F5F0E8] rounded-xl px-3 py-2.5 shrink-0">
-              {item.icon}
-              <span className="text-xs font-medium text-[#1C1C1C] whitespace-nowrap">{item.label}</span>
-            </div>
-          ))}
-        </div>
+      {/* Trust strip */}
+      <div className="flex flex-wrap gap-2">
+        {trustItems.map((item) => (
+          <div key={item.label} className="flex items-center gap-1.5 bg-[#F5F0E8] rounded-xl px-3 py-2.5">
+            {item.icon}
+            <span className="text-xs font-medium text-[#1C1C1C] whitespace-nowrap">{item.label}</span>
+          </div>
+        ))}
       </div>
 
       {/* Product highlights */}
