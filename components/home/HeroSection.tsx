@@ -106,67 +106,23 @@ function Slide2() {
   );
 }
 
-// ─── Slide 3 — Charcoal (editorial, dark, minimal) ───────────────────────────
+// ─── Slide 3 — Charcoal banner image ─────────────────────────────────────────
 function Slide3() {
   return (
-    <div className="max-w-7xl mx-auto px-4 w-full grid md:grid-cols-5 gap-8 items-center py-16 md:py-24">
-      {/* Text — takes 2 cols */}
-      <div className="md:col-span-2 order-2 md:order-1 flex flex-col gap-5">
-        <span className="text-[#9BCB6A] text-xs font-bold uppercase tracking-[0.3em]">
-          Activated Charcoal · Shea Butter
-        </span>
-        <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-white leading-none font-display">
-          Deep<br />Cleanse.<br />
-          <span className="text-[#9BCB6A]">Clear<br />Skin.</span>
-        </h1>
-        <div className="w-12 h-1 bg-[#9BCB6A] rounded-full" />
-        <p className="text-white/60 text-base leading-relaxed max-w-xs">
-          Works like a magnet — drawing out toxins, unclogging pores, and clearing acne without stripping your skin.
-        </p>
-        <div className="flex gap-3 flex-wrap">
-          {["Anti-Acne", "Pore Cleansing", "Cruelty Free"].map((tag) => (
-            <span key={tag} className="text-xs font-semibold text-white/50 border border-white/20 px-3 py-1 rounded-full">
-              {tag}
-            </span>
-          ))}
-        </div>
-        <Link
-          href="/product/activated-charcoal-soap"
-          className="self-start inline-flex items-center gap-2 bg-white text-[#1C1C1C] font-bold px-7 py-3.5 rounded-full text-base hover:bg-[#9BCB6A] hover:text-[#1C1C1C] transition-all duration-300 hover:scale-[1.03]"
-        >
-          Shop Charcoal Soap
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-            <path d="M5 12h14M12 5l7 7-7 7" />
-          </svg>
-        </Link>
+    <Link href="/product/activated-charcoal-soap" className="block w-full group" aria-label="Shop Charcoal Anti-Acne Soap">
+      <div className="relative w-full">
+        <Image
+          src="/images/charcoal-banner.jpg"
+          alt="Hardin Organics Charcoal Anti-Acne Soap"
+          width={1717}
+          height={916}
+          className="w-full h-auto object-cover"
+          priority
+          sizes="100vw"
+        />
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
       </div>
-
-      {/* Image — takes 3 cols */}
-      <div className="md:col-span-3 order-1 md:order-2 flex justify-center md:justify-end">
-        <div className="relative">
-          {/* Glow effect */}
-          <div className="absolute inset-0 bg-[#9BCB6A]/20 rounded-3xl blur-3xl scale-90" />
-          <div className="relative w-72 h-72 sm:w-[360px] sm:h-[360px] lg:w-[480px] lg:h-[480px] rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-[#222]">
-            <Image
-              src="/images/charcoal-cover.png"
-              alt="Hardin Organics Activated Charcoal Soap"
-              fill
-              className="object-contain p-4"
-              sizes="(max-width: 640px) 288px, (max-width: 1024px) 360px, 480px"
-            />
-          </div>
-          {/* Corner badge */}
-          <div className="absolute top-4 right-4 bg-[#9BCB6A] text-[#1C1C1C] text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-wider">
-            Bestseller
-          </div>
-          {/* Bottom tag */}
-          <div className="absolute -bottom-4 left-4 bg-[#1C1C1C] border border-white/10 rounded-2xl px-4 py-2.5 shadow-xl">
-            <div className="text-white font-bold text-sm">5,000+ bars sold</div>
-            <div className="text-white/40 text-xs">⭐⭐⭐⭐⭐ 4.9 / 5</div>
-          </div>
-        </div>
-      </div>
-    </div>
+    </Link>
   );
 }
 
@@ -249,8 +205,8 @@ function Slide4() {
 }
 
 const SLIDES = [Slide1, Slide2, Slide3, Slide4];
-const SLIDE_BG = ["#F5F0E8", "#F5EDDA", "#1A1A1A", "#FDF3E3"];
-const DOT_ACCENT = ["#2D5016", "#2D5016", "#9BCB6A", "#D4A017"];
+const SLIDE_BG = ["#F5F0E8", "#F5EDDA", "#EBEBEB", "#FDF3E3"];
+const DOT_ACCENT = ["#2D5016", "#2D5016", "#1C1C1C", "#D4A017"];
 
 export function HeroSection() {
   const [current, setCurrent] = useState(0);
