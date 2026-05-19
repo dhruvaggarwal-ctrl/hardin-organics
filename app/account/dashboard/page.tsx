@@ -13,38 +13,71 @@ interface Order {
   totalAmount: number; status: string; createdAt: string; waybill?: string;
 }
 
+/**
+ * Converts Firestore Timestamps and any non-serializable values to plain JS.
+ * Next.js Server → Client Component boundary requires fully serializable props.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function serialize<T>(obj: any): T {
+  if (obj === null || obj === undefined) return obj as T;
+  if (typeof obj !== "object") return obj as T;
+  // Firestore Timestamp has toDate()
+  if (typeof obj.toDate === "function") return obj.toDate().toISOString() as T;
+  if (Array.isArray(obj)) return obj.map(serialize) as T;
+  const result: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(obj)) {
+    result[k] = serialize(v);
+  }
+  return result as T;
+}
+
 async function fetchFromFirestore(session: { customerId: string; mobile?: string; email?: string }) {
   try {
     const { db } = await import("@/lib/firebase/admin");
 
-    // Fetch customer
+    // Fetch customer — serialize to strip Timestamps
     const customerSnap = await db.collection("customers").doc(session.customerId).get();
-    const customer: Customer = customerSnap.exists
-      ? (customerSnap.data() as Customer)
+    const rawCustomer = customerSnap.exists ? customerSnap.data() : null;
+
+    const customer: Customer = rawCustomer
+      ? {
+          id: (rawCustomer.id as string) || session.customerId,
+          mobile: (rawCustomer.mobile as string) || session.mobile,
+          email: (rawCustomer.email as string) || session.email,
+          name: rawCustomer.name as string | undefined,
+          birthday: rawCustomer.birthday as string | undefined,
+          address: rawCustomer.address as Customer["address"] | undefined,
+        }
       : { id: session.customerId, mobile: session.mobile, email: session.email };
 
-    // Fetch orders by UID
+    // Fetch orders — wrapped individually so one failure doesn't kill the page
     const orderMap = new Map<string, Order>();
+
     try {
       const snapByUid = await db.collection("orders")
         .where("customerId", "==", session.customerId)
         .orderBy("createdAt", "desc")
         .get();
-      snapByUid.docs.forEach((d) => orderMap.set(d.id, d.data() as Order));
-    } catch {
-      // Index may not exist yet — skip silently
+      snapByUid.docs.forEach((d) => {
+        const raw = d.data();
+        orderMap.set(d.id, serialize<Order>({ ...raw, orderId: raw.orderId || d.id }));
+      });
+    } catch (e) {
+      console.warn("[dashboard] orders by UID query failed (index may be missing):", e);
     }
 
-    // Also match by mobile
     if (session.mobile) {
       try {
         const snapByMobile = await db.collection("orders")
           .where("mobile", "==", session.mobile)
           .orderBy("createdAt", "desc")
           .get();
-        snapByMobile.docs.forEach((d) => orderMap.set(d.id, d.data() as Order));
-      } catch {
-        // Index may not exist yet — skip silently
+        snapByMobile.docs.forEach((d) => {
+          const raw = d.data();
+          orderMap.set(d.id, serialize<Order>({ ...raw, orderId: raw.orderId || d.id }));
+        });
+      } catch (e) {
+        console.warn("[dashboard] orders by mobile query failed (index may be missing):", e);
       }
     }
 
@@ -55,7 +88,6 @@ async function fetchFromFirestore(session: { customerId: string; mobile?: string
     return { customer, orders };
   } catch (err) {
     console.error("[dashboard] Firestore error:", err);
-    // Return empty state so page still loads
     return {
       customer: { id: session.customerId, mobile: session.mobile, email: session.email } as Customer,
       orders: [] as Order[],
