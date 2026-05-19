@@ -103,23 +103,51 @@ export async function createDelhiveryShipment(
   shipment: DelhiveryShipment
 ): Promise<DelhiveryCreateResponse | null> {
   try {
-    const body = JSON.stringify({
+    const token = getToken();
+
+    // Delhivery's create endpoint requires application/x-www-form-urlencoded
+    // with the payload as format=json&data=<JSON string>
+    const dataJson = JSON.stringify({
       shipments: [shipment],
       pickup_location: { name: "Primary" },
     });
 
+    const formBody = `format=json&data=${encodeURIComponent(dataJson)}`;
+
+    console.log("[Delhivery] Creating shipment for order:", shipment.order);
+    console.log("[Delhivery] Payload:", dataJson);
+
     const res = await fetch(`${DELHIVERY_API}/api/cmu/create.json`, {
       method: "POST",
-      headers: getHeaders(),
-      body,
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Authorization": `Token ${token}`,
+      },
+      body: formBody,
     });
 
+    const responseText = await res.text();
+    console.log("[Delhivery] Response status:", res.status);
+    console.log("[Delhivery] Response body:", responseText);
+
     if (!res.ok) {
-      const err = await res.text();
-      console.error("[Delhivery] createShipment error:", res.status, err);
+      console.error("[Delhivery] createShipment HTTP error:", res.status, responseText);
       return null;
     }
-    return await res.json();
+
+    const json = JSON.parse(responseText) as DelhiveryCreateResponse;
+
+    // Log any package-level errors Delhivery returns
+    if (json.packages?.length) {
+      json.packages.forEach((pkg) => {
+        if (pkg.remarks?.length) {
+          console.warn("[Delhivery] Package remarks for", pkg.waybill, ":", pkg.remarks);
+        }
+      });
+    }
+    if (json.rmk) console.warn("[Delhivery] Remark:", json.rmk);
+
+    return json;
   } catch (e) {
     console.error("[Delhivery] createShipment exception:", e);
     return null;
