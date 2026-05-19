@@ -1,6 +1,8 @@
 export interface ProductSize {
   label: string;
   price: number;
+  originalPrice?: number;
+  badge?: string;
 }
 
 export interface Product {
@@ -40,7 +42,11 @@ export const products: Product[] = [
     concerns: ["Acne & Breakouts", "Blackheads & Pores", "Excess Oil"],
     ingredients: ["Activated Charcoal", "Shea Butter", "Tea Tree Oil", "Coconut Oil"],
     sizes: [
-      { label: "100g", price: 149 },
+      { label: "Pack of 1", price: 149, originalPrice: 199 },
+      { label: "Pack of 3", price: 399, originalPrice: 597, badge: "Most Popular" },
+      { label: "Pack of 6", price: 749, originalPrice: 1194 },
+      { label: "Pack of 9", price: 1049, originalPrice: 1791 },
+      { label: "Pack of 12", price: 1299, originalPrice: 2388 },
     ],
     images: [
       "/images/charcoal-1.png",
@@ -77,7 +83,11 @@ export const products: Product[] = [
     concerns: ["Dull Skin", "Pigmentation", "Anti-Aging", "Uneven Tone"],
     ingredients: ["Saffron", "Turmeric (Haldi)", "Sandalwood (Chandan)", "Rose Water"],
     sizes: [
-      { label: "100g", price: 149 },
+      { label: "Pack of 1", price: 149, originalPrice: 199 },
+      { label: "Pack of 3", price: 399, originalPrice: 597, badge: "Most Popular" },
+      { label: "Pack of 6", price: 749, originalPrice: 1194 },
+      { label: "Pack of 9", price: 1049, originalPrice: 1791 },
+      { label: "Pack of 12", price: 1299, originalPrice: 2388 },
     ],
     images: [
       "/images/haldi-1.png",

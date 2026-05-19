@@ -97,10 +97,14 @@ export function AddToCartSection({ product }: AddToCartSectionProps) {
         <span className="text-4xl font-bold text-[#1C1C1C]">
           ₹{currentSize.price}
         </span>
-        <span className="text-xl line-through text-[#6B6B6B]">₹{product.originalPrice}</span>
-        <span className="bg-green-100 text-green-700 text-sm font-bold px-3 py-1 rounded-full">
-          {savingsPct}% off — Save ₹{savings}
-        </span>
+        {currentSize.originalPrice && (
+          <>
+            <span className="text-xl line-through text-[#6B6B6B]">₹{currentSize.originalPrice}</span>
+            <span className="bg-green-100 text-green-700 text-sm font-bold px-3 py-1 rounded-full">
+              {Math.round(((currentSize.originalPrice - currentSize.price) / currentSize.originalPrice) * 100)}% off
+            </span>
+          </>
+        )}
       </div>
 
       {/* Short description */}
@@ -121,26 +125,54 @@ export function AddToCartSection({ product }: AddToCartSectionProps) {
         </div>
       ) : null}
 
-      {/* Size selector */}
+      {/* Pack size selector */}
       {product.sizes.length > 1 && (
         <div>
-          <p className="font-semibold text-sm text-[#1C1C1C] mb-2">Size:</p>
-          <div className="flex gap-2">
-            {product.sizes.map((size) => (
-              <button
-                key={size.label}
-                onClick={() => setSelectedSize(size.label)}
-                className={`px-5 py-2.5 rounded-xl border-2 text-sm font-medium transition-all duration-200 ${
-                  selectedSize === size.label
-                    ? "border-[#2D5016] bg-[#2D5016] text-white"
-                    : "border-gray-200 text-[#1C1C1C] hover:border-[#2D5016]"
-                }`}
-              >
-                {size.label}
-                <span className="block text-xs opacity-80">₹{size.price}</span>
-              </button>
-            ))}
+          <div className="flex items-center justify-between mb-3">
+            <p className="font-semibold text-sm text-[#1C1C1C]">Pack Size</p>
+            {currentSize.originalPrice && (
+              <p className="text-xs text-green-600 font-medium">
+                Save ₹{currentSize.originalPrice - currentSize.price}
+              </p>
+            )}
           </div>
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            {product.sizes.map((size) => {
+              const isSelected = selectedSize === size.label;
+              return (
+                <button
+                  key={size.label}
+                  onClick={() => setSelectedSize(size.label)}
+                  className={`relative flex-shrink-0 flex flex-col items-center px-4 py-2.5 rounded-2xl border-2 transition-all duration-200 min-w-[80px] ${
+                    isSelected
+                      ? "border-[#2D5016] bg-[#2D5016] text-white shadow-md"
+                      : "border-gray-200 text-[#1C1C1C] hover:border-[#2D5016] bg-white"
+                  }`}
+                >
+                  {size.badge && (
+                    <span className={`absolute -top-2.5 left-1/2 -translate-x-1/2 text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap ${
+                      isSelected ? "bg-white text-[#2D5016]" : "bg-[#2D5016] text-white"
+                    }`}>
+                      {size.badge}
+                    </span>
+                  )}
+                  <span className="text-sm font-bold leading-tight">{size.label}</span>
+                  <span className={`text-xs mt-0.5 ${isSelected ? "text-white/80" : "text-[#6B6B6B]"}`}>
+                    ₹{size.price}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          {currentSize.originalPrice && (
+            <p className="text-xs text-[#6B6B6B] mt-2">
+              ₹{Math.round(currentSize.price / parseInt(currentSize.label.replace(/\D/g, "") || "1"))}/bar
+              {" · "}
+              <span className="text-green-600 font-medium">
+                {Math.round(((currentSize.originalPrice - currentSize.price) / currentSize.originalPrice) * 100)}% off MRP
+              </span>
+            </p>
+          )}
         </div>
       )}
 
