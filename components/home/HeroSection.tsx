@@ -85,63 +85,24 @@ function Slide1() {
   );
 }
 
-// ─── Slide 2 — BOGO (dark, centered, loud) ───────────────────────────────────
+// ─── Slide 2 — BOGO banner image ─────────────────────────────────────────────
 function Slide2() {
   return (
-    <div className="max-w-7xl mx-auto px-4 w-full flex flex-col items-center justify-center text-center py-16 md:py-24 gap-6">
-      {/* Urgency badge */}
-      <div className="inline-flex items-center gap-2 bg-[#C4622D] text-white text-sm font-bold px-5 py-2 rounded-full uppercase tracking-widest animate-pulse-green">
-        ⚡ Limited Time · Tonight Only
+    <Link href="/bogo" className="block w-full group" aria-label="Shop BOGO offer">
+      <div className="relative w-full">
+        <Image
+          src="/images/bogo-banner.jpg"
+          alt="Buy One Get One Free — Hardin Organics"
+          width={1717}
+          height={916}
+          className="w-full h-auto object-cover"
+          priority
+          sizes="100vw"
+        />
+        {/* Subtle hover overlay */}
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
       </div>
-
-      {/* Big headline */}
-      <div>
-        <p className="text-2xl md:text-3xl font-bold text-white/70 uppercase tracking-[0.2em] mb-1">Buy 1 Get 1</p>
-        <h1 className="text-5xl sm:text-7xl md:text-9xl font-black text-[#C4622D] leading-none font-display">FREE</h1>
-      </div>
-
-      {/* Two products */}
-      <div className="flex items-center justify-center gap-6 md:gap-12 mt-2">
-        <div className="flex flex-col items-center gap-2">
-          <div className="w-28 h-28 md:w-40 md:h-40 rounded-2xl overflow-hidden bg-[#2A2A2A] shadow-xl ring-2 ring-white/20">
-            <Image src="/images/charcoal-cover.png" alt="Charcoal Soap" width={160} height={160} className="w-full h-full object-contain" />
-          </div>
-          <span className="text-white/60 text-xs font-medium uppercase tracking-wider">Charcoal</span>
-        </div>
-
-        <div className="flex flex-col items-center gap-1">
-          <div className="w-12 h-12 rounded-full bg-[#C4622D] flex items-center justify-center">
-            <span className="text-white font-black text-xl">+</span>
-          </div>
-        </div>
-
-        <div className="flex flex-col items-center gap-2">
-          <div className="w-28 h-28 md:w-40 md:h-40 rounded-2xl overflow-hidden bg-[#3A2A10] shadow-xl ring-2 ring-white/20">
-            <Image src="/images/haldi-1.png" alt="Haldi Chandan Soap" width={160} height={160} className="w-full h-full object-contain" />
-          </div>
-          <span className="text-white/60 text-xs font-medium uppercase tracking-wider">Haldi Chandan</span>
-        </div>
-      </div>
-
-      {/* Pricing */}
-      <div className="flex items-center gap-4">
-        <span className="text-white/40 text-2xl line-through font-bold">₹299</span>
-        <span className="text-4xl font-black text-white">₹149</span>
-        <span className="bg-[#C4622D] text-white text-sm font-bold px-3 py-1 rounded-full">50% OFF</span>
-      </div>
-
-      {/* CTA */}
-      <Link
-        href="/bogo"
-        className="inline-flex items-center gap-3 bg-[#C4622D] text-white font-black px-10 py-4 rounded-full text-xl hover:bg-[#D4734A] transition-all duration-300 hover:shadow-2xl hover:scale-105 active:scale-95"
-      >
-        Grab This Deal Now
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-          <path d="M5 12h14M12 5l7 7-7 7" />
-        </svg>
-      </Link>
-      <p className="text-white/40 text-sm">Free shipping · No code needed · Ships within 24 hours</p>
-    </div>
+    </Link>
   );
 }
 
@@ -288,8 +249,8 @@ function Slide4() {
 }
 
 const SLIDES = [Slide1, Slide2, Slide3, Slide4];
-const SLIDE_BG = ["#F5F0E8", "#111111", "#1A1A1A", "#FDF3E3"];
-const DOT_ACCENT = ["#2D5016", "#C4622D", "#9BCB6A", "#D4A017"];
+const SLIDE_BG = ["#F5F0E8", "#F5EDDA", "#1A1A1A", "#FDF3E3"];
+const DOT_ACCENT = ["#2D5016", "#2D5016", "#9BCB6A", "#D4A017"];
 
 export function HeroSection() {
   const [current, setCurrent] = useState(0);
