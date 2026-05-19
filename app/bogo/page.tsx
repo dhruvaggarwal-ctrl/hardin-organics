@@ -131,10 +131,11 @@ export default function BogoPage() {
   const ORIGINAL_PRICE = 298;
   const SAVINGS = ORIGINAL_PRICE - BOGO_PRICE;
 
-  // Which product the user is paying for (the other is free)
+  // Independent selection — paid and free can be the same soap
   const [paidId, setPaidId] = useState<string>(charcoal.id);
+  const [freeId, setFreeId] = useState<string>(haldi.id);
   const paidProduct = bogoProducts.find((p) => p.id === paidId)!;
-  const freeProduct = bogoProducts.find((p) => p.id !== paidId)!;
+  const freeProduct = bogoProducts.find((p) => p.id === freeId)!;
 
   const LS_KEY = "hardin_checkout_details";
   const [form, setForm] = useState<FormData>(() => {
@@ -258,10 +259,12 @@ export default function BogoPage() {
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 ...form,
-                items: [
-                  { id: paidProduct.id, name: paidProduct.name, quantity: 1, price: BOGO_PRICE },
-                  { id: freeProduct.id, name: freeProduct.name, quantity: 1, price: 0 },
-                ],
+                items: paidProduct.id === freeProduct.id
+                  ? [{ id: paidProduct.id, name: paidProduct.name, quantity: 2, price: BOGO_PRICE }]
+                  : [
+                      { id: paidProduct.id, name: paidProduct.name, quantity: 1, price: BOGO_PRICE },
+                      { id: freeProduct.id, name: freeProduct.name, quantity: 1, price: 0 },
+                    ],
                 subtotal: BOGO_PRICE,
                 discount: 0,
                 shipping: 0,
@@ -355,44 +358,75 @@ export default function BogoPage() {
 
       <div className="max-w-2xl mx-auto px-4 py-8 space-y-5">
 
-        {/* Products — tap to choose which one you pay for */}
-        <div>
-          <p className="text-center text-xs text-[#6B6B6B] mb-3 font-medium">Tap a soap to choose which one you&apos;d like to pay for</p>
-          <div className="grid grid-cols-2 gap-4">
-            {bogoProducts.map((product) => {
-              const isPaid = product.id === paidId;
-              return (
-                <button
-                  key={product.id}
-                  onClick={() => setPaidId(product.id)}
-                  className={`bg-white rounded-2xl overflow-hidden shadow-sm border-2 text-left transition-all ${
-                    isPaid ? "border-[#2D5016] ring-2 ring-[#2D5016]/20" : "border-[#EDE6D6]"
-                  }`}
-                >
-                  <div className="relative aspect-square bg-[#EDE6D6]">
-                    <Image src={product.images[0]} alt={product.name} fill className="object-cover"
-                      sizes="(max-width: 640px) 50vw, 300px" />
-                    <div className={`absolute top-2 right-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${isPaid ? "bg-[#2D5016]" : "bg-[#8B1A1A]"}`}>
-                      {isPaid ? "You Pay" : "FREE"}
-                    </div>
-                  </div>
-                  <div className="p-3 text-center">
-                    <p className="text-xs font-semibold text-[#1C1C1C] leading-tight">{product.name}</p>
-                    <div className="flex items-center justify-center gap-1.5 mt-1">
-                      {isPaid ? (
-                        <span className="text-sm font-bold text-[#2D5016]">₹{BOGO_PRICE}</span>
-                      ) : (
-                        <><span className="text-xs text-gray-400 line-through">₹{product.price}</span>
-                        <span className="text-sm font-bold text-[#8B1A1A]">FREE</span></>
+        {/* Product selection — two independent rows */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#EDE6D6] space-y-5">
+
+          {/* Row 1: paid soap */}
+          <div>
+            <p className="text-xs font-bold text-[#1C1C1C] uppercase tracking-wide mb-3">
+              Choose the soap you&apos;re paying for <span className="text-[#2D5016]">— ₹{BOGO_PRICE}</span>
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              {bogoProducts.map((product) => {
+                const selected = product.id === paidId;
+                return (
+                  <button
+                    key={product.id}
+                    onClick={() => setPaidId(product.id)}
+                    className={`rounded-xl overflow-hidden border-2 text-left transition-all ${
+                      selected ? "border-[#2D5016] ring-2 ring-[#2D5016]/20" : "border-[#EDE6D6]"
+                    }`}
+                  >
+                    <div className="relative aspect-square bg-[#EDE6D6]">
+                      <Image src={product.images[0]} alt={product.name} fill className="object-cover"
+                        sizes="(max-width: 640px) 50vw, 240px" />
+                      {selected && (
+                        <div className="absolute top-2 right-2 bg-[#2D5016] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">✓ Chosen</div>
                       )}
                     </div>
-                    {isPaid && (
-                      <p className="text-[10px] text-[#2D5016] font-semibold mt-1">✓ Selected</p>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
+                    <div className="p-2 text-center bg-white">
+                      <p className="text-xs font-semibold text-[#1C1C1C] leading-tight">{product.name}</p>
+                      <p className="text-sm font-bold text-[#2D5016] mt-0.5">₹{BOGO_PRICE}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="border-t border-dashed border-[#EDE6D6]" />
+
+          {/* Row 2: free soap */}
+          <div>
+            <p className="text-xs font-bold text-[#1C1C1C] uppercase tracking-wide mb-3">
+              Choose your <span className="text-[#8B1A1A]">FREE</span> soap
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              {bogoProducts.map((product) => {
+                const selected = product.id === freeId;
+                return (
+                  <button
+                    key={product.id}
+                    onClick={() => setFreeId(product.id)}
+                    className={`rounded-xl overflow-hidden border-2 text-left transition-all ${
+                      selected ? "border-[#8B1A1A] ring-2 ring-[#8B1A1A]/20" : "border-[#EDE6D6]"
+                    }`}
+                  >
+                    <div className="relative aspect-square bg-[#EDE6D6]">
+                      <Image src={product.images[0]} alt={product.name} fill className="object-cover"
+                        sizes="(max-width: 640px) 50vw, 240px" />
+                      {selected && (
+                        <div className="absolute top-2 right-2 bg-[#8B1A1A] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">✓ Free</div>
+                      )}
+                    </div>
+                    <div className="p-2 text-center bg-white">
+                      <p className="text-xs font-semibold text-[#1C1C1C] leading-tight">{product.name}</p>
+                      <p className="text-sm font-bold text-[#8B1A1A] mt-0.5">FREE</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 
@@ -400,14 +434,29 @@ export default function BogoPage() {
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#EDE6D6]">
           <h2 className="font-bold text-[#1C1C1C] mb-3 text-sm uppercase tracking-wide">Your Order</h2>
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-[#6B6B6B]">{paidProduct.name} (100g)</span>
-              <span className="font-medium">₹{BOGO_PRICE}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-[#6B6B6B]">{freeProduct.name} (100g)</span>
-              <span className="font-bold text-[#8B1A1A]">FREE</span>
-            </div>
+            {paidProduct.id === freeProduct.id ? (
+              <>
+                <div className="flex justify-between">
+                  <span className="text-[#6B6B6B]">{paidProduct.name} (100g) ×1</span>
+                  <span className="font-medium">₹{BOGO_PRICE}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[#6B6B6B]">{freeProduct.name} (100g) ×1</span>
+                  <span className="font-bold text-[#8B1A1A]">FREE</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex justify-between">
+                  <span className="text-[#6B6B6B]">{paidProduct.name} (100g)</span>
+                  <span className="font-medium">₹{BOGO_PRICE}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[#6B6B6B]">{freeProduct.name} (100g)</span>
+                  <span className="font-bold text-[#8B1A1A]">FREE</span>
+                </div>
+              </>
+            )}
             <div className="flex justify-between text-xs text-[#6B6B6B]">
               <span>Shipping</span>
               <span className="text-[#2D5016] font-medium">FREE</span>
