@@ -131,11 +131,21 @@ export default function BogoPage() {
   const ORIGINAL_PRICE = 298;
   const SAVINGS = ORIGINAL_PRICE - BOGO_PRICE;
 
-  // Independent selection — paid and free can be the same soap
-  const [paidId, setPaidId] = useState<string>(charcoal.id);
-  const [freeId, setFreeId] = useState<string>(haldi.id);
-  const paidProduct = bogoProducts.find((p) => p.id === paidId)!;
-  const freeProduct = bogoProducts.find((p) => p.id === freeId)!;
+  // Quantities — always total 2 (linked: increasing one decreases the other)
+  const [charcoalQty, setCharcoalQty] = useState(1);
+  const [haldiQty, setHaldiQty] = useState(1);
+
+  function changeQty(product: "charcoal" | "haldi", delta: number) {
+    if (product === "charcoal") {
+      const next = Math.min(2, Math.max(0, charcoalQty + delta));
+      setCharcoalQty(next);
+      setHaldiQty(2 - next);
+    } else {
+      const next = Math.min(2, Math.max(0, haldiQty + delta));
+      setHaldiQty(next);
+      setCharcoalQty(2 - next);
+    }
+  }
 
   const LS_KEY = "hardin_checkout_details";
   const [form, setForm] = useState<FormData>(() => {
@@ -228,7 +238,11 @@ export default function BogoPage() {
           amount: orderAmount,
           currency,
           name: "Hardin Organics",
-          description: `BOGO: ${paidProduct.name} + ${freeProduct.name} (Free)`,
+          description: charcoalQty === 2
+            ? "BOGO: 2× Activated Charcoal Soap"
+            : haldiQty === 2
+              ? "BOGO: 2× Saffron Haldi Chandan Soap"
+              : "BOGO: Activated Charcoal + Saffron Haldi Chandan Soap",
           theme: { color: "#8B1A1A" },
           prefill: {
             name: form.customerName,
@@ -259,12 +273,20 @@ export default function BogoPage() {
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 ...form,
-                items: paidProduct.id === freeProduct.id
-                  ? [{ id: paidProduct.id, name: paidProduct.name, quantity: 2, price: BOGO_PRICE }]
-                  : [
-                      { id: paidProduct.id, name: paidProduct.name, quantity: 1, price: BOGO_PRICE },
-                      { id: freeProduct.id, name: freeProduct.name, quantity: 1, price: 0 },
-                    ],
+                items: [
+                  // Paid item (always 1 unit at ₹149)
+                  charcoalQty > 0
+                    ? { id: charcoal.id, name: charcoal.name, quantity: 1, price: BOGO_PRICE }
+                    : { id: haldi.id, name: haldi.name, quantity: 1, price: BOGO_PRICE },
+                  // Free item (always 1 unit at ₹0)
+                  charcoalQty === 2
+                    ? { id: charcoal.id, name: charcoal.name, quantity: 1, price: 0 }
+                    : haldiQty === 2
+                      ? { id: haldi.id, name: haldi.name, quantity: 1, price: 0 }
+                      : charcoalQty === 0
+                        ? { id: charcoal.id, name: charcoal.name, quantity: 1, price: 0 }
+                        : { id: haldi.id, name: haldi.name, quantity: 1, price: 0 },
+                ],
                 subtotal: BOGO_PRICE,
                 discount: 0,
                 shipping: 0,
@@ -358,105 +380,60 @@ export default function BogoPage() {
 
       <div className="max-w-2xl mx-auto px-4 py-8 space-y-5">
 
-        {/* Product selection — two independent rows */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#EDE6D6] space-y-5">
-
-          {/* Row 1: paid soap */}
-          <div>
-            <p className="text-xs font-bold text-[#1C1C1C] uppercase tracking-wide mb-3">
-              Choose the soap you&apos;re paying for <span className="text-[#2D5016]">— ₹{BOGO_PRICE}</span>
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              {bogoProducts.map((product) => {
-                const selected = product.id === paidId;
-                return (
+        {/* Products with quantity selectors */}
+        <div className="grid grid-cols-2 gap-4">
+          {[{ product: charcoal, qty: charcoalQty, key: "charcoal" as const },
+            { product: haldi, qty: haldiQty, key: "haldi" as const }].map(({ product, qty, key }) => (
+            <div key={product.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-[#EDE6D6]">
+              <div className="relative aspect-square bg-[#EDE6D6]">
+                <Image src={product.images[0]} alt={product.name} fill className="object-cover"
+                  sizes="(max-width: 640px) 50vw, 300px" />
+                <div className={`absolute top-2 right-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${qty === 0 ? "bg-gray-400" : qty === 2 ? "bg-[#8B1A1A]" : "bg-[#2D5016]"}`}>
+                  {qty === 0 ? "0" : qty === 2 ? "2×" : "1×"}
+                </div>
+              </div>
+              <div className="p-3 text-center">
+                <p className="text-xs font-semibold text-[#1C1C1C] leading-tight mb-2">{product.name}</p>
+                {/* +/- selector */}
+                <div className="flex items-center justify-center gap-3">
                   <button
-                    key={product.id}
-                    onClick={() => setPaidId(product.id)}
-                    className={`rounded-xl overflow-hidden border-2 text-left transition-all ${
-                      selected ? "border-[#2D5016] ring-2 ring-[#2D5016]/20" : "border-[#EDE6D6]"
-                    }`}
-                  >
-                    <div className="relative aspect-square bg-[#EDE6D6]">
-                      <Image src={product.images[0]} alt={product.name} fill className="object-cover"
-                        sizes="(max-width: 640px) 50vw, 240px" />
-                      {selected && (
-                        <div className="absolute top-2 right-2 bg-[#2D5016] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">✓ Chosen</div>
-                      )}
-                    </div>
-                    <div className="p-2 text-center bg-white">
-                      <p className="text-xs font-semibold text-[#1C1C1C] leading-tight">{product.name}</p>
-                      <p className="text-sm font-bold text-[#2D5016] mt-0.5">₹{BOGO_PRICE}</p>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="border-t border-dashed border-[#EDE6D6]" />
-
-          {/* Row 2: free soap */}
-          <div>
-            <p className="text-xs font-bold text-[#1C1C1C] uppercase tracking-wide mb-3">
-              Choose your <span className="text-[#8B1A1A]">FREE</span> soap
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              {bogoProducts.map((product) => {
-                const selected = product.id === freeId;
-                return (
+                    onClick={() => changeQty(key, -1)}
+                    disabled={qty === 0}
+                    className="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center text-lg font-bold text-[#1C1C1C] disabled:opacity-30 hover:border-[#8B1A1A] transition-colors"
+                  >−</button>
+                  <span className="text-base font-bold text-[#1C1C1C] w-4 text-center">{qty}</span>
                   <button
-                    key={product.id}
-                    onClick={() => setFreeId(product.id)}
-                    className={`rounded-xl overflow-hidden border-2 text-left transition-all ${
-                      selected ? "border-[#8B1A1A] ring-2 ring-[#8B1A1A]/20" : "border-[#EDE6D6]"
-                    }`}
-                  >
-                    <div className="relative aspect-square bg-[#EDE6D6]">
-                      <Image src={product.images[0]} alt={product.name} fill className="object-cover"
-                        sizes="(max-width: 640px) 50vw, 240px" />
-                      {selected && (
-                        <div className="absolute top-2 right-2 bg-[#8B1A1A] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">✓ Free</div>
-                      )}
-                    </div>
-                    <div className="p-2 text-center bg-white">
-                      <p className="text-xs font-semibold text-[#1C1C1C] leading-tight">{product.name}</p>
-                      <p className="text-sm font-bold text-[#8B1A1A] mt-0.5">FREE</p>
-                    </div>
-                  </button>
-                );
-              })}
+                    onClick={() => changeQty(key, 1)}
+                    disabled={qty === 2}
+                    className="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center text-lg font-bold text-[#1C1C1C] disabled:opacity-30 hover:border-[#2D5016] transition-colors"
+                  >+</button>
+                </div>
+                <p className="text-[10px] text-[#6B6B6B] mt-1.5">
+                  {qty === 0 ? "Not selected" : qty === 1 ? "1 included" : "Both yours!"}
+                </p>
+              </div>
             </div>
-          </div>
+          ))}
         </div>
 
         {/* Order summary */}
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#EDE6D6]">
           <h2 className="font-bold text-[#1C1C1C] mb-3 text-sm uppercase tracking-wide">Your Order</h2>
           <div className="space-y-2 text-sm">
-            {paidProduct.id === freeProduct.id ? (
-              <>
-                <div className="flex justify-between">
-                  <span className="text-[#6B6B6B]">{paidProduct.name} (100g) ×1</span>
-                  <span className="font-medium">₹{BOGO_PRICE}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#6B6B6B]">{freeProduct.name} (100g) ×1</span>
-                  <span className="font-bold text-[#8B1A1A]">FREE</span>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="flex justify-between">
-                  <span className="text-[#6B6B6B]">{paidProduct.name} (100g)</span>
-                  <span className="font-medium">₹{BOGO_PRICE}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#6B6B6B]">{freeProduct.name} (100g)</span>
-                  <span className="font-bold text-[#8B1A1A]">FREE</span>
-                </div>
-              </>
-            )}
+            {/* Paid item — whichever has qty > 0, charcoal takes priority */}
+            <div className="flex justify-between">
+              <span className="text-[#6B6B6B]">
+                {charcoalQty > 0 ? charcoal.name : haldi.name} (100g) ×1
+              </span>
+              <span className="font-medium">₹{BOGO_PRICE}</span>
+            </div>
+            {/* Free item */}
+            <div className="flex justify-between">
+              <span className="text-[#6B6B6B]">
+                {charcoalQty === 2 ? charcoal.name : haldiQty === 2 ? haldi.name : charcoalQty === 0 ? charcoal.name : haldi.name} (100g) ×1
+              </span>
+              <span className="font-bold text-[#8B1A1A]">FREE</span>
+            </div>
             <div className="flex justify-between text-xs text-[#6B6B6B]">
               <span>Shipping</span>
               <span className="text-[#2D5016] font-medium">FREE</span>
