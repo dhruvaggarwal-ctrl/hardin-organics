@@ -113,7 +113,7 @@ export default function ProductPage({ params }: PageProps) {
   const comboSaving = comboMRP - comboPrice;
 
   function handleAddBoth() {
-    addToCart(product, product.sizes[0].label, product.sizes[0].price, 1);
+    addToCart(product!, product!.sizes[0].label, product!.sizes[0].price, 1);
     if (comboProduct) addToCart(comboProduct, comboProduct.sizes[0].label, comboProduct.sizes[0].price, 1);
     setComboAdded(true);
     setTimeout(() => setComboAdded(false), 3000);
