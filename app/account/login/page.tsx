@@ -35,14 +35,6 @@ export default function LoginPage() {
     return () => clearTimeout(t);
   }, [resendCountdown]);
 
-  // Initialize invisible reCAPTCHA once on mount
-  useEffect(() => {
-    if (recaptchaRef.current) return;
-    recaptchaRef.current = new RecaptchaVerifier(firebaseAuth, "recaptcha-container", {
-      size: "invisible",
-    });
-  }, []);
-
   async function sendOtp() {
     const trimmed = mobile.trim().replace(/\D/g, "");
     if (!/^[6-9]\d{9}$/.test(trimmed)) {
@@ -52,24 +44,37 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      if (!recaptchaRef.current) {
-        recaptchaRef.current = new RecaptchaVerifier(firebaseAuth, "recaptcha-container", { size: "invisible" });
+      // Always clear and recreate reCAPTCHA — avoids stale-verifier errors
+      if (recaptchaRef.current) {
+        recaptchaRef.current.clear();
+        recaptchaRef.current = null;
       }
+      recaptchaRef.current = new RecaptchaVerifier(firebaseAuth, "recaptcha-container", {
+        size: "invisible",
+        "expired-callback": () => { recaptchaRef.current = null; },
+      });
+      await recaptchaRef.current.render();
+
       const result = await signInWithPhoneNumber(firebaseAuth, `+91${trimmed}`, recaptchaRef.current);
       confirmationRef.current = result;
       setStep("otp");
       setResendCountdown(30);
       setTimeout(() => otpRefs.current[0]?.focus(), 100);
     } catch (err: unknown) {
-      console.error(err);
-      const msg = err instanceof Error ? err.message : "";
-      if (msg.includes("quota-exceeded") || msg.includes("too-many-requests")) {
-        setError("Too many requests. Please try again in a few minutes.");
+      console.error("[Firebase Phone Auth error]", err);
+      const code = (err as { code?: string }).code ?? "";
+      if (code === "auth/captcha-check-failed" || code === "auth/internal-error") {
+        setError("Domain not authorised for Firebase. Add this site's URL in Firebase Console → Authentication → Settings → Authorised domains.");
+      } else if (code === "auth/quota-exceeded" || code === "auth/too-many-requests") {
+        setError("SMS limit reached. Please try again in a few minutes.");
+      } else if (code === "auth/invalid-phone-number") {
+        setError("Invalid phone number. Please check and try again.");
+      } else if (code === "auth/operation-not-allowed") {
+        setError("Phone sign-in is not enabled in Firebase. Enable it under Authentication → Sign-in method.");
       } else {
-        setError("Failed to send OTP. Please check the number and try again.");
+        setError(`Failed to send OTP (${code || "unknown"}). Please try again.`);
       }
-      // Reset reCAPTCHA on error
-      recaptchaRef.current = null;
+      if (recaptchaRef.current) { recaptchaRef.current.clear(); recaptchaRef.current = null; }
     } finally {
       setLoading(false);
     }
