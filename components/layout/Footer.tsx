@@ -69,7 +69,7 @@ export function Footer() {
           <h4 className="font-bold text-base mb-4 text-white">Customer Care</h4>
           <ul className="space-y-2.5">
             {[
-              { label: "Track My Order", href: "/account/dashboard" },
+              { label: "Track My Order", href: "/track" },
               { label: "FAQ", href: "/#faq" },
               { label: "Shipping Policy", href: "/shipping" },
               { label: "Return & Refund Policy", href: "/returns" },
