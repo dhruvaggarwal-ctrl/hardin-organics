@@ -44,11 +44,14 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      // Always clear and recreate reCAPTCHA — avoids stale-verifier errors
+      // Clear old verifier + wipe the DOM container so reCAPTCHA can re-render cleanly
       if (recaptchaRef.current) {
-        recaptchaRef.current.clear();
+        try { recaptchaRef.current.clear(); } catch { /* ignore */ }
         recaptchaRef.current = null;
       }
+      const container = document.getElementById("recaptcha-container");
+      if (container) container.innerHTML = "";
+
       recaptchaRef.current = new RecaptchaVerifier(firebaseAuth, "recaptcha-container", {
         size: "invisible",
         "expired-callback": () => { recaptchaRef.current = null; },
@@ -63,18 +66,27 @@ export default function LoginPage() {
     } catch (err: unknown) {
       console.error("[Firebase Phone Auth error]", err);
       const code = (err as { code?: string }).code ?? "";
-      if (code === "auth/captcha-check-failed" || code === "auth/internal-error") {
-        setError("Domain not authorised for Firebase. Add this site's URL in Firebase Console → Authentication → Settings → Authorised domains.");
-      } else if (code === "auth/quota-exceeded" || code === "auth/too-many-requests") {
-        setError("SMS limit reached. Please try again in a few minutes.");
+      const msg  = (err instanceof Error ? err.message : String(err)).toLowerCase();
+
+      if (code === "auth/quota-exceeded" || code === "auth/too-many-requests" || msg.includes("quota")) {
+        setError("Daily SMS limit reached. Please try again tomorrow or use email sign-in below.");
+      } else if (code === "auth/captcha-check-failed" || code === "auth/internal-error" || msg.includes("captcha")) {
+        setError("reCAPTCHA failed. Make sure pop-ups aren't blocked and try again.");
       } else if (code === "auth/invalid-phone-number") {
         setError("Invalid phone number. Please check and try again.");
       } else if (code === "auth/operation-not-allowed") {
-        setError("Phone sign-in is not enabled in Firebase. Enable it under Authentication → Sign-in method.");
+        setError("Phone sign-in is not enabled. Please use email sign-in instead.");
+      } else if (code === "auth/billing-not-enabled") {
+        setError("SMS requires billing to be enabled on Firebase. Please use email sign-in for now.");
+      } else if (code === "auth/network-request-failed") {
+        setError("Network error. Check your connection and try again.");
       } else {
-        setError(`Failed to send OTP (${code || "unknown"}). Please try again.`);
+        // Show the raw code in dev so it's easy to debug
+        setError(`Could not send OTP${code ? ` (${code})` : ""}. Try email sign-in instead.`);
       }
-      if (recaptchaRef.current) { recaptchaRef.current.clear(); recaptchaRef.current = null; }
+      if (recaptchaRef.current) { try { recaptchaRef.current.clear(); } catch { /* ignore */ } recaptchaRef.current = null; }
+      const container = document.getElementById("recaptcha-container");
+      if (container) container.innerHTML = "";
     } finally {
       setLoading(false);
     }
