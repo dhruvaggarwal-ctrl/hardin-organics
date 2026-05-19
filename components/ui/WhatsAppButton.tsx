@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 
-const WA_NUMBER = "919871900959";
+const WA_NUMBER = "919650595027";
 
 const MENU_ITEMS = [
   {

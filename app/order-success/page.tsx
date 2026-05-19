@@ -79,7 +79,7 @@ export default function OrderSuccessPage({ searchParams }: PageProps) {
             Continue Shopping
           </Link>
           <a
-            href="https://wa.me/919871900959?text=Hi! I just placed an order on Hardin Organics"
+            href="https://wa.me/919650595027?text=Hi! I just placed an order on Hardin Organics"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 w-full border-2 border-[#25D366] text-[#25D366] font-semibold py-3 rounded-xl hover:bg-[#25D366] hover:text-white transition-all"

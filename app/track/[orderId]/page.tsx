@@ -266,7 +266,7 @@ export default function TrackPage({ params }: { params: Promise<{ orderId: strin
         {/* Help */}
         <div className="flex gap-3">
           <a
-            href={`https://wa.me/919871900959?text=${encodeURIComponent(`Hi! Query about order ${data.orderId}`)}`}
+            href={`https://wa.me/919650595027?text=${encodeURIComponent(`Hi! Query about order ${data.orderId}`)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex-1 flex items-center justify-center gap-2 bg-[#25D366] text-white font-bold py-3 rounded-xl text-sm hover:bg-[#1fba58] transition-colors"

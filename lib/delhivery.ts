@@ -170,8 +170,8 @@ export function buildDelhiveryPayload(order: {
   const PICKUP_CITY = process.env.DELHIVERY_PICKUP_CITY || "";
   const PICKUP_STATE = process.env.DELHIVERY_PICKUP_STATE || "";
   const PICKUP_PIN = process.env.DELHIVERY_PICKUP_PINCODE || "";
-  const PICKUP_PHONE = process.env.DELHIVERY_PICKUP_PHONE || "9871900959";
-  const PICKUP_EMAIL = process.env.DELHIVERY_PICKUP_EMAIL || "hello@hardinorganics.com";
+  const PICKUP_PHONE = process.env.DELHIVERY_PICKUP_PHONE || "9650595027";
+  const PICKUP_EMAIL = process.env.DELHIVERY_PICKUP_EMAIL || "marketinghardinorganics@gmail.com";
 
   return {
     name: order.customerName,

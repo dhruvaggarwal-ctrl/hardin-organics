@@ -73,7 +73,7 @@ function ProductFAQ({ slug }: { slug: string }) {
         ))}
       </div>
       <a
-        href="https://wa.me/919871900959"
+        href="https://wa.me/919650595027"
         target="_blank"
         rel="noopener noreferrer"
         className="inline-flex items-center gap-2 mt-5 text-sm text-[#2D5016] font-semibold hover:underline"

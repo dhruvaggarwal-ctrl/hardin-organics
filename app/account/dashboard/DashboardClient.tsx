@@ -156,7 +156,7 @@ export function DashboardClient({ customer, orders }: { customer: Customer; orde
                 <div className="flex gap-2 flex-wrap">
                   <Link href={`/track/${order.orderId}`} className="text-xs bg-[#2D5016] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#3D6B20] transition-colors">Track Order →</Link>
                   <button onClick={() => reorder(order)} className="text-xs border border-[#A0522D] text-[#A0522D] px-4 py-2 rounded-lg font-medium hover:bg-[#A0522D] hover:text-white transition-colors">Reorder</button>
-                  <a href={`https://wa.me/919871900959?text=${encodeURIComponent(`Hi! Query about order ${order.orderId}`)}`} target="_blank" rel="noopener noreferrer" className="text-xs border border-gray-200 text-[#6B6B6B] px-4 py-2 rounded-lg font-medium hover:border-[#25D366] hover:text-[#25D366] transition-colors">WhatsApp →</a>
+                  <a href={`https://wa.me/919650595027?text=${encodeURIComponent(`Hi! Query about order ${order.orderId}`)}`} target="_blank" rel="noopener noreferrer" className="text-xs border border-gray-200 text-[#6B6B6B] px-4 py-2 rounded-lg font-medium hover:border-[#25D366] hover:text-[#25D366] transition-colors">WhatsApp →</a>
                 </div>
               </div>
             ))}

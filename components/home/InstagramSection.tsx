@@ -170,7 +170,7 @@ export function InstagramSection() {
         {/* Note for influencer collab */}
         <p className="text-center text-xs text-[#6B6B6B] mt-5">
           Want to collaborate?{" "}
-          <a href="https://wa.me/919871900959" className="text-[#2D5016] font-semibold hover:underline">
+          <a href="https://wa.me/919650595027" className="text-[#2D5016] font-semibold hover:underline">
             WhatsApp us
           </a>
         </p>

@@ -102,7 +102,7 @@ export function FAQSection() {
           <p className="text-[#1C1C1C] font-semibold mb-2">Still have questions?</p>
           <p className="text-[#6B6B6B] text-sm mb-4">We&apos;re just a WhatsApp message away</p>
           <a
-            href="https://wa.me/919871900959?text=Hi! I have a question about Hardin Organics soaps"
+            href="https://wa.me/919650595027?text=Hi! I have a question about Hardin Organics soaps"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 bg-[#25D366] text-white font-bold px-6 py-3 rounded-full hover:bg-green-500 transition-colors"

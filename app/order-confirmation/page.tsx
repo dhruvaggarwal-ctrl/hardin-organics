@@ -130,7 +130,7 @@ export default function OrderConfirmationPage({ searchParams }: PageProps) {
             {/* CTAs */}
             <div className="space-y-3 pt-1">
               <a
-                href={`https://wa.me/919871900959?text=${waText}`}
+                href={`https://wa.me/919650595027?text=${waText}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2.5 w-full bg-[#25D366] text-white font-bold py-4 rounded-xl hover:bg-[#1EBD59] transition-colors text-sm"

@@ -88,11 +88,11 @@ export function Footer() {
         <div>
           <h4 className="font-bold text-base mb-4 text-white">Get in Touch</h4>
           <div className="space-y-3">
-            <a href="https://wa.me/919871900959" className="flex items-center gap-2 text-gray-400 text-sm hover:text-[#D4A017] transition-colors">
+            <a href="https://wa.me/919650595027" className="flex items-center gap-2 text-gray-400 text-sm hover:text-[#D4A017] transition-colors">
               +91 98719 00959 (WhatsApp)
             </a>
-            <a href="mailto:hello@hardinorganics.com" className="flex items-center gap-2 text-gray-400 text-sm hover:text-[#D4A017] transition-colors">
-              hello@hardinorganics.com
+            <a href="mailto:marketinghardinorganics@gmail.com" className="flex items-center gap-2 text-gray-400 text-sm hover:text-[#D4A017] transition-colors">
+              marketinghardinorganics@gmail.com
             </a>
             <p className="flex items-start gap-2 text-gray-400 text-sm">
               India — Shipping Pan-India

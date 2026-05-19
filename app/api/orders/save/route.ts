@@ -117,7 +117,7 @@ export async function POST(req: NextRequest) {
       `📍 ${body.addressLine1}, ${body.city}, ${body.state} - ${body.pincode}`
     );
     console.log(`\n📲 New Order Alert! ${orderId}`);
-    console.log(`   WhatsApp: https://wa.me/919871900959?text=${waText}\n`);
+    console.log(`   WhatsApp: https://wa.me/919650595027?text=${waText}\n`);
 
     return NextResponse.json({ success: true, orderId });
   } catch (err) {
