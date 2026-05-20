@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { StarRating } from "../ui/StarRating";
 import { useCart } from "@/context/CartContext";
@@ -236,13 +235,14 @@ export function AddToCartSection({ product }: AddToCartSectionProps) {
                 href={product.flipkartUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2.5 w-full py-3.5 rounded-xl border-2 border-[#2874F0] text-[#2874F0] font-semibold text-sm hover:bg-[#2874F0] hover:text-white transition-all duration-300 group"
+                className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl border-2 border-[#2874F0] text-[#2874F0] font-semibold text-sm hover:bg-[#2874F0] hover:text-white transition-all duration-300 group"
               >
-                <Image
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
                   src="/images/flipkart-logo-icon-freelogovectors.net_.png"
                   alt="Flipkart"
-                  width={20}
-                  height={20}
+                  width={18}
+                  height={18}
                   className="shrink-0 group-hover:brightness-0 group-hover:invert transition-all duration-300"
                 />
                 Also available on Flipkart
