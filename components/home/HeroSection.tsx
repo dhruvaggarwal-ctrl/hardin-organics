@@ -16,134 +16,34 @@ const slideVariants = {
 
 const transition = { duration: 0.52, ease: [0.25, 0.46, 0.45, 0.94] as const };
 
-// ─── Slide 1 — Classic two-column (cream) ────────────────────────────────────
+// ─── Slide 1 — Hero banner (desktop + mobile) ────────────────────────────────
 function Slide1() {
-  const trustBadges = ["Paraben Free", "Cruelty Free", "Made in India", "Eco Packaging"];
   return (
-    <div className="relative w-full aspect-[1122/1402] md:aspect-[1717/916] overflow-hidden">
-      <div className="absolute inset-0 flex items-center justify-center">
-
-        {/* ── MOBILE layout (< md) ── */}
-        <div className="md:hidden w-full h-full flex flex-col items-center justify-center px-5 py-4 gap-2">
-          {/* Circle image */}
-          <div className="relative shrink-0">
-            <div className="animate-float relative w-36 h-36 rounded-full overflow-hidden shadow-xl bg-[#EDE6D6]">
-              <Image src="/images/haldi-4.png" alt="Saffron Haldi Chandan soap" fill className="object-contain" priority sizes="144px" />
-            </div>
-          </div>
-          {/* Stats row */}
-          <div className="flex items-center gap-3">
-            <div className="bg-white rounded-xl shadow px-3 py-1.5 text-center">
-              <div className="text-base font-bold text-[#2D5016]">10K+</div>
-              <div className="text-[10px] text-[#6B6B6B]">Happy Customers</div>
-            </div>
-            <div className="bg-[#2D5016] text-white rounded-xl shadow px-3 py-1.5 text-center">
-              <div className="text-base font-bold">4.8★</div>
-              <div className="text-[10px] opacity-80">2000+ Reviews</div>
-            </div>
-          </div>
-          {/* Headline */}
-          <h1 className="text-2xl font-bold text-[#1C1C1C] leading-tight text-center font-display">
-            Your Skin Deserves Ingredients You Can{" "}
-            <span className="text-[#2D5016]">Pronounce.</span>
-          </h1>
-          {/* Buttons */}
-          <div className="flex flex-col w-full gap-2">
-            <Link
-              href="/shop"
-              className="inline-flex items-center justify-center gap-2 bg-[#C4622D] text-white font-bold px-5 py-3 rounded-full text-sm hover:bg-[#D4734A] transition-all duration-300 active:scale-[0.98]"
-            >
-              Shop Now — Free Shipping
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </Link>
-            <Link
-              href="/#skin-quiz"
-              className="inline-flex items-center justify-center gap-2 text-[#2D5016] font-semibold px-5 py-3 rounded-full text-sm border-2 border-[#2D5016] hover:bg-[#2D5016] hover:text-white transition-all duration-300"
-            >
-              Take Skin Quiz →
-            </Link>
-          </div>
-          {/* Trust badges */}
-          <div className="flex flex-wrap justify-center gap-2">
-            {trustBadges.map((b) => (
-              <div key={b} className="flex items-center gap-1 bg-white rounded-full px-3 py-1 text-[11px] font-medium text-[#1C1C1C] shadow-sm">
-                <svg className="w-3 h-3 text-[#2D5016]" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-                {b}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ── DESKTOP layout (≥ md) ── */}
-        <div className="hidden md:grid max-w-7xl mx-auto px-4 w-full grid-cols-2 gap-12 items-center">
-          {/* Text */}
-          <div>
-            <div className="inline-flex items-center gap-2 bg-[#E8F0E0] text-[#2D5016] text-sm font-semibold px-4 py-2 rounded-full mb-6">
-              Handcrafted in Small Batches
-            </div>
-            <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-[#1C1C1C] leading-tight mb-6 font-display">
-              Your Skin Deserves Ingredients You Can{" "}
-              <span className="text-[#2D5016]">Pronounce.</span>
-            </h1>
-            <p className="text-lg text-[#6B6B6B] leading-relaxed mb-8">
-              Handcrafted organic soaps made with activated charcoal, saffron, haldi &amp; chandan.{" "}
-              <strong className="text-[#1C1C1C]">No parabens. No SLS. No compromise.</strong>
-            </p>
-            <div className="flex flex-row gap-4 mb-8">
-              <Link
-                href="/shop"
-                className="inline-flex items-center justify-center gap-2 bg-[#C4622D] text-white font-bold px-8 py-4 rounded-full text-lg hover:bg-[#D4734A] transition-all duration-300 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
-              >
-                Shop Now — Free Shipping
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-              </Link>
-              <Link
-                href="/#skin-quiz"
-                className="inline-flex items-center justify-center gap-2 text-[#2D5016] font-semibold px-6 py-4 rounded-full text-lg border-2 border-[#2D5016] hover:bg-[#2D5016] hover:text-white transition-all duration-300"
-              >
-                Take Skin Quiz →
-              </Link>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              {trustBadges.map((b) => (
-                <div key={b} className="flex items-center gap-1.5 bg-white rounded-full px-4 py-2 text-sm font-medium text-[#1C1C1C] shadow-sm">
-                  <svg className="w-3.5 h-3.5 text-[#2D5016]" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                  {b}
-                </div>
-              ))}
-            </div>
-          </div>
-          {/* Image */}
-          <div className="flex justify-center">
-            <div className="relative">
-              <div className="absolute inset-0 bg-[#2D5016]/10 rounded-full scale-110 -z-10" />
-              <div className="animate-float relative w-[320px] h-[320px] lg:w-[380px] lg:h-[380px] xl:w-[440px] xl:h-[440px] rounded-full overflow-hidden shadow-2xl bg-[#EDE6D6]">
-                <Image src="/images/haldi-4.png" alt="Saffron Haldi Chandan soap" fill className="object-contain" priority sizes="(max-width: 1024px) 320px, 440px" />
-              </div>
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-                className="absolute -bottom-4 -left-4 bg-white rounded-2xl shadow-xl px-4 py-3 text-center">
-                <div className="text-2xl font-bold text-[#2D5016]">10K+</div>
-                <div className="text-xs text-[#6B6B6B] font-medium">Happy Customers</div>
-              </motion.div>
-              <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
-                className="absolute -top-2 -right-4 bg-[#2D5016] text-white rounded-2xl shadow-xl px-4 py-3 text-center">
-                <div className="text-2xl font-bold">4.8★</div>
-                <div className="text-xs font-medium opacity-80">2000+ Reviews</div>
-              </motion.div>
-            </div>
-          </div>
-        </div>
-
+    <Link href="/shop" className="block w-full group" aria-label="Shop Hardin Organics">
+      <div className="relative w-full">
+        {/* Desktop */}
+        <Image
+          src="/images/hero-banner.jpg"
+          alt="Better Ingredients. Better Skin. — Hardin Organics"
+          width={1717}
+          height={916}
+          className="hidden md:block w-full h-auto object-cover"
+          priority
+          sizes="100vw"
+        />
+        {/* Mobile */}
+        <Image
+          src="/images/hero-banner-mobile.jpg"
+          alt="Better Ingredients. Better Skin. — Hardin Organics"
+          width={1122}
+          height={1402}
+          className="block md:hidden w-full h-auto object-cover"
+          priority
+          sizes="100vw"
+        />
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
       </div>
-    </div>
+    </Link>
   );
 }
 
