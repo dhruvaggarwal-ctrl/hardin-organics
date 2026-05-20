@@ -32,8 +32,8 @@ async function sendOtpEmail(email: string, otp: string) {
               <!-- Header -->
               <tr>
                 <td style="background:#1E3A0F;padding:32px 32px;text-align:center">
-                  <img src="https://hardinorganics.com/images/hardin-logo.png" alt="Hardin Organics" width="120" style="display:block;margin:0 auto;max-width:120px" />
-                  <p style="margin:10px 0 0;color:rgba(255,255,255,0.5);font-size:11px;letter-spacing:3px;text-transform:uppercase">Handcrafted · Organic · Pure</p>
+                  <p style="margin:0;color:#ffffff;font-size:26px;font-weight:800;letter-spacing:-0.5px">Hardin Organics</p>
+                  <p style="margin:6px 0 0;color:rgba(255,255,255,0.5);font-size:11px;letter-spacing:3px;text-transform:uppercase">Handcrafted · Organic · Pure</p>
                 </td>
               </tr>
 
@@ -46,16 +46,12 @@ async function sendOtpEmail(email: string, otp: string) {
                   </p>
 
                   <!-- OTP Box -->
-                  <div style="background:#F5F0E8;border:1.5px solid #D4B896;border-radius:16px;padding:28px 24px;text-align:center;margin-bottom:16px">
+                  <div style="background:#F5F0E8;border:1.5px solid #D4B896;border-radius:16px;padding:28px 24px;text-align:center;margin-bottom:8px">
                     <p style="margin:0 0 12px;color:#8B7355;font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase">One-Time Code</p>
-                    <p style="margin:0;color:#1E3A0F;font-size:48px;font-weight:800;letter-spacing:16px;font-variant-numeric:tabular-nums;line-height:1">${otp}</p>
+                    <p style="margin:0;color:#1E3A0F;font-size:48px;font-weight:800;letter-spacing:16px;font-variant-numeric:tabular-nums;line-height:1;user-select:all;-webkit-user-select:all">${otp}</p>
                     <p style="margin:16px 0 0;color:#999;font-size:12px">Expires in 10 minutes</p>
                   </div>
-
-                  <!-- Tap to return CTA -->
-                  <a href="${process.env.NEXT_PUBLIC_SITE_URL || "https://hardinorganics.com"}" style="display:inline-block;background:#1E3A0F;color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;padding:14px 32px;border-radius:50px;margin-bottom:28px">
-                    Go back &amp; enter code →
-                  </a>
+                  <p style="margin:0 0 28px;color:#BBBBBB;font-size:11px">Press &amp; hold the code above to copy it</p>
 
                   <p style="margin:0;color:#BBBBBB;font-size:12px;line-height:1.7;text-align:center">
                     Didn't request this? You can safely ignore this email.<br>This code is only valid once and cannot be reused.
