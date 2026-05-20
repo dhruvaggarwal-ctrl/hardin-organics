@@ -25,7 +25,7 @@ function Slide1() {
         <Image
           src="/images/hero-banner.jpg"
           alt="Better Ingredients. Better Skin. — Hardin Organics"
-          width={1717}
+          width={1716}
           height={916}
           className="hidden md:block w-full h-auto object-cover"
           priority
@@ -33,7 +33,7 @@ function Slide1() {
         />
         {/* Mobile */}
         <Image
-          src="/images/hero-banner-mobile.jpg"
+          src="/images/hero-banner-mobile.png"
           alt="Better Ingredients. Better Skin. — Hardin Organics"
           width={1122}
           height={1402}
