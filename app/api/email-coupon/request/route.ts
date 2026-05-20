@@ -39,6 +39,22 @@ async function sendOtpEmail(email: string, otp: string) {
   });
 }
 
+async function checkEmailClaimed(email: string): Promise<boolean> {
+  const url = process.env.GOOGLE_SHEET_WEBHOOK_URL;
+  if (!url) return false;
+  try {
+    const res = await fetch(
+      `${url}?type=check-email&email=${encodeURIComponent(email)}`,
+      { signal: AbortSignal.timeout(8000) }
+    );
+    const data = await res.json();
+    return data.claimed === true;
+  } catch (e) {
+    console.warn("[email-coupon] Sheet check failed, allowing request:", e);
+    return false; // fail open — don't block user if sheet is down
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { email, source } = await req.json() as { email: string; source?: string };
@@ -47,21 +63,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Please enter a valid email address." }, { status: 400 });
     }
 
-    const { db } = await import("@/lib/firebase/admin");
+    const emailKey = email.toLowerCase().trim();
 
-    // Check if this email has already claimed a coupon
-    const leadRef = db.collection("email_leads").doc(email.toLowerCase());
-    const leadDoc = await leadRef.get();
-    if (leadDoc.exists && leadDoc.data()?.couponClaimed) {
+    // Check Google Sheet if this email already claimed
+    const alreadyClaimed = await checkEmailClaimed(emailKey);
+    if (alreadyClaimed) {
       return NextResponse.json({
         error: "This email has already claimed a discount code.",
         alreadyClaimed: true,
       }, { status: 409 });
     }
 
-    // Rate limit: max 3 OTP requests per email
-    const otpRef = db.collection("email_otps").doc(email.toLowerCase());
+    // OTP stored in Firestore (fast, time-sensitive)
+    const { db } = await import("@/lib/firebase/admin");
+    const otpRef = db.collection("email_otps").doc(emailKey);
     const otpDoc = await otpRef.get();
+
+    // Rate limit: max 3 OTP sends per window
     if (otpDoc.exists) {
       const data = otpDoc.data()!;
       const expiresAt = data.expiresAt?.toDate?.() ?? new Date(data.expiresAt);
@@ -70,11 +88,10 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Generate and store OTP
     const otp = String(Math.floor(100000 + crypto.getRandomValues(new Uint32Array(1))[0] % 900000));
     await otpRef.set({
       otp,
-      email: email.toLowerCase(),
+      email: emailKey,
       source: source || "popup",
       expiresAt: new Date(Date.now() + 10 * 60 * 1000),
       attempts: 0,
