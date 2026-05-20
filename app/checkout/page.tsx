@@ -121,7 +121,7 @@ export default function CheckoutPage() {
           const po = post.PostOffice[0];
           setForm((prev) => ({
             ...prev,
-            city: prev.city || po.District || po.Name,
+            city: po.District || po.Name || prev.city,
             state: INDIAN_STATES.includes(po.State) ? po.State : prev.state,
           }));
           // Clear city/state errors if autofilled
