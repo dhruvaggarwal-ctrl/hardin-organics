@@ -19,21 +19,40 @@ async function sendOtpEmail(email: string, otp: string) {
   await transporter.sendMail({
     from: `"Hardin Organics" <${process.env.SMTP_USER}>`,
     to: email,
-    subject: "Your 10% off code — verify your email 🌿",
+    subject: "676373 is your Hardin Organics verification code".replace("676373", otp),
     html: `
-      <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#F5F0E8;border-radius:16px">
-        <h2 style="color:#1C1C1C;margin:0 0 8px">Almost there!</h2>
-        <p style="color:#6B6B6B;line-height:1.6;margin:0 0 24px">
-          Use the verification code below to unlock your <strong style="color:#C4622D">10% discount</strong> on your first Hardin Organics order.
-        </p>
-        <div style="background:#2D5016;color:#fff;font-size:36px;font-weight:700;letter-spacing:12px;text-align:center;padding:20px;border-radius:12px;margin-bottom:24px">
-          ${otp}
+      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:520px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e8e0d0">
+        <!-- Header -->
+        <div style="background:#2D5016;padding:32px 24px;text-align:center">
+          <p style="color:#fff;font-size:22px;font-weight:700;margin:0;letter-spacing:-0.3px">हर्दिन Organics</p>
+          <p style="color:rgba(255,255,255,0.7);font-size:12px;margin:4px 0 0;letter-spacing:2px;text-transform:uppercase">Handcrafted Organic Soaps</p>
         </div>
-        <p style="color:#999;font-size:13px;margin:0">
-          This code expires in 10 minutes. If you didn't request this, ignore this email.
-        </p>
-        <hr style="border:none;border-top:1px solid #ddd;margin:24px 0"/>
-        <p style="color:#999;font-size:12px;margin:0">Hardin Organics — Handcrafted organic soaps. No parabens. No SLS.</p>
+        <!-- Body -->
+        <div style="padding:36px 32px;background:#FDFAF6">
+          <h1 style="color:#1C1C1C;font-size:24px;font-weight:700;margin:0 0 12px;line-height:1.3">
+            Your exclusive 10% off is one step away 🌿
+          </h1>
+          <p style="color:#6B6B6B;font-size:15px;line-height:1.7;margin:0 0 28px">
+            Enter this code to verify your email and unlock your discount on handcrafted organic soaps — no parabens, no SLS, just pure ingredients.
+          </p>
+          <!-- OTP Box -->
+          <div style="background:#2D5016;border-radius:14px;padding:24px;text-align:center;margin-bottom:28px">
+            <p style="color:rgba(255,255,255,0.7);font-size:12px;margin:0 0 10px;letter-spacing:2px;text-transform:uppercase">Verification Code</p>
+            <p style="color:#ffffff;font-size:42px;font-weight:800;letter-spacing:14px;margin:0;font-variant-numeric:tabular-nums">${otp}</p>
+          </div>
+          <!-- Coupon preview -->
+          <div style="background:#F5F0E8;border:2px dashed #C4622D;border-radius:12px;padding:16px;text-align:center;margin-bottom:24px">
+            <p style="color:#6B6B6B;font-size:12px;margin:0 0 4px;text-transform:uppercase;letter-spacing:1px">Your coupon code (after verification)</p>
+            <p style="color:#C4622D;font-size:22px;font-weight:800;letter-spacing:4px;margin:0">WELCOME10</p>
+          </div>
+          <p style="color:#999;font-size:13px;line-height:1.6;margin:0">
+            ⏱ This code expires in <strong>10 minutes</strong>. If you didn't request this, you can safely ignore this email.
+          </p>
+        </div>
+        <!-- Footer -->
+        <div style="padding:20px 32px;background:#f0ebe0;border-top:1px solid #e8e0d0;text-align:center">
+          <p style="color:#999;font-size:12px;margin:0">© Hardin Organics · Made in India · No Parabens · No SLS</p>
+        </div>
       </div>
     `,
   });

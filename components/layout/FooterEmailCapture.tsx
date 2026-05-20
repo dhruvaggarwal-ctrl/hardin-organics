@@ -2,6 +2,15 @@
 
 import { useState, useRef } from "react";
 
+function Spinner() {
+  return (
+    <svg className="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+    </svg>
+  );
+}
+
 type Step = "email" | "otp" | "success";
 
 export function FooterEmailCapture() {
@@ -73,9 +82,9 @@ export function FooterEmailCapture() {
           <button
             type="submit"
             disabled={loading}
-            className="bg-[#D4A017] text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-[#E8B52A] transition-colors disabled:opacity-60"
+            className="bg-[#D4A017] text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-[#E8B52A] transition-colors disabled:opacity-60 flex items-center justify-center"
           >
-            {loading ? "..." : "→"}
+            {loading ? <Spinner /> : "→"}
           </button>
         </form>
       )}
@@ -97,9 +106,9 @@ export function FooterEmailCapture() {
             <button
               type="submit"
               disabled={loading || otp.length !== 6}
-              className="bg-[#D4A017] text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-[#E8B52A] transition-colors disabled:opacity-60"
+              className="bg-[#D4A017] text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-[#E8B52A] transition-colors disabled:opacity-60 flex items-center justify-center"
             >
-              {loading ? "..." : "✓"}
+              {loading ? <Spinner /> : "✓"}
             </button>
           </div>
           <button type="button" onClick={() => { setStep("email"); setOtp(""); setError(""); }} className="text-xs text-gray-500 hover:text-gray-300">

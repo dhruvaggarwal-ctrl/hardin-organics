@@ -5,6 +5,15 @@ import { AnimatePresence, motion } from "framer-motion";
 
 type Step = "email" | "otp" | "success";
 
+function Spinner() {
+  return (
+    <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+    </svg>
+  );
+}
+
 export function ExitIntentPopup() {
   const [isOpen, setIsOpen] = useState(false);
   const [dismissed, setDismissed] = useState(false);
@@ -134,9 +143,9 @@ export function ExitIntentPopup() {
                     <button
                       type="submit"
                       disabled={loading}
-                      className="bg-[#C4622D] text-white px-5 py-3 rounded-xl font-bold text-sm hover:bg-[#D4734A] transition-colors shrink-0 disabled:opacity-60"
+                      className="bg-[#C4622D] text-white px-5 py-3 rounded-xl font-bold text-sm hover:bg-[#D4734A] transition-colors shrink-0 disabled:opacity-60 flex items-center gap-2"
                     >
-                      {loading ? "..." : "Get Code"}
+                      {loading ? <><Spinner />Sending...</> : "Get Code"}
                     </button>
                   </form>
                   {error && <p className="text-red-500 text-xs mt-2">{error}</p>}
@@ -174,9 +183,9 @@ export function ExitIntentPopup() {
                     <button
                       type="submit"
                       disabled={loading || otp.length !== 6}
-                      className="w-full bg-[#C4622D] text-white py-3 rounded-xl font-bold text-sm hover:bg-[#D4734A] transition-colors disabled:opacity-60"
+                      className="w-full bg-[#C4622D] text-white py-3 rounded-xl font-bold text-sm hover:bg-[#D4734A] transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
                     >
-                      {loading ? "Verifying..." : "Verify & Get Discount"}
+                      {loading ? <><Spinner />Verifying...</> : "Verify & Get Discount"}
                     </button>
                   </form>
                   {error && <p className="text-red-500 text-xs mt-2">{error}</p>}
