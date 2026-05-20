@@ -10,6 +10,7 @@ import { FounderSection } from "@/components/home/FounderSection";
 import { InstagramSection } from "@/components/home/InstagramSection";
 import { BundleSection } from "@/components/home/BundleSection";
 import { SkinQuizSection } from "@/components/home/SkinQuizSection";
+import { AvailableOnSection } from "@/components/home/AvailableOnSection";
 import { ExitIntentPopup } from "@/components/home/ExitIntentPopup";
 
 export default function HomePage() {
@@ -19,6 +20,7 @@ export default function HomePage() {
       <SocialProofBar />
       <ConcernSection />
       <BestsellerSection />
+      <AvailableOnSection />
       <IngredientComparisonTable />
       <BrandStorySection />
       <IngredientsSection />

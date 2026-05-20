@@ -230,6 +230,19 @@ export function AddToCartSection({ product }: AddToCartSectionProps) {
             >
               Buy Now →
             </Link>
+            {product.flipkartUrl && (
+              <a
+                href={product.flipkartUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2.5 w-full py-3.5 rounded-xl border-2 border-[#2874F0] text-[#2874F0] font-semibold text-sm hover:bg-[#2874F0] hover:text-white transition-all duration-300"
+              >
+                <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M5 2h14a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm7 3-4 5h3v2l4-5h-3V5z"/>
+                </svg>
+                Also available on Flipkart
+              </a>
+            )}
           </>
         )}
       </div>

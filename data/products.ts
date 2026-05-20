@@ -25,6 +25,8 @@ export interface Product {
   howToUse: string[];
   inStock: boolean;
   stockCount: number;
+  flipkartUrl?: string;
+  amazonUrl?: string;
 }
 
 export const products: Product[] = [
@@ -68,6 +70,7 @@ export const products: Product[] = [
     ],
     inStock: true,
     stockCount: 23,
+    flipkartUrl: "https://www.flipkart.com/search?q=hardin+organics+charcoal+soap",
   },
   {
     id: "saffron-haldi-chandan",
@@ -109,6 +112,7 @@ export const products: Product[] = [
     ],
     inStock: true,
     stockCount: 15,
+    flipkartUrl: "https://www.flipkart.com/search?q=hardin+organics+haldi+chandan+soap",
   },
 ];
 

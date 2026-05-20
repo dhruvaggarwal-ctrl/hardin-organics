@@ -88,19 +88,17 @@ export function ConcernSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.07 }}
+              className="h-full"
             >
               <Link
                 href={`/product/${c.slug}`}
-                className="group flex flex-col items-center gap-3 p-6 rounded-2xl bg-[#F5F0E8] border-2 border-transparent hover:border-[#2D5016] transition-all duration-300 hover:-translate-y-1 hover:shadow-lg text-center"
+                className="group flex flex-col items-center justify-center gap-3 p-6 h-full min-h-[120px] rounded-2xl bg-[#F5F0E8] border-2 border-transparent hover:border-[#2D5016] transition-all duration-300 hover:-translate-y-1 hover:shadow-lg text-center"
               >
-                <span className="text-[#2D5016] group-hover:scale-110 transition-transform duration-300">
+                <span className="text-[#2D5016] group-hover:scale-110 transition-transform duration-300 shrink-0">
                   {c.icon}
                 </span>
                 <span className="font-semibold text-sm md:text-base text-[#1C1C1C] group-hover:text-[#2D5016] transition-colors leading-tight">
                   {c.label}
-                </span>
-                <span className="text-xs text-[#2D5016] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                  Shop Now →
                 </span>
               </Link>
             </motion.div>
