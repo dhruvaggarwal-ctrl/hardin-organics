@@ -224,7 +224,7 @@ export function AddToCartSection({ product }: AddToCartSectionProps) {
               {added ? "✓ Added to Cart!" : `Add to Cart — ₹${currentSize.price * quantity}`}
             </button>
             <Link
-              href="/cart"
+              href="/checkout"
               onClick={handleBuyNow}
               className="block w-full text-center py-4 rounded-xl font-bold text-base bg-[#2D5016] text-white hover:bg-[#3D6B20] transition-all duration-300 hover:shadow-lg"
             >

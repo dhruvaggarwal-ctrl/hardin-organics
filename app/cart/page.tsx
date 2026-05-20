@@ -7,7 +7,6 @@ import { motion } from "framer-motion";
 import { useCart } from "@/context/CartContext";
 import { products } from "@/data/products";
 import { ProductCard } from "@/components/ui/ProductCard";
-import { RazorpayButton } from "@/components/checkout/RazorpayButton";
 
 export default function CartPage() {
   const {
@@ -203,7 +202,15 @@ export default function CartPage() {
                   )}
                 </div>
 
-                <RazorpayButton amount={total} />
+                <Link
+                  href="/checkout"
+                  className="w-full bg-[#C4622D] text-white font-bold py-4 rounded-xl text-base transition-all duration-300 hover:bg-[#D4734A] hover:shadow-lg flex items-center justify-center gap-2"
+                >
+                  Proceed to Checkout — ₹{total}
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </Link>
 
                 <button onClick={clearCart} className="block w-full text-center text-sm text-[#6B6B6B] hover:text-red-500 transition-colors">
                   Clear Cart
