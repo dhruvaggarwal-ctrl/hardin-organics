@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 const platforms = [
   {
     name: "Flipkart",
-    href: "https://www.flipkart.com/search?q=hardin+organics",
+    href: "https://www.flipkart.com/search?q=hardin+organics+soap&marketplace=FLIPKART",
     bg: "#2874F0",
     logo: (
       <svg viewBox="0 0 120 32" className="h-6 w-auto" fill="white">

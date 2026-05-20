@@ -70,7 +70,7 @@ export const products: Product[] = [
     ],
     inStock: true,
     stockCount: 23,
-    flipkartUrl: "https://www.flipkart.com/search?q=hardin+organics+charcoal+soap",
+    flipkartUrl: "https://www.flipkart.com/hardin-organics-activated-charcoal-soap-detox-deep-cleanse-anti-pollution-oil-control/p/itm7665496446105?pid=SOPHCN4NHVZASAUM&marketplace=FLIPKART",
   },
   {
     id: "saffron-haldi-chandan",
@@ -112,7 +112,7 @@ export const products: Product[] = [
     ],
     inStock: true,
     stockCount: 15,
-    flipkartUrl: "https://www.flipkart.com/search?q=hardin+organics+haldi+chandan+soap",
+    flipkartUrl: "https://www.flipkart.com/hardin-organics-haldi-chandan-soap-glowing-skin-tan-removal-hydration/p/itmb00cc1f1e28fe?pid=SOPHCZGZH6QQRMCS&marketplace=FLIPKART",
   },
 ];
 
