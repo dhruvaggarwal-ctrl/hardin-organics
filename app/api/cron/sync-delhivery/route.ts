@@ -30,14 +30,18 @@ export async function GET(req: NextRequest) {
   try {
     const { db } = await import("@/lib/firebase/admin");
 
-    // Fetch all orders that have a waybill and are still active
-    const snap = await db.collection("orders")
-      .where("waybill", "!=", null)
-      .get();
+    // Fetch all orders and filter in JS — avoids any Firestore index requirements
+    const snap = await db.collection("orders").get();
 
     const active = snap.docs.filter((doc) => {
-      const status = doc.data().status as string;
-      return status !== "delivered" && status !== "cancelled" && status !== "refunded";
+      const data = doc.data();
+      const status = data.status as string;
+      return (
+        data.waybill &&
+        status !== "delivered" &&
+        status !== "cancelled" &&
+        status !== "refunded"
+      );
     });
 
     if (active.length === 0) {
