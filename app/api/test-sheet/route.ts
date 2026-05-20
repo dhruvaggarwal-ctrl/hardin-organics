@@ -6,24 +6,32 @@ export async function GET() {
     return NextResponse.json({ error: "GOOGLE_SHEET_WEBHOOK_URL not set" }, { status: 500 });
   }
 
-  const testPayload = {
-    type: "order",
+  // Exact same payload structure as app/api/orders/save/route.ts
+  const sheetPayload = {
     orderId: `TEST-${Date.now()}`,
-    razorpayPaymentId: `pay_TEST${Date.now()}`,
-    amount: 599,
-    customerName: "Test User",
-    customerPhone: "9999999999",
-    customerEmail: "test@example.com",
-    items: [{ name: "Charcoal Soap", quantity: 1, price: 599 }],
-    address: "123 Test St, Delhi, 110001",
     createdAt: new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
+    customerName: "Test User",
+    mobile: "9999999999",
+    email: "test@example.com",
+    items: "Charcoal Soap ×1, Haldi & Chandan Soap ×2 (100g)",
+    subtotal: 1197,
+    shipping: 0,
+    couponDiscount: 120,
+    total: 1077,
+    paymentMethod: "razorpay",
+    paymentId: `pay_TEST${Date.now()}`,
+    status: "confirmed",
+    addressLine1: "123 Test Street, Sector 15",
+    city: "Delhi",
+    state: "Delhi",
+    pincode: "110001",
   };
 
   try {
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "text/plain" },
-      body: JSON.stringify(testPayload),
+      body: JSON.stringify(sheetPayload),
       signal: AbortSignal.timeout(10000),
     });
 
@@ -32,7 +40,7 @@ export async function GET() {
       success: res.ok,
       sheetStatus: res.status,
       sheetResponse: text,
-      sentPayload: testPayload,
+      sentPayload: sheetPayload,
     });
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 500 });
