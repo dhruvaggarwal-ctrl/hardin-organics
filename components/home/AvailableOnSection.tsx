@@ -38,7 +38,7 @@ const platforms = [
 
 export function AvailableOnSection() {
   return (
-    <section className="py-10 md:py-14 bg-white border-t border-[#EDE6D6]">
+    <section className="py-10 md:py-14 bg-[#F5F0E8]">
       <div className="max-w-4xl mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 16 }}

@@ -13,7 +13,7 @@ const stats = [
 
 export function BrandStorySection() {
   return (
-    <section className="py-16 md:py-24 bg-white">
+    <section className="py-16 md:py-24 bg-[#F5F0E8]">
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           {/* Image */}
@@ -68,7 +68,7 @@ export function BrandStorySection() {
             {/* Stats */}
             <div className="grid grid-cols-2 gap-4 mb-8">
               {stats.map((s) => (
-                <div key={s.label} className="bg-[#F5F0E8] rounded-2xl p-4 text-center">
+                <div key={s.label} className="bg-white rounded-2xl p-4 text-center shadow-sm">
                   <div className="text-3xl font-bold text-[#2D5016]">
                     {s.value}
                   </div>
