@@ -32,6 +32,8 @@ function readOrders(): Order[] {
   }
 }
 
+const TERMINAL_STATUSES = ["cancelled", "refunded", "payment_failed"];
+
 async function buildTrackingResponse(order: Order) {
   const base = {
     orderId: order.orderId,
@@ -45,27 +47,36 @@ async function buildTrackingResponse(order: Order) {
     tracking: null as null | object,
   };
 
-  if (order.waybill) {
-    const data = await trackByWaybill(order.waybill);
-    const shipment = data?.ShipmentData?.[0]?.Shipment;
-    if (shipment) {
-      const activities = (shipment.Scans || []).map((s) => ({
-        date: s.ScanDetail.StatusDateTime || s.ScanDetail.ScanDateTime,
-        status: s.ScanDetail.ScanType,
-        activity: s.ScanDetail.Instructions || s.ScanDetail.Scan,
-        location: s.ScanDetail.CityLocation || s.ScanDetail.ScannedLocation,
-      }));
+  // Skip live Delhivery lookup for terminal statuses — the shipment is
+  // already cancelled/closed on their end and the API may return errors.
+  const isTerminal = TERMINAL_STATUSES.includes((order.status || "").toLowerCase());
 
-      base.tracking = {
-        currentStatus: shipment.Status,
-        statusType: shipment.StatusType,
-        origin: shipment.Origin,
-        destination: shipment.Destination,
-        pickupDate: shipment.PickUpDate,
-        deliveredDate: shipment.DeliveryDate,
-        scheduledDeliveryDate: shipment.ScheduledDeliveryDate,
-        activities,
-      };
+  if (order.waybill && !isTerminal) {
+    try {
+      const data = await trackByWaybill(order.waybill);
+      const shipment = data?.ShipmentData?.[0]?.Shipment;
+      if (shipment) {
+        const activities = (shipment.Scans || []).map((s) => ({
+          date: s.ScanDetail.StatusDateTime || s.ScanDetail.ScanDateTime,
+          status: s.ScanDetail.ScanType,
+          activity: s.ScanDetail.Instructions || s.ScanDetail.Scan,
+          location: s.ScanDetail.CityLocation || s.ScanDetail.ScannedLocation,
+        }));
+
+        base.tracking = {
+          currentStatus: shipment.Status,
+          statusType: shipment.StatusType,
+          origin: shipment.Origin,
+          destination: shipment.Destination,
+          pickupDate: shipment.PickUpDate,
+          deliveredDate: shipment.DeliveryDate,
+          scheduledDeliveryDate: shipment.ScheduledDeliveryDate,
+          activities,
+        };
+      }
+    } catch (err) {
+      // Delhivery API errors (e.g. cancelled waybill) should not crash the page
+      console.warn("[track] Delhivery API error for waybill", order.waybill, err);
     }
   }
 
