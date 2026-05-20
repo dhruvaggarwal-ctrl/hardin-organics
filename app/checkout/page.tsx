@@ -37,11 +37,12 @@ function loadRazorpay(): Promise<boolean> {
   return new Promise((resolve) => {
     if (typeof window === "undefined") { resolve(false); return; }
     if (document.getElementById("rzp-sdk")) { resolve(true); return; }
+    const timeout = setTimeout(() => resolve(false), 10_000);
     const s = document.createElement("script");
     s.id = "rzp-sdk";
     s.src = "https://checkout.razorpay.com/v1/checkout.js";
-    s.onload = () => resolve(true);
-    s.onerror = () => resolve(false);
+    s.onload = () => { clearTimeout(timeout); resolve(true); };
+    s.onerror = () => { clearTimeout(timeout); resolve(false); };
     document.body.appendChild(s);
   });
 }
@@ -109,12 +110,17 @@ export default function CheckoutPage() {
       return;
     }
     let cancelled = false;
+    let controller: AbortController;
     setPincodeLoading(true);
     setPincodeStatus("idle");
 
-    fetch(`https://api.postalpincode.in/pincode/${pin}`)
+    controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+    fetch(`https://api.postalpincode.in/pincode/${pin}`, { signal: controller.signal })
       .then((r) => r.json())
       .then((data) => {
+        clearTimeout(timeoutId);
         if (cancelled) return;
         const post = data?.[0];
         if (post?.Status === "Success" && post.PostOffice?.length > 0) {
@@ -131,10 +137,10 @@ export default function CheckoutPage() {
           setPincodeStatus("error");
         }
       })
-      .catch(() => { if (!cancelled) setPincodeStatus("error"); })
+      .catch(() => { clearTimeout(timeoutId); if (!cancelled) setPincodeStatus("error"); })
       .finally(() => { if (!cancelled) setPincodeLoading(false); });
 
-    return () => { cancelled = true; };
+    return () => { cancelled = true; controller.abort(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.pincode]);
 
@@ -158,12 +164,16 @@ export default function CheckoutPage() {
     if (!couponInput.trim()) return;
     setCouponLoading(true);
     setCouponError("");
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
     try {
       const res = await fetch("/api/coupon/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code: couponInput.trim(), orderType: "regular" }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
       const data = await res.json();
       if (data.valid) {
         setCouponApplied({ code: data.code, type: data.type, value: data.value, label: data.label });
@@ -171,8 +181,13 @@ export default function CheckoutPage() {
       } else {
         setCouponError(data.message);
       }
-    } catch {
-      setCouponError("Could not validate coupon. Try again.");
+    } catch (err) {
+      clearTimeout(timeoutId);
+      if ((err as { name?: string })?.name === "AbortError") {
+        setCouponError("Request timed out. Please try again.");
+      } else {
+        setCouponError("Could not validate coupon. Please try again.");
+      }
     } finally {
       setCouponLoading(false);
     }
@@ -293,6 +308,7 @@ export default function CheckoutPage() {
                 razorpay_signature: response.razorpay_signature,
               }),
             });
+            if (!verifyRes.ok) { reject(new Error("Payment verification failed. Please contact support with your payment ID.")); return; }
             const { verified } = await verifyRes.json();
             if (!verified) { reject(new Error("Payment verification failed. Please contact support.")); return; }
 
@@ -312,6 +328,11 @@ export default function CheckoutPage() {
                 status: "paid",
               }),
             });
+            if (!saveRes.ok) {
+              // Payment went through but order save failed — show payment ID so support can help
+              reject(new Error(`Your payment was successful but we couldn't save your order. Please WhatsApp us with Payment ID: ${response.razorpay_payment_id}`));
+              return;
+            }
             const saveData = await saveRes.json();
             const hoOrderId = saveData.orderId || `HO-${Date.now()}`;
 

@@ -119,14 +119,24 @@ export async function createDelhiveryShipment(
     console.log("[Delhivery] Creating shipment for order:", shipment.order);
     console.log("[Delhivery] Payload:", dataJson);
 
-    const res = await fetch(`${DELHIVERY_API}/api/cmu/create.json`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Authorization": `Token ${token}`,
-      },
-      body: formBody,
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15_000);
+    let res: Response;
+    try {
+      res = await fetch(`${DELHIVERY_API}/api/cmu/create.json`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Authorization": `Token ${token}`,
+        },
+        body: formBody,
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+    } catch (err) {
+      clearTimeout(timeoutId);
+      throw err;
+    }
 
     const responseText = await res.text();
     console.log("[Delhivery] Response status:", res.status);
@@ -162,7 +172,16 @@ export async function trackByWaybill(
 ): Promise<DelhiveryTrackResponse | null> {
   try {
     const url = `${DELHIVERY_API}/api/v1/packages/json/?waybill=${encodeURIComponent(waybill)}&token=${getToken()}`;
-    const res = await fetch(url, { headers: getHeaders() });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15_000);
+    let res: Response;
+    try {
+      res = await fetch(url, { headers: getHeaders(), signal: controller.signal });
+      clearTimeout(timeoutId);
+    } catch (err) {
+      clearTimeout(timeoutId);
+      throw err;
+    }
 
     if (!res.ok) {
       console.error("[Delhivery] track error:", res.status);
