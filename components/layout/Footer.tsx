@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FooterEmailCapture } from "./FooterEmailCapture";
 
 export function Footer() {
   return (
@@ -100,19 +101,7 @@ export function Footer() {
           </div>
 
           {/* Newsletter */}
-          <div className="mt-6">
-            <p className="text-sm text-gray-400 mb-2">Get 10% off your first order:</p>
-            <div className="flex gap-2">
-              <input
-                type="email"
-                placeholder="Your email"
-                className="flex-1 bg-white/10 text-white placeholder-gray-500 text-sm px-3 py-2 rounded-lg border border-white/20 focus:outline-none focus:border-[#D4A017]"
-              />
-              <button className="bg-[#D4A017] text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-[#E8B52A] transition-colors">
-                →
-              </button>
-            </div>
-          </div>
+          <FooterEmailCapture />
         </div>
       </div>
 
