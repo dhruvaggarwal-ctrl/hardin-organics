@@ -141,23 +141,45 @@ function NotFound({ orderId }: { orderId: string }) {
 }
 
 // ── Main page ──────────────────────────────────────────────────────────────────
+const POLL_INTERVAL_MS = 15_000; // refresh every 15 seconds while page is open
+
 export default function TrackPage() {
   const params = useParams();
   const orderId = (params?.orderId as string) ?? "";
   const [data, setData] = useState<OrderData | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
+
+  async function fetchStatus(isInitial = false) {
+    try {
+      const r = await fetch(`/api/track/${orderId}`);
+      if (r.status === 404) { setNotFound(true); setLoading(false); return; }
+      if (!r.ok) throw new Error("error");
+      const d = await r.json();
+      setData(d);
+      setLastRefreshed(new Date());
+      if (isInitial) setLoading(false);
+    } catch {
+      if (isInitial) { setNotFound(true); setLoading(false); }
+    }
+  }
 
   useEffect(() => {
-    fetch(`/api/track/${orderId}`)
-      .then(async (r) => {
-        if (r.status === 404) { setNotFound(true); setLoading(false); return; }
-        if (!r.ok) throw new Error("error");
-        const d = await r.json();
-        setData(d);
-        setLoading(false);
-      })
-      .catch(() => { setNotFound(true); setLoading(false); });
+    if (!orderId) return;
+    fetchStatus(true);
+
+    // Poll every 15 seconds — stops automatically when order is delivered/cancelled
+    const timer = setInterval(() => {
+      setData((current) => {
+        const done = current?.status === "delivered" || current?.status === "cancelled";
+        if (!done) fetchStatus(false);
+        return current;
+      });
+    }, POLL_INTERVAL_MS);
+
+    return () => clearInterval(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId]);
 
   // Loading
@@ -270,6 +292,21 @@ export default function TrackPage() {
               <p className="text-xs font-medium text-[#1C1C1C] mt-0.5">{formatShortDate(data.createdAt)}</p>
             </div>
           </div>
+
+          {/* Live refresh indicator */}
+          {!isCancelled && !isDelivered && (
+            <div className="flex items-center justify-center gap-1.5 py-2 bg-green-50 border-b border-green-100">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              <p className="text-[10px] text-green-700 font-medium">
+                Live · Auto-refreshes every 15s
+                {lastRefreshed && (
+                  <span className="text-green-500 ml-1">
+                    · Updated {lastRefreshed.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                  </span>
+                )}
+              </p>
+            </div>
+          )}
 
           {/* Stepper */}
           {!isCancelled && (
