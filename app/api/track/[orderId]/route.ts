@@ -78,29 +78,42 @@ export async function GET(
 ) {
   const { orderId } = await params;
 
-  // Try Firestore first
+  // Try Firestore — search by orderId first, then by waybill (AWB number)
   try {
     const { db } = await import("@/lib/firebase/admin");
-    const docSnap = await db.collection("orders").doc(orderId).get();
-    if (docSnap.exists) {
-      const raw = docSnap.data()!;
-      // Firestore Timestamps are not JSON-serializable — convert to ISO strings
-      const order: Order = {
+
+    function normalizeOrder(raw: Record<string, unknown>): Order {
+      return {
         ...raw,
         createdAt:
-          raw.createdAt && typeof raw.createdAt.toDate === "function"
-            ? raw.createdAt.toDate().toISOString()
-            : raw.createdAt ?? new Date().toISOString(),
+          raw.createdAt && typeof (raw.createdAt as { toDate?: () => Date }).toDate === "function"
+            ? (raw.createdAt as { toDate: () => Date }).toDate().toISOString()
+            : (raw.createdAt as string) ?? new Date().toISOString(),
       } as Order;
-      return buildTrackingResponse(order);
     }
+
+    // 1. Try direct lookup by HO order ID
+    const docSnap = await db.collection("orders").doc(orderId).get();
+    if (docSnap.exists) {
+      return buildTrackingResponse(normalizeOrder(docSnap.data()!));
+    }
+
+    // 2. Try lookup by Delhivery AWB / waybill number
+    const waybillSnap = await db.collection("orders")
+      .where("waybill", "==", orderId)
+      .limit(1)
+      .get();
+    if (!waybillSnap.empty) {
+      return buildTrackingResponse(normalizeOrder(waybillSnap.docs[0].data()!));
+    }
+
   } catch (firestoreErr) {
     console.error("[track] Firestore read failed, falling back to JSON:", firestoreErr);
   }
 
-  // Fall back to JSON file
+  // Fall back to local JSON (dev / ephemeral fallback)
   const orders = readOrders();
-  const order = orders.find((o) => o.orderId === orderId);
+  const order = orders.find((o) => o.orderId === orderId || o.waybill === orderId);
 
   if (!order) {
     return NextResponse.json({ error: "Order not found" }, { status: 404 });

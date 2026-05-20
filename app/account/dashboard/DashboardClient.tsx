@@ -14,6 +14,9 @@ interface Order {
   status: string;
   createdAt: string;
   waybill?: string;
+  refundAmount?: number;
+  delhiveryPending?: boolean;
+  delhiveryError?: string;
 }
 interface Customer {
   id: string; mobile?: string; email?: string; name?: string; birthday?: string;
@@ -27,6 +30,12 @@ const STATUS_COLORS: Record<string, string> = {
   shipped: "bg-purple-100 text-purple-700",
   delivered: "bg-green-100 text-green-700",
   cancelled: "bg-red-100 text-red-700",
+  refunded: "bg-orange-100 text-orange-700",
+  payment_failed: "bg-red-100 text-red-700",
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  payment_failed: "Payment Failed",
 };
 
 function pad(d: string) {
@@ -177,7 +186,7 @@ export function DashboardClient({ customer, orders }: { customer: Customer; orde
                     <p className="text-xs text-[#6B6B6B]">{pad(order.createdAt)}</p>
                   </div>
                   <span className={`text-xs font-bold px-3 py-1 rounded-full capitalize ${STATUS_COLORS[order.status] || "bg-gray-100 text-gray-600"}`}>
-                    {order.status}
+                    {STATUS_LABELS[order.status] ?? order.status}
                   </span>
                 </div>
                 <div className="space-y-1 mb-3">
@@ -185,7 +194,29 @@ export function DashboardClient({ customer, orders }: { customer: Customer; orde
                     <p key={i} className="text-sm text-[#6B6B6B]">{item.name} × {item.quantity}</p>
                   ))}
                 </div>
-                <p className="font-bold text-[#1C1C1A] mb-3">₹{order.totalAmount}</p>
+                <div className="flex items-center gap-3 mb-3 flex-wrap">
+                  <p className="font-bold text-[#1C1C1A]">₹{order.totalAmount}</p>
+                  {order.status === "refunded" && order.refundAmount && (
+                    <span className="text-xs text-orange-600 font-medium bg-orange-50 px-2 py-0.5 rounded-full">
+                      ₹{order.refundAmount} refunded
+                    </span>
+                  )}
+                  {order.waybill && (
+                    <span className="text-xs text-[#6B6B6B] font-mono bg-[#F5F0E8] px-2 py-0.5 rounded-full">
+                      AWB: {order.waybill}
+                    </span>
+                  )}
+                  {order.delhiveryPending && (
+                    <span className="text-xs text-amber-700 font-medium bg-amber-50 px-2 py-0.5 rounded-full">
+                      Shipment pending
+                    </span>
+                  )}
+                  {order.delhiveryError && !order.waybill && (
+                    <span className="text-xs text-red-600 font-medium bg-red-50 px-2 py-0.5 rounded-full">
+                      Shipment error
+                    </span>
+                  )}
+                </div>
                 <div className="flex gap-2 flex-wrap">
                   <Link href={`/track/${order.orderId}`} className="text-xs bg-[#2D5016] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#3D6B20] transition-colors">Track Order →</Link>
                   <button onClick={() => reorder(order)} className="text-xs border border-[#A0522D] text-[#A0522D] px-4 py-2 rounded-lg font-medium hover:bg-[#A0522D] hover:text-white transition-colors">Reorder</button>

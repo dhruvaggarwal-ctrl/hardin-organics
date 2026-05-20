@@ -154,28 +154,56 @@ export async function POST(req: NextRequest) {
         totalAmount: body.totalAmount,
         paymentMethod: body.paymentMethod,
       });
+
+      // Mark shipment as pending so we can detect failures
+      try {
+        const { db: db2 } = await import("@/lib/firebase/admin");
+        await db2.collection("orders").doc(orderId).update({ delhiveryPending: true });
+      } catch { /* non-fatal */ }
+
       createDelhiveryShipment(payload).then(async (dl) => {
-        if (dl?.packages?.length) {
-          const waybill = dl.packages[0].waybill;
+        const waybill = dl?.packages?.[0]?.waybill ?? null;
+        const remarks = dl?.packages?.[0]?.remarks ?? [];
+
+        try {
+          const { db } = await import("@/lib/firebase/admin");
+
           if (waybill) {
-            // Write waybill back to JSON file
+            // Success — save waybill and clear pending flag
             const updatedOrders = readOrders() as Array<Record<string, unknown>>;
             const idx = updatedOrders.findIndex((o) => o.orderId === orderId);
-            if (idx !== -1) {
-              updatedOrders[idx].waybill = waybill;
-              writeOrders(updatedOrders);
-            }
-            // FIX: Also write waybill back to Firestore so tracking works in production
-            try {
-              const { db } = await import("@/lib/firebase/admin");
-              await db.collection("orders").doc(orderId).update({ waybill });
-            } catch (e) {
-              console.error("[Delhivery] Firestore waybill update failed:", e);
-            }
-            console.log(`[Delhivery] Shipment created: waybill=${waybill}`);
+            if (idx !== -1) { updatedOrders[idx].waybill = waybill; writeOrders(updatedOrders); }
+
+            await db.collection("orders").doc(orderId).update({
+              waybill,
+              delhiveryPending: false,
+              delhiveryCreatedAt: new Date().toISOString(),
+            });
+            console.log(`[Delhivery] ✅ Shipment created: waybill=${waybill}`);
+          } else {
+            // Failure — store error so it's visible in Firestore
+            const errorMsg = remarks.join(", ") || dl?.rmk || "No waybill returned";
+            await db.collection("orders").doc(orderId).update({
+              delhiveryPending: false,
+              delhiveryError: errorMsg,
+              delhiveryFailedAt: new Date().toISOString(),
+            });
+            console.error(`[Delhivery] ❌ Shipment creation failed for ${orderId}:`, errorMsg);
           }
+        } catch (e) {
+          console.error("[Delhivery] Firestore update failed:", e);
         }
-      }).catch((e) => console.error("[Delhivery] background error:", e));
+      }).catch(async (e) => {
+        console.error("[Delhivery] createShipment exception:", e);
+        try {
+          const { db } = await import("@/lib/firebase/admin");
+          await db.collection("orders").doc(orderId).update({
+            delhiveryPending: false,
+            delhiveryError: String(e),
+            delhiveryFailedAt: new Date().toISOString(),
+          });
+        } catch { /* non-fatal */ }
+      });
     }
 
     // Log WhatsApp notification (replace with WhatsApp Business API for production)

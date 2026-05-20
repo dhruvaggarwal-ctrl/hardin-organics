@@ -55,13 +55,13 @@ export default function TrackOrderPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-bold text-[#6B6B6B] uppercase tracking-widest mb-2">
-                Order ID
+                Order ID or AWB Number
               </label>
               <input
                 type="text"
                 value={orderId}
                 onChange={(e) => { setOrderId(e.target.value); setError(""); }}
-                placeholder="e.g. HO-20240501-XXXX"
+                placeholder="HO-20240501-XXXX or Delhivery AWB"
                 className="w-full border border-[#EDE6D6] rounded-xl px-4 py-3.5 text-sm font-mono text-[#1C1C1C] placeholder-[#C4C4C4] focus:outline-none focus:ring-2 focus:ring-[#2D5016] focus:border-transparent transition"
                 autoFocus
               />
@@ -102,7 +102,7 @@ export default function TrackOrderPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <p className="text-xs text-[#6B6B6B] leading-relaxed">
-              Your Order ID was shared in the confirmation message after you placed your order.
+              Your Order ID (HO-XXXXX) is on your confirmation page, or use the AWB number shown in your account orders.
             </p>
           </div>
         </div>
