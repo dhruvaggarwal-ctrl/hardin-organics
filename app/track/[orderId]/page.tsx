@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { products } from "@/data/products";
 
 interface TrackingActivity {
   date: string;
@@ -471,26 +472,51 @@ export default function TrackPage() {
             <h2 className="font-bold text-[#1C1C1C] text-sm">Order Summary</h2>
           </div>
           <div className="px-5 py-4 space-y-3">
-            {data.items.map((item, i) => (
-              <div key={i} className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-8 h-8 rounded-lg bg-[#F5F0E8] flex items-center justify-center shrink-0">
-                    <svg className="w-4 h-4 text-[#6B6B6B]" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10" />
-                    </svg>
+            {data.items.map((item, i) => {
+              const product = products.find(
+                (p) => p.name.toLowerCase() === item.name.toLowerCase()
+              );
+              const imgSrc = product?.images?.[0] ?? null;
+              return (
+                <div key={i} className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-12 h-12 rounded-xl bg-[#F5F0E8] shrink-0 overflow-hidden flex items-center justify-center">
+                      {imgSrc ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={imgSrc} alt={item.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <svg className="w-5 h-5 text-[#6B6B6B]" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10" />
+                        </svg>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-[#1C1C1C] leading-snug">{item.name}</p>
+                      <p className="text-xs text-[#9B9B9B]">Qty: {item.quantity}</p>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-[#1C1C1C] truncate">{item.name}</p>
-                    <p className="text-xs text-[#9B9B9B]">Qty: {item.quantity}</p>
-                  </div>
+                  <span className="text-sm font-bold text-[#1C1C1C] shrink-0">₹{item.price * item.quantity}</span>
                 </div>
-                <span className="text-sm font-bold text-[#1C1C1C] shrink-0">₹{item.price * item.quantity}</span>
-              </div>
-            ))}
+              );
+            })}
 
-            <div className="border-t border-[#F0EBE0] pt-3 flex justify-between items-center">
-              <span className="text-sm font-bold text-[#1C1C1C]">Total Paid</span>
-              <span className="text-base font-bold text-[#2D5016]">₹{data.totalAmount}</span>
+            <div className="border-t border-[#F0EBE0] pt-3 space-y-1.5">
+              <div className="flex justify-between items-center text-xs text-[#9B9B9B]">
+                <span>Subtotal</span>
+                <span>₹{data.items.reduce((s, it) => s + it.price * it.quantity, 0)}</span>
+              </div>
+              <div className="flex justify-between items-center text-xs text-[#9B9B9B]">
+                <span>Shipping</span>
+                <span className={data.totalAmount - data.items.reduce((s, it) => s + it.price * it.quantity, 0) === 0 ? "text-green-600 font-medium" : ""}>
+                  {data.totalAmount - data.items.reduce((s, it) => s + it.price * it.quantity, 0) === 0
+                    ? "FREE"
+                    : `₹${data.totalAmount - data.items.reduce((s, it) => s + it.price * it.quantity, 0)}`}
+                </span>
+              </div>
+              <div className="flex justify-between items-center pt-1 border-t border-[#F0EBE0]">
+                <span className="text-sm font-bold text-[#1C1C1C]">Total Paid</span>
+                <span className="text-base font-bold text-[#2D5016]">₹{data.totalAmount}</span>
+              </div>
             </div>
           </div>
         </motion.div>

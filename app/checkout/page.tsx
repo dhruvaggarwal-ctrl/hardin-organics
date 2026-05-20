@@ -290,6 +290,7 @@ export default function CheckoutPage() {
             router.push(
               `/order-confirmation?orderId=${hoOrderId}&method=paid` +
               `&name=${encodeURIComponent(form.customerName)}&mobile=${form.mobile}&total=${total}` +
+              `&shipping=${shipping}` +
               `&items=${itemsParam}`
             );
             resolve();

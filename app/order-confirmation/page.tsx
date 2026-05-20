@@ -20,6 +20,7 @@ interface PageProps {
     name?: string;
     mobile?: string;
     total?: string;
+    shipping?: string;
     items?: string;
   }>;
 }
@@ -61,7 +62,7 @@ const steps = [
 ];
 
 export default function OrderConfirmationPage({ searchParams }: PageProps) {
-  const { orderId, method, name, mobile, total, items: itemsParam } = use(searchParams);
+  const { orderId, method, name, mobile, total, shipping: shippingParam, items: itemsParam } = use(searchParams);
   const [copied, setCopied] = useState(false);
 
   let orderItems: OrderItem[] = [];
@@ -211,11 +212,32 @@ export default function OrderConfirmationPage({ searchParams }: PageProps) {
                       </div>
                     </div>
                   ))}
-                  {/* Total row */}
-                  <div className="flex items-center justify-between px-3 py-2.5 bg-[#F5F0E8]">
-                    <span className="text-xs font-bold text-[#6B6B6B] uppercase tracking-wide">Total Paid</span>
-                    <span className="text-base font-bold text-[#2D5016]">₹{total}</span>
-                  </div>
+
+                  {/* Price breakdown */}
+                  {(() => {
+                    const itemsSubtotal = orderItems.reduce((sum, it) => sum + it.p * it.q, 0);
+                    const shippingCost = shippingParam !== undefined ? Number(shippingParam) : null;
+                    return (
+                      <div className="bg-[#F5F0E8] divide-y divide-[#EDE6D6]">
+                        <div className="flex items-center justify-between px-3 py-2 text-xs text-[#6B6B6B]">
+                          <span>Subtotal</span>
+                          <span>₹{itemsSubtotal}</span>
+                        </div>
+                        {shippingCost !== null && (
+                          <div className="flex items-center justify-between px-3 py-2 text-xs text-[#6B6B6B]">
+                            <span>Shipping</span>
+                            <span className={shippingCost === 0 ? "text-green-600 font-medium" : ""}>
+                              {shippingCost === 0 ? "FREE" : `₹${shippingCost}`}
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex items-center justify-between px-3 py-2.5">
+                          <span className="text-xs font-bold text-[#6B6B6B] uppercase tracking-wide">Total Paid</span>
+                          <span className="text-base font-bold text-[#2D5016]">₹{total}</span>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             )}
