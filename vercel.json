@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/sync-delhivery",
-      "schedule": "* * * * *"
+      "schedule": "0 0 * * *"
     }
   ]
 }
