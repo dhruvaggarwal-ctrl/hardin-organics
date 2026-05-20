@@ -239,7 +239,7 @@ export function AddToCartSection({ product }: AddToCartSectionProps) {
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/images/flipkart-logo-icon-freelogovectors.net_.png"
+                  src="/images/flipkart-logo.png"
                   alt="Flipkart"
                   width={18}
                   height={18}
