@@ -200,11 +200,41 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Log WhatsApp notification (replace with WhatsApp Business API for production)
-    const itemSummary = (body.items as Array<{ name: string; quantity: number }>)
-      .map((i) => `${i.name} ×${i.quantity}`)
+    // ── Google Sheets backup log (fire-and-forget) ──────────────────────────
+    const itemSummary = (body.items as Array<{ name: string; quantity: number; size?: string }>)
+      .map((i) => `${i.name} ×${i.quantity}${i.size ? ` (${i.size})` : ""}`)
       .join(", ");
 
+    if (process.env.GOOGLE_SHEET_WEBHOOK_URL) {
+      const sheetPayload = {
+        orderId,
+        createdAt: new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
+        customerName: order.customerName,
+        mobile: order.mobile,
+        email: order.email || "",
+        items: itemSummary,
+        subtotal: order.subtotal,
+        shipping: order.shipping,
+        couponDiscount: order.couponDiscount || 0,
+        total: order.totalAmount,
+        paymentMethod: order.paymentMethod,
+        paymentId: order.razorpayPaymentId || "COD",
+        status: order.status,
+        addressLine1: order.addressLine1,
+        city: order.city,
+        state: order.state,
+        pincode: order.pincode,
+      };
+
+      fetch(process.env.GOOGLE_SHEET_WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(sheetPayload),
+        signal: AbortSignal.timeout(10000),
+      }).catch((e) => console.warn("[Google Sheets] Log failed (non-fatal):", e));
+    }
+
+    // Log WhatsApp notification
     const waText = encodeURIComponent(
       `🛍️ New Order: ${orderId}\n` +
       `👤 ${body.customerName} | 📱 ${body.mobile}\n` +
