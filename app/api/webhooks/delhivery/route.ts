@@ -22,6 +22,17 @@ function mapDelhiveryStatus(dlStatus: string): string | null {
 }
 
 export async function POST(req: NextRequest) {
+  // Verify shared secret to prevent spoofed status updates
+  const webhookSecret = process.env.DELHIVERY_WEBHOOK_SECRET;
+  if (webhookSecret) {
+    const authHeader = req.headers.get("authorization") ?? req.headers.get("x-webhook-secret") ?? "";
+    const token = authHeader.replace(/^Bearer\s+/i, "");
+    if (token !== webhookSecret) {
+      console.warn("[delhivery-webhook] Unauthorized request — invalid secret");
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+  }
+
   let body: Record<string, unknown>;
   try {
     body = await req.json();

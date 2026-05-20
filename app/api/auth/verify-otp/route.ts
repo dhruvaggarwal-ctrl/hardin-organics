@@ -1,62 +1,90 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
-import path from "path";
 import crypto from "crypto";
 import { signSession, setSessionCookie } from "@/lib/auth";
-
-interface OtpRecord { mobile: string; otp: string; expiresAt: number; attempts: number; }
-interface Customer { id: string; mobile: string; email?: string; name?: string; birthday?: string; address?: Record<string, string>; createdAt: string; }
-
-function getDataDir() {
-  const dir = process.env.NODE_ENV === "production" ? "/tmp" : path.join(process.cwd(), "data");
-  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
-  return dir;
-}
-
-function readJson<T>(filename: string, fallback: T): T {
-  const p = path.join(getDataDir(), filename);
-  try { return existsSync(p) ? JSON.parse(readFileSync(p, "utf-8")) : fallback; } catch { return fallback; }
-}
-
-function writeJson(filename: string, data: unknown) {
-  writeFileSync(path.join(getDataDir(), filename), JSON.stringify(data, null, 2));
-}
 
 export async function POST(req: NextRequest) {
   try {
     const { mobile, otp } = await req.json() as { mobile: string; otp: string };
     if (!mobile || !otp) return NextResponse.json({ error: "Missing fields" }, { status: 400 });
 
-    const otps = readJson<OtpRecord[]>("auth-otps.json", []);
-    const record = otps.find((r) => r.mobile === mobile && r.expiresAt > Date.now());
+    const { db } = await import("@/lib/firebase/admin");
+    const { FieldValue } = await import("firebase-admin/firestore");
 
-    if (!record) return NextResponse.json({ error: "OTP expired. Please request a new one." }, { status: 400 });
+    const otpRef = db.collection("otps").doc(mobile);
+    const otpDoc = await otpRef.get();
 
-    // Increment attempts
-    record.attempts += 1;
-    if (record.attempts > 5) return NextResponse.json({ error: "Too many attempts. Request a new OTP." }, { status: 429 });
+    if (!otpDoc.exists) {
+      return NextResponse.json({ error: "OTP expired. Please request a new one." }, { status: 400 });
+    }
 
-    if (record.otp !== otp) {
-      writeJson("auth-otps.json", otps);
+    const data = otpDoc.data()!;
+    const expiresAt = data.expiresAt?.toDate?.() ?? new Date(data.expiresAt);
+
+    if (expiresAt < new Date()) {
+      await otpRef.delete();
+      return NextResponse.json({ error: "OTP expired. Please request a new one." }, { status: 400 });
+    }
+
+    const attempts = data.attempts ?? 0;
+    if (attempts >= 5) {
+      return NextResponse.json({ error: "Too many attempts. Request a new OTP." }, { status: 429 });
+    }
+
+    if (data.otp !== otp) {
+      await otpRef.update({ attempts: FieldValue.increment(1) });
       return NextResponse.json({ error: "Incorrect OTP. Please try again." }, { status: 400 });
     }
 
-    // OTP verified — remove it
-    writeJson("auth-otps.json", otps.filter((r) => r.mobile !== mobile));
+    // OTP verified — delete it immediately (one-time use)
+    await otpRef.delete();
 
-    // Find or create customer
-    const customers = readJson<Customer[]>("customers.json", []);
-    let customer = customers.find((c) => c.mobile === mobile);
-    if (!customer) {
-      customer = { id: crypto.randomUUID(), mobile, createdAt: new Date().toISOString() };
-      customers.push(customer);
-      writeJson("customers.json", customers);
+    // Find or create customer in Firestore
+    let customerId: string;
+    let hasName = false;
+
+    // 1. Check if there's a temp profile from a guest order (mob_{mobile})
+    const tempKey = `mob_${mobile}`;
+    const tempDoc = await db.collection("customers").doc(tempKey).get();
+
+    if (tempDoc.exists) {
+      const cData = tempDoc.data()!;
+      // Promote temp profile to a real customer doc
+      customerId = crypto.randomUUID();
+      await db.collection("customers").doc(customerId).set({
+        ...cData,
+        id: customerId,
+        mobile,
+        tempMobileKey: FieldValue.delete(),
+        updatedAt: new Date(),
+      });
+      await db.collection("customers").doc(tempKey).delete();
+      hasName = !!cData.name;
+    } else {
+      // 2. Check if customer already exists by mobile field
+      const existingSnap = await db.collection("customers")
+        .where("mobile", "==", mobile)
+        .limit(1)
+        .get();
+
+      if (!existingSnap.empty) {
+        customerId = existingSnap.docs[0].id;
+        hasName = !!existingSnap.docs[0].data().name;
+      } else {
+        // 3. Brand new customer
+        customerId = crypto.randomUUID();
+        await db.collection("customers").doc(customerId).set({
+          id: customerId,
+          mobile,
+          createdAt: new Date(),
+        });
+        hasName = false;
+      }
     }
 
-    const jwt = await signSession({ customerId: customer.id, mobile });
+    const jwt = await signSession({ customerId, mobile });
     await setSessionCookie(jwt);
 
-    return NextResponse.json({ success: true, hasName: !!customer.name });
+    return NextResponse.json({ success: true, hasName });
   } catch (err) {
     console.error("[verify-otp] error:", err);
     return NextResponse.json({ error: "Verification failed. Please try again." }, { status: 500 });

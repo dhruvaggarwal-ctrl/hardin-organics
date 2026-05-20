@@ -1,12 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
 import { createDelhiveryShipment, buildDelhiveryPayload } from "@/lib/delhivery";
 import { verifySession } from "@/lib/auth";
-
-// NOTE: Orders are saved to a local JSON file for development / MVP purposes.
-// On Vercel, /tmp is used but is ephemeral and resets on each deployment.
-// For production, replace this with Supabase, MongoDB, or a similar persistent database.
 
 function generateOrderId(): string {
   const now = new Date();
@@ -15,35 +9,23 @@ function generateOrderId(): string {
   return `HO-${date}-${random}`;
 }
 
-function getOrdersFilePath(): string {
-  if (process.env.NODE_ENV === "production") {
-    // /tmp is writable on Vercel but ephemeral — data resets on redeployment
-    return "/tmp/orders.json";
-  }
-  return path.join(process.cwd(), "data", "orders.json");
-}
-
-function readOrders(): unknown[] {
-  const filePath = getOrdersFilePath();
-  try {
-    if (!fs.existsSync(filePath)) return [];
-    const raw = fs.readFileSync(filePath, "utf8");
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
-}
-
-function writeOrders(orders: unknown[]): void {
-  const filePath = getOrdersFilePath();
-  const dir = path.dirname(filePath);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(filePath, JSON.stringify(orders, null, 2));
-}
-
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+
+    // ── Idempotency: prevent duplicate orders from network retries ──────────
+    if (body.razorpayPaymentId) {
+      const { db: dbCheck } = await import("@/lib/firebase/admin");
+      const existing = await dbCheck.collection("orders")
+        .where("razorpayPaymentId", "==", body.razorpayPaymentId)
+        .limit(1)
+        .get();
+      if (!existing.empty) {
+        console.log("[orders/save] Duplicate paymentId — returning existing order:", existing.docs[0].id);
+        return NextResponse.json({ success: true, orderId: existing.docs[0].id });
+      }
+    }
+
     const orderId = generateOrderId();
 
     // Attach customerId from session if the user is logged in (optional — guest checkouts are fine)
@@ -99,11 +81,6 @@ export async function POST(req: NextRequest) {
       status: body.status || "pending",
       createdAt: new Date().toISOString(),
     };
-
-    // Save to file
-    const orders = readOrders();
-    orders.push(order);
-    writeOrders(orders);
 
     // Save order to Firestore + auto-upsert customer profile
     try {
@@ -191,10 +168,6 @@ export async function POST(req: NextRequest) {
 
           if (waybill) {
             // Success — save waybill and clear pending flag
-            const updatedOrders = readOrders() as Array<Record<string, unknown>>;
-            const idx = updatedOrders.findIndex((o) => o.orderId === orderId);
-            if (idx !== -1) { updatedOrders[idx].waybill = waybill; writeOrders(updatedOrders); }
-
             await db.collection("orders").doc(orderId).update({
               waybill,
               delhiveryPending: false,
