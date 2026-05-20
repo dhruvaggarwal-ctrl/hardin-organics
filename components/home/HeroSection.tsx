@@ -24,17 +24,12 @@ function Slide1() {
       <div className="absolute inset-0 flex items-center justify-center">
 
         {/* ── MOBILE layout (< md) ── */}
-        <div className="md:hidden w-full h-full flex flex-col items-center justify-center px-5 py-6 gap-3">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-1.5 bg-[#E8F0E0] text-[#2D5016] text-xs font-semibold px-3 py-1.5 rounded-full">
-            Handcrafted in Small Batches
-          </div>
+        <div className="md:hidden w-full h-full flex flex-col items-center justify-center px-5 py-4 gap-2">
           {/* Circle image */}
           <div className="relative shrink-0">
-            <div className="animate-float relative w-40 h-40 rounded-full overflow-hidden shadow-xl bg-[#EDE6D6]">
-              <Image src="/images/haldi-4.png" alt="Saffron Haldi Chandan soap" fill className="object-contain" priority sizes="160px" />
+            <div className="animate-float relative w-36 h-36 rounded-full overflow-hidden shadow-xl bg-[#EDE6D6]">
+              <Image src="/images/haldi-4.png" alt="Saffron Haldi Chandan soap" fill className="object-contain" priority sizes="144px" />
             </div>
-            {/* Inline stats — no negative offsets so nothing clips */}
           </div>
           {/* Stats row */}
           <div className="flex items-center gap-3">
