@@ -19,41 +19,66 @@ async function sendOtpEmail(email: string, otp: string) {
   await transporter.sendMail({
     from: `"Hardin Organics" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
     to: email,
-    subject: "676373 is your Hardin Organics verification code".replace("676373", otp),
+    subject: `${otp} — your Hardin Organics discount code 🌿`,
     html: `
-      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:520px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e8e0d0">
-        <!-- Header -->
-        <div style="background:#2D5016;padding:32px 24px;text-align:center">
-          <p style="color:#fff;font-size:22px;font-weight:700;margin:0;letter-spacing:-0.3px">हर्दिन Organics</p>
-          <p style="color:rgba(255,255,255,0.7);font-size:12px;margin:4px 0 0;letter-spacing:2px;text-transform:uppercase">Handcrafted Organic Soaps</p>
-        </div>
-        <!-- Body -->
-        <div style="padding:36px 32px;background:#FDFAF6">
-          <h1 style="color:#1C1C1C;font-size:24px;font-weight:700;margin:0 0 12px;line-height:1.3">
-            Your exclusive 10% off is one step away 🌿
-          </h1>
-          <p style="color:#6B6B6B;font-size:15px;line-height:1.7;margin:0 0 28px">
-            Enter this code to verify your email and unlock your discount on handcrafted organic soaps — no parabens, no SLS, just pure ingredients.
-          </p>
-          <!-- OTP Box -->
-          <div style="background:#2D5016;border-radius:14px;padding:24px;text-align:center;margin-bottom:28px">
-            <p style="color:rgba(255,255,255,0.7);font-size:12px;margin:0 0 10px;letter-spacing:2px;text-transform:uppercase">Verification Code</p>
-            <p style="color:#ffffff;font-size:42px;font-weight:800;letter-spacing:14px;margin:0;font-variant-numeric:tabular-nums">${otp}</p>
-          </div>
-          <!-- Coupon preview -->
-          <div style="background:#F5F0E8;border:2px dashed #C4622D;border-radius:12px;padding:16px;text-align:center;margin-bottom:24px">
-            <p style="color:#6B6B6B;font-size:12px;margin:0 0 4px;text-transform:uppercase;letter-spacing:1px">Your coupon code (after verification)</p>
-            <p style="color:#C4622D;font-size:22px;font-weight:800;letter-spacing:4px;margin:0">WELCOME10</p>
-          </div>
-          <p style="color:#999;font-size:13px;line-height:1.6;margin:0">
-            ⏱ This code expires in <strong>10 minutes</strong>. If you didn't request this, you can safely ignore this email.
-          </p>
-        </div>
-        <!-- Footer -->
-        <div style="padding:20px 32px;background:#f0ebe0;border-top:1px solid #e8e0d0;text-align:center">
-          <p style="color:#999;font-size:12px;margin:0">© Hardin Organics · Made in India · No Parabens · No SLS</p>
-        </div>
-      </div>
+      <!DOCTYPE html>
+      <html>
+      <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+      <body style="margin:0;padding:0;background:#F2EDE4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#F2EDE4;padding:32px 16px">
+          <tr><td align="center">
+            <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08)">
+
+              <!-- Header -->
+              <tr>
+                <td style="background:#1E3A0F;padding:36px 32px;text-align:center">
+                  <p style="margin:0;color:#ffffff;font-size:26px;font-weight:800;letter-spacing:-0.5px">Hardin Organics</p>
+                  <p style="margin:6px 0 0;color:rgba(255,255,255,0.55);font-size:11px;letter-spacing:3px;text-transform:uppercase">Handcrafted · Organic · Pure</p>
+                </td>
+              </tr>
+
+              <!-- Body -->
+              <tr>
+                <td style="padding:40px 36px 32px;background:#ffffff">
+                  <p style="margin:0 0 8px;color:#1C1C1C;font-size:22px;font-weight:700;line-height:1.3">Here's your verification code 👇</p>
+                  <p style="margin:0 0 32px;color:#6B6B6B;font-size:15px;line-height:1.6">
+                    Enter this code on the website to verify your email and unlock <strong style="color:#1C1C1C">10% off</strong> your first order of handcrafted organic soaps.
+                  </p>
+
+                  <!-- OTP Box -->
+                  <div style="background:#F5F0E8;border:1.5px solid #D4B896;border-radius:16px;padding:28px 24px;text-align:center;margin-bottom:28px">
+                    <p style="margin:0 0 12px;color:#8B7355;font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase">One-Time Code</p>
+                    <p style="margin:0;color:#1E3A0F;font-size:48px;font-weight:800;letter-spacing:16px;font-variant-numeric:tabular-nums;line-height:1">${otp}</p>
+                    <p style="margin:16px 0 0;color:#999;font-size:12px">Expires in 10 minutes</p>
+                  </div>
+
+                  <!-- Coupon teaser -->
+                  <div style="background:#1E3A0F;border-radius:14px;padding:20px 24px;text-align:center;margin-bottom:28px">
+                    <p style="margin:0 0 6px;color:rgba(255,255,255,0.6);font-size:11px;letter-spacing:2px;text-transform:uppercase">Your discount code (unlocks after verification)</p>
+                    <p style="margin:0;color:#F5C842;font-size:26px;font-weight:800;letter-spacing:6px">WELCOME10</p>
+                  </div>
+
+                  <p style="margin:0;color:#BBBBBB;font-size:12px;line-height:1.7;text-align:center">
+                    Didn't request this? You can safely ignore this email.<br>This code is only valid once and cannot be reused.
+                  </p>
+                </td>
+              </tr>
+
+              <!-- Footer -->
+              <tr>
+                <td style="background:#F7F3EE;border-top:1px solid #EAE3D8;padding:20px 32px;text-align:center">
+                  <p style="margin:0;color:#AAAAAA;font-size:11px;line-height:1.8">
+                    © Hardin Organics · Made in India<br>
+                    No Parabens · No SLS · No Compromise
+                  </p>
+                </td>
+              </tr>
+
+            </table>
+          </td></tr>
+        </table>
+      </body>
+      </html>
     `,
   });
 }
