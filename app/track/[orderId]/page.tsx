@@ -1,6 +1,7 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
@@ -140,8 +141,9 @@ function NotFound({ orderId }: { orderId: string }) {
 }
 
 // ── Main page ──────────────────────────────────────────────────────────────────
-export default function TrackPage({ params }: { params: Promise<{ orderId: string }> }) {
-  const { orderId } = use(params);
+export default function TrackPage() {
+  const params = useParams();
+  const orderId = (params?.orderId as string) ?? "";
   const [data, setData] = useState<OrderData | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
