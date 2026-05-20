@@ -83,7 +83,15 @@ export async function GET(
     const { db } = await import("@/lib/firebase/admin");
     const docSnap = await db.collection("orders").doc(orderId).get();
     if (docSnap.exists) {
-      const order = docSnap.data() as Order;
+      const raw = docSnap.data()!;
+      // Firestore Timestamps are not JSON-serializable — convert to ISO strings
+      const order: Order = {
+        ...raw,
+        createdAt:
+          raw.createdAt && typeof raw.createdAt.toDate === "function"
+            ? raw.createdAt.toDate().toISOString()
+            : raw.createdAt ?? new Date().toISOString(),
+      } as Order;
       return buildTrackingResponse(order);
     }
   } catch (firestoreErr) {

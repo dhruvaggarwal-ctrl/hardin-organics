@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
@@ -82,6 +82,8 @@ function Input({ value, onChange, placeholder, type = "text", error, maxLength }
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, subtotal, discount, clearCart } = useCart();
+  // Prevents the "cart empty → redirect to shop" effect from firing during checkout submission
+  const completingOrder = useRef(false);
 
   const LS_KEY = "hardin_checkout_details";
   const [form, setForm] = useState<FormData>(() => {
@@ -143,7 +145,8 @@ export default function CheckoutPage() {
   }
 
   useEffect(() => {
-    if (items.length === 0) router.replace("/shop");
+    // Don't redirect when we're the ones clearing the cart after a successful order
+    if (items.length === 0 && !completingOrder.current) router.replace("/shop");
   }, [items, router]);
 
   // Persist form to localStorage so it survives page refreshes and return visits
@@ -271,6 +274,7 @@ export default function CheckoutPage() {
             const saveData = await saveRes.json();
             const hoOrderId = saveData.orderId || `HO-${Date.now()}`;
 
+            completingOrder.current = true;
             clearCart();
             const itemsParam = encodeURIComponent(
               JSON.stringify(
