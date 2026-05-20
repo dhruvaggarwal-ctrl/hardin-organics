@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useCart } from "@/context/CartContext";
 import { products } from "@/data/products";
 import { pixelInitiateCheckout } from "@/lib/pixel";
 
@@ -123,6 +124,7 @@ const REVIEWS = [
 export default function BogoPage() {
   const { h, m, s, expired } = useCountdown();
   const router = useRouter();
+  const { clearCart } = useCart();
 
   const charcoal = products.find((p) => p.id === "charcoal-soap")!;
   const haldi = products.find((p) => p.id === "saffron-haldi-chandan")!;
@@ -132,7 +134,7 @@ export default function BogoPage() {
   const SAVINGS = ORIGINAL_PRICE - BOGO_PRICE;
 
 
-  const LS_KEY = "hardin_checkout_details";
+  const LS_KEY = "hardin_bogo_details";
   const [form, setForm] = useState<FormData>(() => {
     const empty: FormData = { customerName: "", mobile: "", email: "", addressLine1: "", addressLine2: "", city: "", state: "", pincode: "" };
     if (typeof window === "undefined") return empty;
@@ -144,6 +146,8 @@ export default function BogoPage() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [pincodeLoading, setPincodeLoading] = useState(false);
+  const [pincodeStatus, setPincodeStatus] = useState<"idle" | "ok" | "error">("idle");
 
   // Persist form to localStorage on every change
   useEffect(() => {
@@ -170,6 +174,45 @@ export default function BogoPage() {
       })
       .catch(() => {/* not logged in — ignore */});
   }, []);
+
+  // Pincode autofill
+  useEffect(() => {
+    const pin = form.pincode.trim();
+    if (pin.length !== 6) {
+      if (pincodeStatus !== "idle") setPincodeStatus("idle");
+      return;
+    }
+    let cancelled = false;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    setPincodeLoading(true);
+    setPincodeStatus("idle");
+
+    fetch(`https://api.postalpincode.in/pincode/${pin}`, { signal: controller.signal })
+      .then((r) => r.json())
+      .then((data) => {
+        clearTimeout(timeoutId);
+        if (cancelled) return;
+        const post = data?.[0];
+        if (post?.Status === "Success" && post.PostOffice?.length > 0) {
+          const po = post.PostOffice[0];
+          setForm((prev) => ({
+            ...prev,
+            city: po.District || po.Name || prev.city,
+            state: INDIAN_STATES.includes(po.State) ? po.State : prev.state,
+          }));
+          setErrors((prev) => ({ ...prev, city: undefined, state: undefined }));
+          setPincodeStatus("ok");
+        } else {
+          setPincodeStatus("error");
+        }
+      })
+      .catch(() => { clearTimeout(timeoutId); if (!cancelled) setPincodeStatus("error"); })
+      .finally(() => { if (!cancelled) setPincodeLoading(false); });
+
+    return () => { cancelled = true; controller.abort(); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.pincode]);
 
   const set = (field: keyof FormData) => (value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -278,6 +321,7 @@ export default function BogoPage() {
                 { n: haldi.name, q: 1, p: 0, img: haldi.images[0] ?? "", size: "1 Bar" },
               ])
             );
+            clearCart();
             router.push(
               `/order-confirmation?orderId=${hoOrderId}&method=paid` +
               `&name=${encodeURIComponent(form.customerName)}&mobile=${form.mobile}&total=${BOGO_PRICE}` +
@@ -451,11 +495,43 @@ export default function BogoPage() {
                 <Input value={form.city} onChange={set("city")} placeholder="Gurgaon" error={!!errors.city} />
               </Field>
               <Field label="Pincode" required error={errors.pincode}>
-                <Input
-                  value={form.pincode}
-                  onChange={(v) => set("pincode")(v.replace(/\D/g, "").slice(0, 6))}
-                  placeholder="122001" error={!!errors.pincode} maxLength={6}
-                />
+                <div className="relative">
+                  <Input
+                    value={form.pincode}
+                    onChange={(v) => {
+                      set("pincode")(v.replace(/\D/g, "").slice(0, 6));
+                      setPincodeStatus("idle");
+                    }}
+                    placeholder="122001" error={!!errors.pincode} maxLength={6}
+                  />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    {pincodeLoading && (
+                      <svg className="animate-spin w-4 h-4 text-[#2D5016]" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                      </svg>
+                    )}
+                    {!pincodeLoading && pincodeStatus === "ok" && (
+                      <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+                      </svg>
+                    )}
+                    {!pincodeLoading && pincodeStatus === "error" && (
+                      <svg className="w-4 h-4 text-red-400" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                      </svg>
+                    )}
+                  </div>
+                </div>
+                {pincodeStatus === "ok" && !errors.pincode && (
+                  <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    City &amp; state auto-filled
+                  </p>
+                )}
+                {pincodeStatus === "error" && !errors.pincode && (
+                  <p className="text-xs text-amber-600 mt-1">Pincode not found — please fill city &amp; state manually</p>
+                )}
               </Field>
             </div>
 

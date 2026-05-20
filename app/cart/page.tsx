@@ -218,14 +218,14 @@ export default function CartPage() {
 
                 {/* Trust */}
                 <div className="mt-5 pt-5 border-t border-gray-100 space-y-2">
-                  {["Secure Payment", "Free shipping above ₹399", "100% Natural", "COD Available"].map((t) => (
+                  {["Secure Payment", "Free shipping above ₹399", "100% Natural"].map((t) => (
                     <div key={t} className="flex items-center gap-2 text-xs text-[#6B6B6B]">{t}</div>
                   ))}
                 </div>
 
                 {/* Payment icons */}
                 <div className="mt-4 flex flex-wrap gap-2">
-                  {["UPI", "Razorpay", "Visa", "Mastercard", "COD"].map((p) => (
+                  {["UPI", "Razorpay", "Visa", "Mastercard"].map((p) => (
                     <span key={p} className="text-xs border border-gray-200 text-[#6B6B6B] px-2 py-1 rounded">{p}</span>
                   ))}
                 </div>

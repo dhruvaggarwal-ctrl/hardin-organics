@@ -53,6 +53,27 @@ export async function POST(req: NextRequest) {
       if (session?.customerId) customerId = session.customerId;
     } catch { /* not logged in — ignore */ }
 
+    // Re-verify coupon server-side to prevent client-side manipulation
+    // Coupon definitions mirror those in app/api/coupon/validate/route.ts
+    const COUPONS: Record<string, { type: "percent" | "fixed"; value: number; allowedOn: "all" | "non-sale" }> = {
+      WELCOME10: { type: "percent", value: 10, allowedOn: "non-sale" },
+    };
+    let verifiedCouponDiscount = 0;
+    if (body.couponCode) {
+      const upper = String(body.couponCode).trim().toUpperCase();
+      const coupon = COUPONS[upper];
+      if (coupon) {
+        const orderType = body.orderType || "regular";
+        const isValidForOrderType = !(coupon.allowedOn === "non-sale" && orderType === "BOGO");
+        if (isValidForOrderType) {
+          const sub = (body.subtotal as number) || 0;
+          verifiedCouponDiscount = coupon.type === "percent"
+            ? Math.round(sub * coupon.value / 100)
+            : Math.min(coupon.value, sub);
+        }
+      }
+    }
+
     const order = {
       orderId,
       customerId,                                      // FIX: link order to logged-in user
@@ -68,7 +89,7 @@ export async function POST(req: NextRequest) {
       subtotal: body.subtotal,
       discount: body.discount,
       couponCode: body.couponCode || null,             // FIX: save coupon info
-      couponDiscount: body.couponDiscount || 0,        // FIX: save coupon discount
+      couponDiscount: verifiedCouponDiscount,          // server-verified — ignores client-sent value
       shipping: body.shipping,
       totalAmount: body.totalAmount,
       orderType: body.orderType || "regular",

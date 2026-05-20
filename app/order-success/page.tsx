@@ -49,6 +49,19 @@ export default function OrderSuccessPage({ searchParams }: PageProps) {
   const [copied, setCopied] = useState(false);
   const firstName = name ? name.split(" ")[0] : "Friend";
 
+  // Guard: if no paymentId, this is likely a direct URL access — show nothing useful
+  if (!paymentId) {
+    return (
+      <div className="min-h-screen bg-[#F5F0E8] flex items-center justify-center px-4">
+        <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-xl">
+          <h2 className="text-xl font-bold text-[#1C1C1C] mb-2">No order found</h2>
+          <p className="text-[#6B6B6B] text-sm mb-6">We couldn&apos;t find a payment for this page. Please check your order in your account.</p>
+          <a href="/account/dashboard" className="block w-full bg-[#2D5016] text-white font-bold py-3.5 rounded-2xl text-sm text-center">Go to My Orders</a>
+        </div>
+      </div>
+    );
+  }
+
   function copyOrderId() {
     if (orderId) {
       navigator.clipboard?.writeText(orderId).then(() => {
