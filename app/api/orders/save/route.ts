@@ -226,12 +226,18 @@ export async function POST(req: NextRequest) {
         pincode: order.pincode,
       };
 
-      fetch(process.env.GOOGLE_SHEET_WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(sheetPayload),
-        signal: AbortSignal.timeout(10000),
-      }).catch((e) => console.warn("[Google Sheets] Log failed (non-fatal):", e));
+      // Must be awaited — Vercel kills fire-and-forget fetches when the function returns
+      try {
+        const sheetRes = await fetch(process.env.GOOGLE_SHEET_WEBHOOK_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain" }, // Apps Script reads e.postData.contents regardless
+          body: JSON.stringify(sheetPayload),
+          signal: AbortSignal.timeout(10000),
+        });
+        console.log("[Google Sheets] Log status:", sheetRes.status);
+      } catch (e) {
+        console.warn("[Google Sheets] Log failed (non-fatal):", e);
+      }
     }
 
     // Log WhatsApp notification
