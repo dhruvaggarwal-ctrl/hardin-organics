@@ -52,12 +52,6 @@ async function sendOtpEmail(email: string, otp: string) {
                     <p style="margin:16px 0 0;color:#999;font-size:12px">Expires in 10 minutes</p>
                   </div>
 
-                  <!-- Coupon teaser -->
-                  <div style="background:#1E3A0F;border-radius:14px;padding:20px 24px;text-align:center;margin-bottom:28px">
-                    <p style="margin:0 0 6px;color:rgba(255,255,255,0.6);font-size:11px;letter-spacing:2px;text-transform:uppercase">Your discount code (unlocks after verification)</p>
-                    <p style="margin:0;color:#F5C842;font-size:26px;font-weight:800;letter-spacing:6px">WELCOME10</p>
-                  </div>
-
                   <p style="margin:0;color:#BBBBBB;font-size:12px;line-height:1.7;text-align:center">
                     Didn't request this? You can safely ignore this email.<br>This code is only valid once and cannot be reused.
                   </p>
