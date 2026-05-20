@@ -67,8 +67,8 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${dmSans.variable} ${cormorant.variable} ${dancingScript.variable}`}>
-      <body>
-        {/* Microsoft Clarity */}
+      <head>
+        {/* Microsoft Clarity — placed in <head> as required */}
         <Script id="microsoft-clarity" strategy="afterInteractive">{`
           (function(c,l,a,r,i,t,y){
             c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
@@ -76,7 +76,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
           })(window, document, "clarity", "script", "wu7baxic7e");
         `}</Script>
-
+      </head>
+      <body>
         {/* Meta Pixel — strategy="afterInteractive" works fine in body */}
         <Script id="meta-pixel" strategy="afterInteractive">{`
           !function(f,b,e,v,n,t,s)
