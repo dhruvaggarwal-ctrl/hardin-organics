@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     });
 
     await transporter.sendMail({
-      from: `"Hardin Organics" <${process.env.SMTP_USER}>`,
+      from: `"Hardin Organics" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
       to: email,
       subject: "Your login link for Hardin Organics 🌿",
       html: `

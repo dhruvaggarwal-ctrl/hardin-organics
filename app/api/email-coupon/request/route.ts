@@ -17,7 +17,7 @@ async function sendOtpEmail(email: string, otp: string) {
   });
 
   await transporter.sendMail({
-    from: `"Hardin Organics" <${process.env.SMTP_USER}>`,
+    from: `"Hardin Organics" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
     to: email,
     subject: "676373 is your Hardin Organics verification code".replace("676373", otp),
     html: `
