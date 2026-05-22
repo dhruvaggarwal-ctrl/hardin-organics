@@ -184,32 +184,28 @@ export default function BogoPage() {
     }
     let cancelled = false;
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
     setPincodeLoading(true);
     setPincodeStatus("idle");
 
-    fetch(`https://api.postalpincode.in/pincode/${pin}`, { signal: controller.signal })
+    fetch(`/api/pincode?pin=${pin}`, { signal: controller.signal })
       .then((r) => r.json())
       .then((data) => {
-        clearTimeout(timeoutId);
         if (cancelled) return;
-        const post = data?.[0];
-        if (post?.Status === "Success" && post.PostOffice?.length > 0) {
-          const po = post.PostOffice[0];
+        if (data.found) {
           setForm((prev) => ({
             ...prev,
-            city: po.District || po.Name || prev.city,
-            state: INDIAN_STATES.includes(po.State) ? po.State : prev.state,
+            city: data.city || prev.city,
+            state: INDIAN_STATES.includes(data.state) ? data.state : prev.state,
           }));
           setErrors((prev) => ({ ...prev, city: undefined, state: undefined }));
           setPincodeStatus("ok");
-        } else if (post?.Status === "Error") {
+        } else if (data.found === false) {
           setPincodeStatus("error");
         } else {
           setPincodeStatus("idle");
         }
       })
-      .catch(() => { clearTimeout(timeoutId); if (!cancelled) setPincodeStatus("idle"); })
+      .catch(() => { if (!cancelled) setPincodeStatus("idle"); })
       .finally(() => { if (!cancelled) setPincodeLoading(false); });
 
     return () => { cancelled = true; controller.abort(); };

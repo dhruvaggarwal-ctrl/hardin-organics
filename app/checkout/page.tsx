@@ -110,42 +110,31 @@ export default function CheckoutPage() {
       return;
     }
     let cancelled = false;
-    let controller: AbortController;
+    const controller = new AbortController();
     setPincodeLoading(true);
     setPincodeStatus("idle");
 
-    controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-    fetch(`https://api.postalpincode.in/pincode/${pin}`, { signal: controller.signal })
+    fetch(`/api/pincode?pin=${pin}`, { signal: controller.signal })
       .then((r) => r.json())
       .then((data) => {
-        clearTimeout(timeoutId);
         if (cancelled) return;
-        const post = data?.[0];
-        if (post?.Status === "Success" && post.PostOffice?.length > 0) {
-          const po = post.PostOffice[0];
+        if (data.found) {
           setForm((prev) => ({
             ...prev,
-            city: po.District || po.Name || prev.city,
-            state: INDIAN_STATES.includes(po.State) ? po.State : prev.state,
+            city: data.city || prev.city,
+            state: INDIAN_STATES.includes(data.state) ? data.state : prev.state,
           }));
-          // Clear city/state errors if autofilled
           setErrors((prev) => ({ ...prev, city: undefined, state: undefined }));
           setPincodeStatus("ok");
-        } else if (post?.Status === "Error") {
-          // API responded but pincode genuinely doesn't exist
+        } else if (data.found === false) {
+          // Pincode genuinely doesn't exist
           setPincodeStatus("error");
         } else {
-          // API returned unexpected response — silently ignore, let user fill manually
+          // Service temporarily down — let user fill manually, no error shown
           setPincodeStatus("idle");
         }
       })
-      .catch(() => {
-        // API is down or timed out — don't show error, just let user fill city/state manually
-        clearTimeout(timeoutId);
-        if (!cancelled) setPincodeStatus("idle");
-      })
+      .catch(() => { if (!cancelled) setPincodeStatus("idle"); })
       .finally(() => { if (!cancelled) setPincodeLoading(false); });
 
     return () => { cancelled = true; controller.abort(); };
