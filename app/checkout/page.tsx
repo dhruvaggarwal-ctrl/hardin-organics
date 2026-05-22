@@ -133,11 +133,19 @@ export default function CheckoutPage() {
           // Clear city/state errors if autofilled
           setErrors((prev) => ({ ...prev, city: undefined, state: undefined }));
           setPincodeStatus("ok");
-        } else {
+        } else if (post?.Status === "Error") {
+          // API responded but pincode genuinely doesn't exist
           setPincodeStatus("error");
+        } else {
+          // API returned unexpected response — silently ignore, let user fill manually
+          setPincodeStatus("idle");
         }
       })
-      .catch(() => { clearTimeout(timeoutId); if (!cancelled) setPincodeStatus("error"); })
+      .catch(() => {
+        // API is down or timed out — don't show error, just let user fill city/state manually
+        clearTimeout(timeoutId);
+        if (!cancelled) setPincodeStatus("idle");
+      })
       .finally(() => { if (!cancelled) setPincodeLoading(false); });
 
     return () => { cancelled = true; controller.abort(); };

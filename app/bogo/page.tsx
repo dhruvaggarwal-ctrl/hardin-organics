@@ -203,11 +203,13 @@ export default function BogoPage() {
           }));
           setErrors((prev) => ({ ...prev, city: undefined, state: undefined }));
           setPincodeStatus("ok");
-        } else {
+        } else if (post?.Status === "Error") {
           setPincodeStatus("error");
+        } else {
+          setPincodeStatus("idle");
         }
       })
-      .catch(() => { clearTimeout(timeoutId); if (!cancelled) setPincodeStatus("error"); })
+      .catch(() => { clearTimeout(timeoutId); if (!cancelled) setPincodeStatus("idle"); })
       .finally(() => { if (!cancelled) setPincodeLoading(false); });
 
     return () => { cancelled = true; controller.abort(); };
