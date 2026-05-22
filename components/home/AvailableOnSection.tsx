@@ -39,9 +39,8 @@ export function AvailableOnSection() {
             <img
               src="/images/flipkart-logo.png"
               alt="Flipkart"
-              width={22}
-              height={22}
-              className="brightness-0 invert"
+              width={24}
+              height={24}
             />
             <span className="text-base">Shop on Flipkart</span>
             <svg className="w-3.5 h-3.5 opacity-80" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
