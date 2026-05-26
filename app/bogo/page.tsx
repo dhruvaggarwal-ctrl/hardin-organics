@@ -249,10 +249,53 @@ export default function BogoPage() {
       const loaded = await loadRazorpay();
       if (!loaded) throw new Error("Failed to load payment gateway. Please try again.");
 
+      const bogoItems = [
+        { id: charcoal.id, name: charcoal.name, quantity: 1, price: BOGO_PRICE },
+        { id: haldi.id, name: haldi.name, quantity: 1, price: 0 },
+      ];
+      const cartId = `${form.mobile}_${Date.now()}`;
+
+      // Save abandoned cart before opening Razorpay
+      fetch("/api/abandoned-cart/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cartId,
+          customerName: form.customerName,
+          mobile: form.mobile,
+          email: form.email || null,
+          addressLine1: form.addressLine1,
+          addressLine2: form.addressLine2 || null,
+          city: form.city,
+          state: form.state,
+          pincode: form.pincode,
+          items: bogoItems,
+          totalAmount: BOGO_PRICE,
+          orderType: "BOGO",
+        }),
+      }).catch(() => {});
+
+      const orderNotes = {
+        customerName:  form.customerName,
+        mobile:        form.mobile,
+        email:         form.email || "",
+        addressLine1:  form.addressLine1,
+        addressLine2:  form.addressLine2 || "",
+        city:          form.city,
+        state:         form.state,
+        pincode:       form.pincode,
+        items:         JSON.stringify(bogoItems),
+        subtotal:      String(BOGO_PRICE),
+        discount:      "0",
+        shipping:      "0",
+        orderType:     "BOGO",
+        cartId,
+      };
+
       const orderRes = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: BOGO_PRICE, receipt: `bogo_${Date.now()}` }),
+        body: JSON.stringify({ amount: BOGO_PRICE, receipt: `bogo_${Date.now()}`, notes: orderNotes }),
       });
       if (!orderRes.ok) throw new Error("Could not initiate payment. Please try again.");
       const { orderId: rzpOrderId, amount: orderAmount, currency } = await orderRes.json();
@@ -312,6 +355,13 @@ export default function BogoPage() {
             });
             const saveData = await saveRes.json();
             const hoOrderId = saveData.orderId || `HO-${Date.now()}`;
+
+            // Delete abandoned cart — order completed
+            fetch("/api/abandoned-cart/delete", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ cartId }),
+            }).catch(() => {});
 
             const bogoItemsParam = encodeURIComponent(
               JSON.stringify([

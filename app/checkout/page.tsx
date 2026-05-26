@@ -267,10 +267,52 @@ export default function CheckoutPage() {
       const loaded = await loadRazorpay();
       if (!loaded) throw new Error("Failed to load payment gateway. Check your connection and try again.");
 
+      // Save abandoned cart to Firestore before opening Razorpay
+      // If payment completes → deleted. If user closes tab → stays for retargeting.
+      const cartId = `${form.mobile}_${Date.now()}`;
+      fetch("/api/abandoned-cart/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cartId,
+          customerName: form.customerName,
+          mobile: form.mobile,
+          email: form.email || null,
+          addressLine1: form.addressLine1,
+          addressLine2: form.addressLine2 || null,
+          city: form.city,
+          state: form.state,
+          pincode: form.pincode,
+          items: orderItems,
+          totalAmount: total,
+          orderType: "regular",
+        }),
+      }).catch(() => {}); // fire-and-forget, non-critical
+
+      // Pass full details as Razorpay notes → webhook can auto-recover orphaned payments
+      const orderNotes = {
+        customerName:  form.customerName,
+        mobile:        form.mobile,
+        email:         form.email || "",
+        addressLine1:  form.addressLine1,
+        addressLine2:  form.addressLine2 || "",
+        city:          form.city,
+        state:         form.state,
+        pincode:       form.pincode,
+        items:         JSON.stringify(orderItems),
+        subtotal:      String(subtotal),
+        discount:      String(discount),
+        couponCode:    couponApplied?.code ?? "",
+        couponDiscount: String(couponDiscount),
+        shipping:      String(shipping),
+        orderType:     "regular",
+        cartId,
+      };
+
       const orderRes = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: total, receipt: `rcpt_${Date.now()}` }),
+        body: JSON.stringify({ amount: total, receipt: `rcpt_${Date.now()}`, notes: orderNotes }),
       });
       if (!orderRes.ok) throw new Error("Could not initiate payment. Please try again.");
       const { orderId: rzpOrderId, amount: orderAmount, currency } = await orderRes.json();
@@ -332,6 +374,13 @@ export default function CheckoutPage() {
             }
             const saveData = await saveRes.json();
             const hoOrderId = saveData.orderId || `HO-${Date.now()}`;
+
+            // Delete abandoned cart record — order completed successfully
+            fetch("/api/abandoned-cart/delete", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ cartId }),
+            }).catch(() => {});
 
             completingOrder.current = true;
             clearCart();
