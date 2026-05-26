@@ -9,19 +9,15 @@ import { products } from "@/data/products";
 import { pixelInitiateCheckout } from "@/lib/pixel";
 
 // ─── Countdown ────────────────────────────────────────────────────────────────
-const OFFER_DURATION_HOURS = 24;
-const SS_KEY = "hardin_bogo_expiry"; // sessionStorage — resets on browser close (intentional)
+// Fixed 48-hour cycles anchored to a specific date.
+// ALL users see the same timer — it never resets on page visit, only after 48h.
+const CYCLE_MS = 48 * 60 * 60 * 1000; // 48 hours in ms
+const ANCHOR   = new Date("2026-05-26T00:00:00+05:30").getTime(); // IST midnight anchor
 
 function getEndTime(): number {
-  if (typeof window === "undefined") return Date.now() + OFFER_DURATION_HOURS * 3600 * 1000;
-  const stored = sessionStorage.getItem(SS_KEY);
-  if (stored) {
-    const end = parseInt(stored, 10);
-    if (end > Date.now()) return end;
-  }
-  const end = Date.now() + OFFER_DURATION_HOURS * 3600 * 1000;
-  sessionStorage.setItem(SS_KEY, String(end));
-  return end;
+  const elapsed      = Date.now() - ANCHOR;
+  const currentCycle = Math.floor(elapsed / CYCLE_MS);
+  return ANCHOR + (currentCycle + 1) * CYCLE_MS;
 }
 
 function useCountdown() {
