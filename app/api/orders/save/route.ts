@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createDelhiveryShipment, buildDelhiveryPayload } from "@/lib/delhivery";
 import { verifySession } from "@/lib/auth";
+import { sendOrderConfirmationWhatsApp } from "@/lib/notifications/whatsapp";
+import { verifyAndPriceOrder } from "@/lib/pricing";
 
 function generateOrderId(): string {
   const now = new Date();
@@ -35,24 +37,37 @@ export async function POST(req: NextRequest) {
       if (session?.customerId) customerId = session.customerId;
     } catch { /* not logged in — ignore */ }
 
-    // Re-verify coupon server-side to prevent client-side manipulation
-    // Coupon definitions mirror those in app/api/coupon/validate/route.ts
-    const COUPONS: Record<string, { type: "percent" | "fixed"; value: number; allowedOn: "all" | "non-sale" }> = {
-      WELCOME10: { type: "percent", value: 10, allowedOn: "non-sale" },
-    };
-    let verifiedCouponDiscount = 0;
-    if (body.couponCode) {
-      const upper = String(body.couponCode).trim().toUpperCase();
-      const coupon = COUPONS[upper];
-      if (coupon) {
-        const orderType = body.orderType || "regular";
-        const isValidForOrderType = !(coupon.allowedOn === "non-sale" && orderType === "BOGO");
-        if (isValidForOrderType) {
-          const sub = (body.subtotal as number) || 0;
-          verifiedCouponDiscount = coupon.type === "percent"
-            ? Math.round(sub * coupon.value / 100)
-            : Math.min(coupon.value, sub);
+    // Recompute pricing from catalog data server-side — never trust the client's
+    // subtotal/discount/couponDiscount/totalAmount for anything that determines
+    // what gets charged, shipped, or collected as COD.
+    const orderType = body.orderType || "regular";
+    const pricing = verifyAndPriceOrder(body.items, body.couponCode, orderType);
+    if (!pricing.valid) {
+      return NextResponse.json({ success: false, error: pricing.error || "Invalid order" }, { status: 400 });
+    }
+
+    // For prepaid orders, cross-check the recomputed total against what Razorpay
+    // actually captured — the ground truth for what the customer was charged.
+    if (body.razorpayPaymentId) {
+      try {
+        const keyId = process.env.RAZORPAY_KEY_ID!;
+        const keySecret = process.env.RAZORPAY_KEY_SECRET!;
+        const auth = Buffer.from(`${keyId}:${keySecret}`).toString("base64");
+        const paymentRes = await fetch(`https://api.razorpay.com/v1/payments/${body.razorpayPaymentId}`, {
+          headers: { Authorization: `Basic ${auth}` },
+        });
+        if (paymentRes.ok) {
+          const payment = await paymentRes.json();
+          const paidAmount = Number(payment.amount) / 100;
+          if (Math.abs(paidAmount - pricing.total) > 1) {
+            console.error(
+              `[orders/save] Amount mismatch — computed ₹${pricing.total}, Razorpay charged ₹${paidAmount} (payment ${body.razorpayPaymentId})`
+            );
+            return NextResponse.json({ success: false, error: "Payment amount mismatch — contact support." }, { status: 400 });
+          }
         }
+      } catch (e) {
+        console.error("[orders/save] Could not verify Razorpay payment amount:", e);
       }
     }
 
@@ -68,13 +83,13 @@ export async function POST(req: NextRequest) {
       state: body.state,
       pincode: body.pincode,
       items: body.items,
-      subtotal: body.subtotal,
-      discount: body.discount,
-      couponCode: body.couponCode || null,             // FIX: save coupon info
-      couponDiscount: verifiedCouponDiscount,          // server-verified — ignores client-sent value
-      shipping: body.shipping,
-      totalAmount: body.totalAmount,
-      orderType: body.orderType || "regular",
+      subtotal: pricing.subtotal,
+      discount: pricing.discount,
+      couponCode: pricing.couponCode,
+      couponDiscount: pricing.couponDiscount,
+      shipping: pricing.shipping,
+      totalAmount: pricing.total,                      // server-computed — ignores client-sent value
+      orderType,
       paymentMethod: body.paymentMethod,
       razorpayOrderId: body.razorpayOrderId || null,
       razorpayPaymentId: body.razorpayPaymentId || null,
@@ -149,7 +164,7 @@ export async function POST(req: NextRequest) {
         state: body.state,
         pincode: body.pincode,
         items: body.items,
-        totalAmount: body.totalAmount,
+        totalAmount: order.totalAmount,
         paymentMethod: body.paymentMethod,
       });
 
@@ -240,12 +255,22 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // ── Customer-facing order confirmation (WhatsApp) ───────────────────────
+    // Must be awaited — Vercel kills fire-and-forget work when the function returns.
+    // Internally no-ops (log + skip) if WhatsApp env vars aren't configured.
+    const whatsappResult = await sendOrderConfirmationWhatsApp({
+      orderId,
+      customerName: order.customerName,
+      mobile: order.mobile,
+    });
+    console.log(`[order-confirmation] whatsapp=${whatsappResult.sent}${whatsappResult.error ? ` (${whatsappResult.error})` : ""}`);
+
     // Log WhatsApp notification
     const waText = encodeURIComponent(
       `🛍️ New Order: ${orderId}\n` +
       `👤 ${body.customerName} | 📱 ${body.mobile}\n` +
       `📦 ${itemSummary}\n` +
-      `💰 ₹${body.totalAmount} (${body.paymentMethod})\n` +
+      `💰 ₹${order.totalAmount} (${body.paymentMethod})\n` +
       `📍 ${body.addressLine1}, ${body.city}, ${body.state} - ${body.pincode}`
     );
     console.log(`\n📲 New Order Alert! ${orderId}`);

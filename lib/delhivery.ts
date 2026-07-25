@@ -116,8 +116,9 @@ export async function createDelhiveryShipment(
 
     const formBody = `format=json&data=${encodeURIComponent(dataJson)}`;
 
+    // Log only the order ID here — the full payload (name/phone/address) is PII
+    // and shouldn't sit in the log stream. `dataJson` itself is still sent below.
     console.log("[Delhivery] Creating shipment for order:", shipment.order);
-    console.log("[Delhivery] Payload:", dataJson);
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15_000);
@@ -140,10 +141,11 @@ export async function createDelhiveryShipment(
 
     const responseText = await res.text();
     console.log("[Delhivery] Response status:", res.status);
-    console.log("[Delhivery] Response body:", responseText);
 
     if (!res.ok) {
-      console.error("[Delhivery] createShipment HTTP error:", res.status, responseText);
+      // Delhivery echoes the submitted shipment (incl. customer PII) back in error
+      // bodies — log only the status here, not the full response text.
+      console.error("[Delhivery] createShipment HTTP error:", res.status);
       return null;
     }
 

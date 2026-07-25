@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { products, Product } from "@/data/products";
+import { COUPONS, PENDING_COUPON_KEY } from "@/lib/pricing";
 
 interface Props {
   currentProductId: string;
@@ -13,13 +14,18 @@ export function CompleteYourRoutine({ currentProductId }: Props) {
   const { addToCart } = useCart();
   const other = products.find((p) => p.id !== currentProductId)!;
 
-  // Bundle card data
+  // Bundle card data — derived from the catalog + the shared STARTERDUO16 coupon
+  // so this can't silently drift from the real product prices again.
+  const current = products.find((p) => p.id === currentProductId)!;
+  const starterCoupon = COUPONS.STARTERDUO16;
+  const bundleOriginal = current.price + other.price;
+  const bundlePrice = Math.round(bundleOriginal * (1 - starterCoupon.value / 100));
   const bundle = {
     name: "Starter Duo",
     subtitle: "Both soaps — best value",
-    price: 249,
-    originalPrice: 298,
-    savings: 49,
+    price: bundlePrice,
+    originalPrice: bundleOriginal,
+    savings: bundleOriginal - bundlePrice,
   };
 
   const CrossSellCard = ({ product, isFree = false }: { product: Product; isFree?: boolean }) => (
@@ -81,6 +87,7 @@ export function CompleteYourRoutine({ currentProductId }: Props) {
             const haldi = products.find((p) => p.id === "saffron-haldi-chandan")!;
             addToCart(charcoal, charcoal.sizes[0].label, charcoal.price);
             addToCart(haldi, haldi.sizes[0].label, haldi.price);
+            try { localStorage.setItem(PENDING_COUPON_KEY, "STARTERDUO16"); } catch { /* ignore */ }
           }}
           className="w-full bg-[#D4A017] text-[#1C1C1C] text-sm font-bold py-2.5 rounded-xl hover:bg-[#E8B52A] transition-colors"
         >

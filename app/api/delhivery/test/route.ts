@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { buildDelhiveryPayload, createDelhiveryShipment } from "@/lib/delhivery";
+import { requireAdmin } from "@/lib/adminAuth";
 
-// Test endpoint — call GET /api/delhivery/test?secret=hardin2025
-// to verify your Delhivery token and pickup address are correctly configured.
+// Test endpoint — verifies your Delhivery token and pickup address are
+// correctly configured. Usage: GET /api/delhivery/test (header: x-admin-token)
 export async function GET(req: NextRequest) {
-  const secret = req.nextUrl.searchParams.get("secret");
-  if (secret !== "hardin2025") {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const denied = requireAdmin(req);
+  if (denied) return denied;
 
   const token = process.env.DELHIVERY_API_TOKEN;
   const pickupName = process.env.DELHIVERY_PICKUP_NAME;

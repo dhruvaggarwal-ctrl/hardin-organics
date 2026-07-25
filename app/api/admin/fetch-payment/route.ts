@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/adminAuth";
 
 // Fetches full payment + order details directly from Razorpay API
-// Usage: /api/admin/fetch-payment?paymentId=pay_xxx
+// Usage: /api/admin/fetch-payment?paymentId=pay_xxx  (header: x-admin-token)
 export async function GET(req: NextRequest) {
+  const denied = requireAdmin(req);
+  if (denied) return denied;
+
   const paymentId = req.nextUrl.searchParams.get("paymentId")?.trim();
   if (!paymentId) return NextResponse.json({ error: "paymentId required" }, { status: 400 });
 

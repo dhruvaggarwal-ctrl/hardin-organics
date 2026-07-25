@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { pixelInitiateCheckout } from "@/lib/pixel";
+import { PENDING_COUPON_KEY, FREE_SHIPPING_THRESHOLD, FLAT_SHIPPING_FEE } from "@/lib/pricing";
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -154,11 +155,12 @@ export default function CheckoutPage() {
       : Math.min(couponApplied.value, discountedSubtotal)
     : 0;
   const afterCoupon = discountedSubtotal - couponDiscount;
-  const shipping = afterCoupon >= 399 ? 0 : 60;
+  const shipping = afterCoupon >= FREE_SHIPPING_THRESHOLD ? 0 : FLAT_SHIPPING_FEE;
   const total = afterCoupon + shipping;
 
-  async function applyCoupon() {
-    if (!couponInput.trim()) return;
+  async function applyCoupon(codeOverride?: string) {
+    const code = codeOverride ?? couponInput.trim();
+    if (!code) return;
     setCouponLoading(true);
     setCouponError("");
     const controller = new AbortController();
@@ -167,7 +169,7 @@ export default function CheckoutPage() {
       const res = await fetch("/api/coupon/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: couponInput.trim(), orderType: "regular" }),
+        body: JSON.stringify({ code, orderType: "regular" }),
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
@@ -189,6 +191,19 @@ export default function CheckoutPage() {
       setCouponLoading(false);
     }
   }
+
+  // Auto-apply a bundle's coupon code when arriving here via a "Buy Bundle" button
+  useEffect(() => {
+    if (couponApplied) return;
+    try {
+      const pending = localStorage.getItem(PENDING_COUPON_KEY);
+      if (pending) {
+        localStorage.removeItem(PENDING_COUPON_KEY);
+        applyCoupon(pending);
+      }
+    } catch { /* ignore */ }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function removeCoupon() {
     setCouponApplied(null);
@@ -312,7 +327,13 @@ export default function CheckoutPage() {
       const orderRes = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: total, receipt: `rcpt_${Date.now()}`, notes: orderNotes }),
+        body: JSON.stringify({
+          items: orderItems,
+          couponCode: couponApplied?.code ?? null,
+          orderType: "regular",
+          receipt: `rcpt_${Date.now()}`,
+          notes: orderNotes,
+        }),
       });
       if (!orderRes.ok) throw new Error("Could not initiate payment. Please try again.");
       const { orderId: rzpOrderId, amount: orderAmount, currency } = await orderRes.json();
@@ -664,7 +685,7 @@ export default function CheckoutPage() {
                       className="flex-1 px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#2D5016] uppercase placeholder-normal placeholder:normal-case"
                     />
                     <button
-                      onClick={applyCoupon}
+                      onClick={() => applyCoupon()}
                       disabled={couponLoading || !couponInput.trim()}
                       className="px-4 py-2.5 bg-[#2D5016] text-white text-sm font-semibold rounded-xl hover:bg-[#3D6B20] disabled:opacity-50 transition-colors whitespace-nowrap"
                     >

@@ -1,6 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/adminAuth";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const denied = requireAdmin(req);
+  if (denied) return denied;
+
   const url = process.env.GOOGLE_SHEET_WEBHOOK_URL;
   if (!url) {
     return NextResponse.json({ error: "GOOGLE_SHEET_WEBHOOK_URL not set" }, { status: 500 });

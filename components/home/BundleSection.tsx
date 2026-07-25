@@ -5,45 +5,61 @@ import { motion } from "framer-motion";
 import { CountdownTimer } from "../ui/CountdownTimer";
 import { useCart } from "@/context/CartContext";
 import { products } from "@/data/products";
+import { COUPONS, PENDING_COUPON_KEY } from "@/lib/pricing";
 
-const bundles = [
-  {
-    name: "Starter Duo",
-    subtitle: "The perfect day + night routine",
-    includes: [
-      "1× Activated Charcoal Soap (100g)",
-      "1× Saffron Haldi Chandan Soap (100g)",
-      "Free eco-friendly packaging",
-    ],
-    originalPrice: 298,
-    price: 249,
-    savings: 49,
-    savingsPct: 16,
-    badge: "Most Popular",
-    color: "#2D5016",
-  },
-  {
-    name: "Double Up Pack",
-    subtitle: "Stock up & save more",
-    includes: [
-      "2× Activated Charcoal Soap (100g each)",
-      "2× Saffron Haldi Chandan Soap (100g each)",
-      "Free eco-friendly packaging",
-      "Priority shipping",
-    ],
-    originalPrice: 596,
-    price: 449,
-    savings: 147,
-    savingsPct: 25,
-    badge: "Best Value",
-    color: "#C4622D",
-  },
-];
+function buildBundles(unitPrice: number) {
+  const starterCoupon = COUPONS.STARTERDUO16;
+  const doubleUpCoupon = COUPONS.DOUBLEUP25;
+  const starterOriginal = unitPrice * 2;
+  const starterPrice = Math.round(starterOriginal * (1 - starterCoupon.value / 100));
+  const doubleUpOriginal = unitPrice * 4;
+  const doubleUpPrice = Math.round(doubleUpOriginal * (1 - doubleUpCoupon.value / 100));
+
+  return [
+    {
+      name: "Starter Duo",
+      subtitle: "The perfect day + night routine",
+      includes: [
+        "1× Activated Charcoal Soap (100g)",
+        "1× Saffron Haldi Chandan Soap (100g)",
+        "Free eco-friendly packaging",
+      ],
+      quantityEach: 1,
+      originalPrice: starterOriginal,
+      price: starterPrice,
+      savings: starterOriginal - starterPrice,
+      savingsPct: starterCoupon.value,
+      couponCode: "STARTERDUO16",
+      badge: "Most Popular",
+      color: "#2D5016",
+    },
+    {
+      name: "Double Up Pack",
+      subtitle: "Stock up & save more",
+      includes: [
+        "2× Activated Charcoal Soap (100g each)",
+        "2× Saffron Haldi Chandan Soap (100g each)",
+        "Free eco-friendly packaging",
+        "Priority shipping",
+      ],
+      quantityEach: 2,
+      originalPrice: doubleUpOriginal,
+      price: doubleUpPrice,
+      savings: doubleUpOriginal - doubleUpPrice,
+      savingsPct: doubleUpCoupon.value,
+      couponCode: "DOUBLEUP25",
+      badge: "Best Value",
+      color: "#C4622D",
+    },
+  ];
+}
 
 export function BundleSection() {
   const { addToCart } = useCart();
   const charcoal = products.find((p) => p.id === "charcoal-soap")!;
   const haldi = products.find((p) => p.id === "saffron-haldi-chandan")!;
+  // Both soaps share the same Pack of 1 price, but derive from the catalog rather than assuming.
+  const bundles = buildBundles(charcoal.price);
 
   return (
     <section className="py-16 md:py-20 bg-[#2D5016]">
@@ -123,8 +139,9 @@ export function BundleSection() {
 
               <button
                 onClick={() => {
-                  addToCart(charcoal, charcoal.sizes[0].label, charcoal.price);
-                  addToCart(haldi, haldi.sizes[0].label, haldi.price);
+                  addToCart(charcoal, charcoal.sizes[0].label, charcoal.price, bundle.quantityEach);
+                  addToCart(haldi, haldi.sizes[0].label, haldi.price, bundle.quantityEach);
+                  try { localStorage.setItem(PENDING_COUPON_KEY, bundle.couponCode); } catch { /* ignore */ }
                 }}
                 className="w-full py-4 rounded-xl font-bold text-white text-base transition-all duration-300 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
                 style={{ backgroundColor: bundle.color }}

@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
 import { Product } from "@/data/products";
+import { FREE_SHIPPING_THRESHOLD, MULTI_ITEM_DISCOUNT } from "@/lib/pricing";
 
 export interface CartItem {
   product: Product;
@@ -27,7 +28,6 @@ interface CartContextType {
 }
 
 const CART_KEY = "hardin_cart";
-const FREE_SHIPPING_THRESHOLD = 399;
 
 function readStorage(): CartItem[] {
   try {
@@ -120,8 +120,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  // Auto-apply ₹50 discount when 2+ total items in cart
-  const discount = totalItems >= 2 ? 50 : 0;
+  // Auto-apply multi-item discount when 2+ total items in cart
+  const discount = totalItems >= 2 ? MULTI_ITEM_DISCOUNT : 0;
   const discountedSubtotal = subtotal - discount;
   const amountToFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - discountedSubtotal);
 

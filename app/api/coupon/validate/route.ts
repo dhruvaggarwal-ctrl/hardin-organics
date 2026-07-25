@@ -1,22 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-/**
- * Coupon definitions.
- * allowedOn: "all" = works everywhere | "non-sale" = blocked on BOGO / sale pages
- */
-const COUPONS: Record<string, {
-  type: "percent" | "fixed";
-  value: number;           // percent: 0-100 | fixed: rupee amount
-  allowedOn: "all" | "non-sale";
-  label: string;
-}> = {
-  WELCOME10: {
-    type: "percent",
-    value: 10,
-    allowedOn: "non-sale",
-    label: "10% off",
-  },
-};
+import { COUPONS } from "@/lib/pricing";
 
 export async function POST(req: NextRequest) {
   try {

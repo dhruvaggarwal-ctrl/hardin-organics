@@ -126,7 +126,7 @@ export function Footer() {
 
       {/* Copyright */}
       <div className="border-t border-white/10 py-4 text-center text-xs text-gray-600">
-        © 2024 Hardin Organics. All rights reserved. Made in India.
+        © {new Date().getFullYear()} Hardin Organics. All rights reserved. Made in India.
       </div>
     </footer>
   );

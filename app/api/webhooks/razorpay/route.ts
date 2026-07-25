@@ -243,7 +243,11 @@ export async function POST(req: NextRequest) {
 
   } catch (err) {
     console.error("[razorpay-webhook] Firestore error:", err);
-    // Still return 200 so Razorpay doesn't keep retrying for transient DB errors
+    // Return 5xx so Razorpay retries with backoff — a payment.captured event we
+    // fail to persist here is an order that never gets fulfilled, so it must not
+    // be silently dropped. Razorpay stops retrying on its own after its retry
+    // window elapses, so this can't retry forever.
+    return NextResponse.json({ error: "Internal error processing webhook" }, { status: 500 });
   }
 
   return NextResponse.json({ received: true });

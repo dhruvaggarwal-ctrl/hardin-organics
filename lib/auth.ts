@@ -1,9 +1,13 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 
-const SECRET = new TextEncoder().encode(
-  process.env.AUTH_SECRET || "hardin-organics-fallback-secret-32chars!!"
-);
+if (!process.env.AUTH_SECRET) {
+  throw new Error(
+    "AUTH_SECRET env var is not set. Refusing to start with a hardcoded fallback " +
+    "secret, since anyone reading the source could forge customer session tokens."
+  );
+}
+const SECRET = new TextEncoder().encode(process.env.AUTH_SECRET);
 export const COOKIE_NAME = "hardin_session";
 const COOKIE_MAX_AGE = 7 * 24 * 60 * 60; // 7 days
 
