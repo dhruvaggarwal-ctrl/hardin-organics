@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
+import { BOGO_SALE_ENABLED } from "@/lib/promotions";
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -57,19 +58,21 @@ export function Navbar() {
             ))}
 
             {/* BOGO animated button */}
-            <Link
-              href="/bogo"
-              className="relative inline-flex items-center gap-1.5 bg-[#C4622D] text-white text-xs font-bold px-4 py-2 rounded-full hover:bg-[#D4734A] transition-colors overflow-hidden group"
-            >
-              {/* Shimmer sweep */}
-              <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-              {/* Pulse ring */}
-              <span className="absolute inset-0 rounded-full animate-ping opacity-30 bg-[#C4622D]" />
-              <span className="relative flex items-center gap-1.5">
-                🔥
-                <span>BOGO FREE</span>
-              </span>
-            </Link>
+            {BOGO_SALE_ENABLED && (
+              <Link
+                href="/bogo"
+                className="relative inline-flex items-center gap-1.5 bg-[#C4622D] text-white text-xs font-bold px-4 py-2 rounded-full hover:bg-[#D4734A] transition-colors overflow-hidden group"
+              >
+                {/* Shimmer sweep */}
+                <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                {/* Pulse ring */}
+                <span className="absolute inset-0 rounded-full animate-ping opacity-30 bg-[#C4622D]" />
+                <span className="relative flex items-center gap-1.5">
+                  🔥
+                  <span>BOGO FREE</span>
+                </span>
+              </Link>
+            )}
           </div>
 
           {/* Right icons */}
@@ -135,13 +138,15 @@ export function Navbar() {
               <button onClick={() => setMenuOpen(false)} className="text-[#1C1C1C] text-2xl">×</button>
             </div>
             <nav className="flex flex-col gap-5">
-              <Link
-                href="/bogo"
-                onClick={() => setMenuOpen(false)}
-                className="flex items-center justify-center gap-2 bg-[#C4622D] text-white font-bold px-5 py-3 rounded-xl text-base mb-2"
-              >
-                🔥 BOGO FREE — Buy 1 Get 1
-              </Link>
+              {BOGO_SALE_ENABLED && (
+                <Link
+                  href="/bogo"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center justify-center gap-2 bg-[#C4622D] text-white font-bold px-5 py-3 rounded-xl text-base mb-2"
+                >
+                  🔥 BOGO FREE — Buy 1 Get 1
+                </Link>
+              )}
               {navLinks.map((l) => (
                 <Link
                   key={l.href}

@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { products } from "@/data/products";
 import { pixelInitiateCheckout } from "@/lib/pixel";
+import { BOGO_SALE_ENABLED } from "@/lib/promotions";
 
 // ─── Countdown ────────────────────────────────────────────────────────────────
 // Fixed 48-hour cycles anchored to a specific date.
@@ -118,6 +119,30 @@ const REVIEWS = [
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function BogoPage() {
+  if (!BOGO_SALE_ENABLED) return <BogoOfflineNotice />;
+  return <BogoPageContent />;
+}
+
+function BogoOfflineNotice() {
+  return (
+    <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4 gap-4">
+      <h1 className="text-2xl md:text-3xl font-bold text-[#1C1C1C] font-display">
+        This offer isn&apos;t running right now
+      </h1>
+      <p className="text-[#6B6B6B] max-w-md">
+        Check back soon, or head to the shop to see our regular soap prices.
+      </p>
+      <Link
+        href="/shop"
+        className="mt-2 px-6 py-3 rounded-xl bg-[#2D5016] text-white font-semibold hover:bg-[#3D6B20] transition-colors"
+      >
+        Go to Shop
+      </Link>
+    </div>
+  );
+}
+
+function BogoPageContent() {
   const { h, m, s, expired } = useCountdown();
   const router = useRouter();
   const { clearCart } = useCart();

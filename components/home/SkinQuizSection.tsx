@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { products, Product } from "@/data/products";
+import { BOGO_SALE_ENABLED } from "@/lib/promotions";
 
 const questions = [
   {
@@ -294,7 +295,7 @@ export function SkinQuizSection({ autoOpen = false }: SkinQuizProps) {
                   <div className="space-y-3">
                     {result.bothProducts ? (
                       <Link
-                        href="/bogo"
+                        href={BOGO_SALE_ENABLED ? "/bogo" : "/shop"}
                         onClick={() => { setIsOpen(false); reset(); }}
                         className="block w-full bg-[#C4622D] text-white font-bold py-4 rounded-xl text-center hover:bg-[#D4734A] transition-colors"
                       >

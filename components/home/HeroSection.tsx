@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { BOGO_SALE_ENABLED } from "@/lib/promotions";
 
 const INTERVAL = 4000;
 
@@ -140,7 +141,7 @@ function Slide4() {
   );
 }
 
-const SLIDES = [Slide1, Slide2, Slide3, Slide4];
+const SLIDES = BOGO_SALE_ENABLED ? [Slide1, Slide2, Slide3, Slide4] : [Slide1, Slide3, Slide4];
 const SLIDE_BG = ["#F5F0E8", "#F5EDDA", "#EBEBEB", "#F5E6C0"];
 
 export function HeroSection() {
