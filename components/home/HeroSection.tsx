@@ -53,14 +53,13 @@ function Slide2() {
   return (
     <Link href="/bogo" className="block w-full group" aria-label="Shop BOGO offer">
       <div className="relative w-full">
-        {/* Desktop */}
+        {/* Desktop — see Slide3 note on why this isn't `priority` */}
         <Image
           src="/images/bogo-banner.jpg"
           alt="Buy One Get One Free — Hardin Organics"
           width={1717}
           height={916}
           className="hidden md:block w-full h-auto object-cover"
-          priority
           sizes="100vw"
         />
         {/* Mobile */}
@@ -70,7 +69,6 @@ function Slide2() {
           width={1122}
           height={1402}
           className="block md:hidden w-full h-auto object-cover"
-          priority
           sizes="100vw"
         />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
@@ -84,14 +82,16 @@ function Slide3() {
   return (
     <Link href="/product/activated-charcoal-soap" className="block w-full group" aria-label="Shop Charcoal Anti-Acne Soap">
       <div className="relative w-full">
-        {/* Desktop */}
+        {/* Desktop — not `priority`: this slide isn't shown on first paint, and marking
+            both breakpoints priority/eager forces both to fetch+decode simultaneously
+            on every slide transition even though only one is ever visible. Letting the
+            hidden (display:none) variant stay native-lazy means it never loads at all. */}
         <Image
           src="/images/charcoal-banner.jpg"
           alt="Hardin Organics Charcoal Anti-Acne Soap"
           width={1717}
           height={916}
           className="hidden md:block w-full h-auto object-cover"
-          priority
           sizes="100vw"
         />
         {/* Mobile */}
@@ -101,7 +101,6 @@ function Slide3() {
           width={1092}
           height={1440}
           className="block md:hidden w-full h-auto object-cover"
-          priority
           sizes="100vw"
         />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
@@ -115,14 +114,13 @@ function Slide4() {
   return (
     <Link href="/product/saffron-haldi-chandan-soap" className="block w-full group" aria-label="Shop Saffron Haldi Chandan Soap">
       <div className="relative w-full">
-        {/* Desktop */}
+        {/* Desktop — see Slide3 note on why this isn't `priority` */}
         <Image
           src="/images/haldi-banner.jpg"
           alt="Hardin Organics Saffron Haldi Chandan Soap"
           width={1672}
           height={941}
           className="hidden md:block w-full h-auto object-cover"
-          priority
           sizes="100vw"
         />
         {/* Mobile */}
@@ -132,7 +130,6 @@ function Slide4() {
           width={1122}
           height={1402}
           className="block md:hidden w-full h-auto object-cover"
-          priority
           sizes="100vw"
         />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
@@ -141,8 +138,16 @@ function Slide4() {
   );
 }
 
-const SLIDES = BOGO_SALE_ENABLED ? [Slide1, Slide2, Slide3, Slide4] : [Slide1, Slide3, Slide4];
-const SLIDE_BG = ["#F5F0E8", "#F5EDDA", "#EBEBEB", "#F5E6C0"];
+// Each entry pairs a slide with its own background — avoids the two arrays
+// silently drifting out of sync (exactly what happened when BOGO was removed
+// from SLIDES but SLIDE_BG wasn't updated to match).
+const ALL_SLIDES = [
+  { Component: Slide1, bg: "#F5F0E8" },
+  { Component: Slide2, bg: "#F5EDDA" },
+  { Component: Slide3, bg: "#EBEBEB" },
+  { Component: Slide4, bg: "#F5E6C0" },
+];
+const SLIDES = BOGO_SALE_ENABLED ? ALL_SLIDES : ALL_SLIDES.filter((s) => s.Component !== Slide2);
 
 export function HeroSection() {
   const [current, setCurrent] = useState(0);
@@ -160,12 +165,12 @@ export function HeroSection() {
     return () => clearInterval(id);
   }, [next]);
 
-  const SlideContent = SLIDES[current];
+  const SlideContent = SLIDES[current].Component;
 
   return (
     <section
       className="relative overflow-hidden transition-colors duration-700"
-      style={{ backgroundColor: SLIDE_BG[current] }}
+      style={{ backgroundColor: SLIDES[current].bg }}
     >
       <AnimatePresence mode="wait" custom={direction}>
         <motion.div
