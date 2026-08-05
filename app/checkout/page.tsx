@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { pixelInitiateCheckout } from "@/lib/pixel";
+import { gaBeginCheckout } from "@/lib/gtag";
 import { PENDING_COUPON_KEY, FREE_SHIPPING_THRESHOLD, FLAT_SHIPPING_FEE } from "@/lib/pricing";
 
 declare global {
@@ -438,6 +439,15 @@ export default function CheckoutPage() {
           value: total,
           numItems: items.reduce((s, i) => s + i.quantity, 0),
           contentIds: items.map((i) => i.product.id),
+        });
+        gaBeginCheckout({
+          value: total,
+          items: items.map((i) => ({
+            item_id: i.product.id,
+            item_name: i.product.name,
+            price: i.price,
+            quantity: i.quantity,
+          })),
         });
         rzp.open();
       });

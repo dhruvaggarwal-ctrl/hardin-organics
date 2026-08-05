@@ -8,6 +8,7 @@ import { Product } from "@/data/products";
 import { useStock } from "@/hooks/useStock";
 import { NotifyModal } from "./NotifyModal";
 import { pixelAddToCart } from "@/lib/pixel";
+import { gaAddToCart } from "@/lib/gtag";
 
 interface AddToCartSectionProps {
   product: Product;
@@ -73,6 +74,12 @@ export function AddToCartSection({ product }: AddToCartSectionProps) {
       productId: product.id,
       productName: product.name,
       value: currentSize.price * quantity,
+    });
+    gaAddToCart({
+      productId: product.id,
+      productName: product.name,
+      value: currentSize.price * quantity,
+      quantity,
     });
   };
 

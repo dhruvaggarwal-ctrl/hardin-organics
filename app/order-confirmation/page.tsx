@@ -4,6 +4,7 @@ import { use, useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { pixelPurchase } from "@/lib/pixel";
+import { gaPurchase } from "@/lib/gtag";
 
 interface OrderItem {
   n: string;   // name
@@ -74,7 +75,7 @@ export default function OrderConfirmationPage({ searchParams }: PageProps) {
   const lastFour = mobile ? mobile.slice(-4) : "XXXX";
   const firstName = name ? name.split(" ")[0] : "Friend";
 
-  // Fire Purchase pixel once per order (sessionStorage dedupes refreshes)
+  // Fire Purchase pixel + GA4 purchase event once per order (sessionStorage dedupes refreshes)
   useEffect(() => {
     if (!orderId || !total) return;
     pixelPurchase({
@@ -82,7 +83,17 @@ export default function OrderConfirmationPage({ searchParams }: PageProps) {
       value: Number(total),
       contentIds: [], // we don't have product IDs here; value+orderId is what matters
     });
-  }, [orderId, total]);
+    gaPurchase({
+      orderId,
+      value: Number(total),
+      items: orderItems.map((i) => ({
+        item_id: i.n,
+        item_name: i.n,
+        price: i.p,
+        quantity: i.q,
+      })),
+    });
+  }, [orderId, total, itemsParam]);
 
   function copyOrderId() {
     if (orderId) {

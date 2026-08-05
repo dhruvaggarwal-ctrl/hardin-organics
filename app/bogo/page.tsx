@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { products } from "@/data/products";
 import { pixelInitiateCheckout } from "@/lib/pixel";
+import { gaBeginCheckout } from "@/lib/gtag";
 import { BOGO_SALE_ENABLED } from "@/lib/promotions";
 
 // ─── Countdown ────────────────────────────────────────────────────────────────
@@ -411,6 +412,13 @@ function BogoPageContent() {
           value: BOGO_PRICE,
           numItems: 2,
           contentIds: [charcoal.id, haldi.id],
+        });
+        gaBeginCheckout({
+          value: BOGO_PRICE,
+          items: [
+            { item_id: charcoal.id, item_name: charcoal.name, price: BOGO_PRICE, quantity: 1 },
+            { item_id: haldi.id, item_name: haldi.name, price: 0, quantity: 1 },
+          ],
         });
         rzp.open();
       });
