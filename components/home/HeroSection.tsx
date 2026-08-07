@@ -21,7 +21,7 @@ const transition = { duration: 0.52, ease: [0.25, 0.46, 0.45, 0.94] as const };
 function Slide1() {
   return (
     <Link href="/shop" className="block w-full group" aria-label="Shop Hardin Organics">
-      <div className="relative w-full">
+      <div className="relative w-full md:max-w-7xl md:mx-auto">
         {/* Desktop */}
         <Image
           src="/images/hero-banner.jpg"
@@ -52,7 +52,7 @@ function Slide1() {
 function Slide2() {
   return (
     <Link href="/bogo" className="block w-full group" aria-label="Shop BOGO offer">
-      <div className="relative w-full">
+      <div className="relative w-full md:max-w-7xl md:mx-auto">
         {/* Desktop — see Slide3 note on why this isn't `priority` */}
         <Image
           src="/images/bogo-banner.jpg"
@@ -81,7 +81,7 @@ function Slide2() {
 function Slide3() {
   return (
     <Link href="/product/activated-charcoal-soap" className="block w-full group" aria-label="Shop Charcoal Anti-Acne Soap">
-      <div className="relative w-full">
+      <div className="relative w-full md:max-w-7xl md:mx-auto">
         {/* Desktop — not `priority`: this slide isn't shown on first paint, and marking
             both breakpoints priority/eager forces both to fetch+decode simultaneously
             on every slide transition even though only one is ever visible. Letting the
@@ -113,7 +113,7 @@ function Slide3() {
 function Slide4() {
   return (
     <Link href="/product/saffron-haldi-chandan-soap" className="block w-full group" aria-label="Shop Saffron Haldi Chandan Soap">
-      <div className="relative w-full">
+      <div className="relative w-full md:max-w-7xl md:mx-auto">
         {/* Desktop — see Slide3 note on why this isn't `priority` */}
         <Image
           src="/images/haldi-banner.jpg"
