@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 
 const messages = [
   "Free Shipping on Orders Above ₹399",
@@ -15,7 +16,8 @@ const tickerText = messages.join("   •   ") + "   •   " + messages.join("   
 
 export function AnnouncementBar() {
   const [dismissed, setDismissed] = useState(false);
-  if (dismissed) return null;
+  const pathname = usePathname();
+  if (dismissed || pathname?.startsWith("/new")) return null;
 
   return (
     <div className="relative bg-[#2D5016] text-white text-sm py-2.5 overflow-hidden">

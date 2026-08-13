@@ -1,7 +1,13 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { FooterEmailCapture } from "./FooterEmailCapture";
 
 export function Footer() {
+  const pathname = usePathname();
+  if (pathname?.startsWith("/new")) return null;
+
   return (
     <footer id="contact" className="bg-[#1C1C1C] text-white">
       {/* Main footer */}

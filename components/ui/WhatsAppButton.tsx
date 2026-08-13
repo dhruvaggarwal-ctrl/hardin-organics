@@ -44,6 +44,7 @@ export function WhatsAppButton() {
   const [didBounce, setDidBounce] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
+  const hidden = pathname?.startsWith("/new");
 
   useEffect(() => {
     const isConfirmation = pathname === "/order-confirmation";
@@ -75,6 +76,8 @@ export function WhatsAppButton() {
       setShowDot(false);
     }
   }
+
+  if (hidden) return null;
 
   return (
     <div ref={ref} className="fixed bottom-20 md:bottom-6 right-4 z-50 flex flex-col items-end gap-3">

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { products } from "@/data/products";
 
@@ -11,6 +12,7 @@ export function CartDrawer() {
     removeFromCart, updateQuantity, addToCart,
     subtotal, discount, amountToFreeShipping, freeShippingThreshold,
   } = useCart();
+  const pathname = usePathname();
 
   const discountedSubtotal = subtotal - discount;
   const shipping = discountedSubtotal >= freeShippingThreshold ? 0 : 60;
@@ -18,7 +20,7 @@ export function CartDrawer() {
   const shippingProgress = Math.min(100, (discountedSubtotal / freeShippingThreshold) * 100);
   const upsellProduct = products.find((p) => !items.some((i) => i.product.id === p.id));
 
-  if (!isDrawerOpen) return null;
+  if (!isDrawerOpen || pathname?.startsWith("/new")) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex">
