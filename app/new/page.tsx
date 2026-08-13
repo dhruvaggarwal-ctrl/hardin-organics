@@ -101,7 +101,7 @@ export default function NewLandingPage() {
   return (
     <div>
       {/* ─── Section 1 — Hero ─────────────────────────────────────────── */}
-      <section className="bg-[#141310] py-20 md:py-28 px-4">
+      <section className="bg-[#141310] pt-20 md:pt-28 pb-36 md:pb-44 px-4">
         <div className="max-w-5xl mx-auto text-center">
           <motion.p
             initial={{ opacity: 0 }}
@@ -122,27 +122,50 @@ export default function NewLandingPage() {
             Better Skin.
           </motion.h1>
 
-          <div className="grid md:grid-cols-2 gap-5 md:gap-6">
-            <ProductCard
-              product={charcoal}
-              bg="#E4E1D8"
-              fg="#1C1C1C"
-              rotate="rotate-[6deg]"
-              onBuy={() => buyNow(charcoal)}
-            />
-            <ProductCard
-              product={haldi}
-              bg="#F6E2A8"
-              fg="#5A3E12"
-              rotate="rotate-[-6deg]"
-              onBuy={() => buyNow(haldi)}
-            />
-          </div>
+          {/* Product banner — visual only, no price/CTA here */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="flex items-center justify-center gap-6 md:gap-10"
+          >
+            {[
+              { img: charcoal.images[0], glow: "#9CA3AF" },
+              { img: haldi.images[0], glow: "#D4A017" },
+            ].map((p, i) => (
+              <div key={i} className="relative">
+                <div className="absolute inset-0 blur-3xl opacity-40 rounded-full" style={{ background: p.glow }} />
+                <div className="relative bg-white rounded-[24px] p-4 md:p-5 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.6)]">
+                  <Image src={p.img} alt="" width={300} height={300} className="w-24 md:w-32 h-auto" priority />
+                </div>
+              </div>
+            ))}
+          </motion.div>
         </div>
       </section>
 
+      {/* Buy cards — pulled up so they peek out of the hero, prompting a scroll */}
+      <div className="max-w-5xl mx-auto px-4 -mt-24 md:-mt-28 relative z-10">
+        <div className="grid md:grid-cols-2 gap-5 md:gap-6">
+          <ProductCard
+            product={charcoal}
+            bg="#E4E1D8"
+            fg="#1C1C1C"
+            rotate="rotate-[6deg]"
+            onBuy={() => buyNow(charcoal)}
+          />
+          <ProductCard
+            product={haldi}
+            bg="#F6E2A8"
+            fg="#5A3E12"
+            rotate="rotate-[-6deg]"
+            onBuy={() => buyNow(haldi)}
+          />
+        </div>
+      </div>
+
       {/* ─── Section 2 — Trust ────────────────────────────────────────── */}
-      <section className="bg-[#F5F0E8] py-16 md:py-24 px-4">
+      <section className="bg-[#F5F0E8] pt-16 md:pt-20 pb-16 md:pb-24 px-4">
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center justify-center gap-2 mb-14">
             <div className="flex gap-0.5 text-[#D4A017]">
