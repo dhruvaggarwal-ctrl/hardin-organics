@@ -29,66 +29,63 @@ const QUOTES = [
 
 const TOTAL_REVIEWS = charcoal.reviewCount + haldi.reviewCount;
 
-function ProductPanel({
+function ProductCard({
   product,
-  accent,
-  kicker,
+  bg,
+  fg,
+  rotate,
   onBuy,
 }: {
   product: typeof charcoal;
-  accent: string;
-  kicker: string;
+  bg: string;
+  fg: string;
+  rotate: string;
   onBuy: () => void;
 }) {
   return (
-    <motion.div
+    <motion.button
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-80px" }}
       transition={{ duration: 0.6, ease: "easeOut" }}
-      className="flex flex-col items-center text-center w-full"
+      onClick={onBuy}
+      className="group relative w-full h-[220px] md:h-[240px] rounded-[28px] p-6 md:p-7 text-left overflow-hidden transition-transform hover:-translate-y-1"
+      style={{ backgroundColor: bg }}
     >
-      <div className="relative mb-7">
-        <div
-          className="absolute inset-0 blur-3xl opacity-40 rounded-full"
-          style={{ background: accent }}
-        />
-        <div className="relative bg-white rounded-[28px] p-6 md:p-7 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.6)]">
+      <p className="text-[11px] font-bold uppercase tracking-widest opacity-50" style={{ color: fg }}>
+        {product.tagline.split(" • ")[0]}
+      </p>
+      <h3 className="font-display text-xl md:text-2xl leading-tight mt-1 max-w-[60%]" style={{ color: fg }}>
+        {product.name}
+      </h3>
+      <div className="flex items-baseline gap-2 mt-2.5">
+        <span className="text-lg font-bold" style={{ color: fg }}>₹{product.price}</span>
+        <span className="text-xs line-through opacity-40" style={{ color: fg }}>₹{product.originalPrice}</span>
+      </div>
+
+      {/* Product photo — sticker treatment */}
+      <div
+        className={`absolute right-5 bottom-5 w-20 md:w-24 ${rotate} transition-transform duration-300 group-hover:scale-105`}
+      >
+        <div className="bg-white rounded-2xl p-1.5 shadow-xl">
           <Image
             src={product.images[0]}
             alt={product.name}
-            width={600}
-            height={600}
-            className="w-36 md:w-48 h-auto"
+            width={300}
+            height={300}
+            className="w-full h-auto rounded-lg"
             priority
           />
         </div>
       </div>
 
-      <p
-        className="text-[11px] font-bold uppercase tracking-[0.15em] mb-3"
-        style={{ color: accent }}
-      >
-        {kicker}
-      </p>
-      <h3 className="font-display text-2xl md:text-3xl text-white mb-1.5">
-        {product.name}
-      </h3>
-      <p className="text-white/50 text-sm mb-5 max-w-xs">{product.tagline}</p>
-
-      <div className="flex items-baseline gap-2.5 mb-6">
-        <span className="text-white text-2xl font-bold">₹{product.price}</span>
-        <span className="text-white/35 text-sm line-through">₹{product.originalPrice}</span>
+      {/* Buy chip */}
+      <div className="absolute bottom-6 left-6 w-11 h-11 rounded-full bg-white shadow-md flex items-center justify-center transition-colors group-hover:bg-[#C4622D]">
+        <svg className="w-4 h-4 text-[#1C1C1C] group-hover:text-white transition-colors" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M17 7 7 17M7 7h10v10" />
+        </svg>
       </div>
-
-      <button
-        onClick={onBuy}
-        className="w-full max-w-[280px] bg-[#C4622D] hover:bg-[#D4734A] text-white font-bold py-4 rounded-2xl text-sm tracking-wide transition-all duration-200 hover:shadow-xl hover:shadow-[#C4622D]/20"
-      >
-        Buy Now — Free Shipping
-      </button>
-      <p className="text-white/35 text-xs mt-3">Ships in 24 hrs · COD available</p>
-    </motion.div>
+    </motion.button>
   );
 }
 
@@ -125,17 +122,19 @@ export default function NewLandingPage() {
             Better Skin.
           </motion.h1>
 
-          <div className="grid md:grid-cols-2 gap-16 md:gap-10">
-            <ProductPanel
+          <div className="grid md:grid-cols-2 gap-5 md:gap-6">
+            <ProductCard
               product={charcoal}
-              accent="#9CA3AF"
-              kicker="Activated Charcoal · Anti-Acne"
+              bg="#E4E1D8"
+              fg="#1C1C1C"
+              rotate="rotate-[6deg]"
               onBuy={() => buyNow(charcoal)}
             />
-            <ProductPanel
+            <ProductCard
               product={haldi}
-              accent="#D4A017"
-              kicker="Saffron · Haldi · Chandan"
+              bg="#F6E2A8"
+              fg="#5A3E12"
+              rotate="rotate-[-6deg]"
               onBuy={() => buyNow(haldi)}
             />
           </div>
