@@ -19,6 +19,8 @@ interface Dict {
   deliveryMetro: string; // {city} placeholder
   deliveryDefault: string; // {city} placeholder
   langLabel: string;
+  swipeLabel: string;
+  swipeDone: string;
 }
 
 export const DICT: Record<Lang, Dict> = {
@@ -33,6 +35,8 @@ export const DICT: Record<Lang, Dict> = {
     deliveryMetro: "Ships to {city} in 1–2 days",
     deliveryDefault: "Ships to {city} in 3–5 days",
     langLabel: "Language",
+    swipeLabel: "Swipe to Buy Now",
+    swipeDone: "Added! Redirecting…",
   },
   hi: {
     kicker: "भारत में हस्तनिर्मित · कोई पैराबेन नहीं · कोई SLS नहीं",
@@ -45,6 +49,8 @@ export const DICT: Record<Lang, Dict> = {
     deliveryMetro: "{city} में 1–2 दिनों में डिलीवरी",
     deliveryDefault: "{city} में 3–5 दिनों में डिलीवरी",
     langLabel: "भाषा",
+    swipeLabel: "खरीदने के लिए स्वाइप करें",
+    swipeDone: "जुड़ गया! रीडायरेक्ट हो रहा है…",
   },
   ta: {
     kicker: "இந்தியாவில் கையால் தயாரிக்கப்பட்டது · பாராபென் இல்லை · SLS இல்லை",
@@ -57,6 +63,8 @@ export const DICT: Record<Lang, Dict> = {
     deliveryMetro: "{city}க்கு 1–2 நாட்களில் டெலிவரி",
     deliveryDefault: "{city}க்கு 3–5 நாட்களில் டெலிவரி",
     langLabel: "மொழி",
+    swipeLabel: "வாங்க ஸ்வைப் செய்யவும்",
+    swipeDone: "சேர்க்கப்பட்டது! திருப்பி விடப்படுகிறது…",
   },
   te: {
     kicker: "భారతదేశంలో చేతితో తయారు · పారాబెన్స్ లేవు · SLS లేదు",
@@ -69,6 +77,8 @@ export const DICT: Record<Lang, Dict> = {
     deliveryMetro: "{city}కి 1–2 రోజుల్లో డెలివరీ",
     deliveryDefault: "{city}కి 3–5 రోజుల్లో డెలివరీ",
     langLabel: "భాష",
+    swipeLabel: "కొనుగోలు చేయడానికి స్వైప్ చేయండి",
+    swipeDone: "జోడించబడింది! దారి మళ్లిస్తోంది…",
   },
   bn: {
     kicker: "ভারতে হস্তনির্মিত · কোনো প্যারাবেন নেই · কোনো SLS নেই",
@@ -81,6 +91,8 @@ export const DICT: Record<Lang, Dict> = {
     deliveryMetro: "{city}-এ 1–2 দিনে ডেলিভারি",
     deliveryDefault: "{city}-এ 3–5 দিনে ডেলিভারি",
     langLabel: "ভাষা",
+    swipeLabel: "কিনতে সোয়াইপ করুন",
+    swipeDone: "যোগ করা হয়েছে! পুনঃনির্দেশ করা হচ্ছে…",
   },
 };
 

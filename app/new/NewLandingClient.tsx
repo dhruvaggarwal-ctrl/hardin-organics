@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { useCart } from "@/context/CartContext";
 import { products } from "@/data/products";
 import { DICT, LANGUAGES, PRODUCT_COPY, deliveryMessage, type Lang } from "./i18n";
+import { SwipeToBuy } from "./SwipeToBuy";
 
 const charcoal = products.find((p) => p.id === "charcoal-soap")!;
 const haldi = products.find((p) => p.id === "saffron-haldi-chandan")!;
@@ -41,6 +42,8 @@ function ProductCard({
   bg,
   fg,
   rotate,
+  swipeLabel,
+  swipeDone,
   onBuy,
 }: {
   name: string;
@@ -51,52 +54,52 @@ function ProductCard({
   bg: string;
   fg: string;
   rotate: string;
+  swipeLabel: string;
+  swipeDone: string;
   onBuy: () => void;
 }) {
   return (
-    <motion.button
+    <motion.div
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-80px" }}
       transition={{ duration: 0.6, ease: "easeOut" }}
-      onClick={onBuy}
-      className="group relative w-full h-[220px] md:h-[240px] rounded-[28px] p-6 md:p-7 text-left overflow-hidden transition-transform hover:-translate-y-1"
+      className="relative w-full rounded-[28px] p-6 md:p-7 overflow-hidden"
       style={{ backgroundColor: bg }}
     >
-      <p className="text-[11px] font-bold uppercase tracking-widest opacity-50" style={{ color: fg }}>
-        {kicker}
-      </p>
-      <h3 className="font-display text-xl md:text-2xl leading-tight mt-1 max-w-[60%]" style={{ color: fg }}>
-        {name}
-      </h3>
-      <div className="flex items-baseline gap-2 mt-2.5">
-        <span className="text-lg font-bold" style={{ color: fg }}>₹{price}</span>
-        <span className="text-xs line-through opacity-40" style={{ color: fg }}>₹{originalPrice}</span>
-      </div>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[11px] font-bold uppercase tracking-widest opacity-50" style={{ color: fg }}>
+            {kicker}
+          </p>
+          <h3 className="font-display text-xl md:text-2xl leading-tight mt-1" style={{ color: fg }}>
+            {name}
+          </h3>
+          <div className="flex items-baseline gap-2 mt-2.5">
+            <span className="text-lg font-bold" style={{ color: fg }}>₹{price}</span>
+            <span className="text-xs line-through opacity-40" style={{ color: fg }}>₹{originalPrice}</span>
+          </div>
+        </div>
 
-      {/* Product photo — sticker treatment */}
-      <div
-        className={`absolute right-5 bottom-5 w-20 md:w-24 ${rotate} transition-transform duration-300 group-hover:scale-105`}
-      >
-        <div className="bg-white rounded-2xl p-1.5 shadow-xl">
-          <Image
-            src={image}
-            alt={name}
-            width={300}
-            height={300}
-            className="w-full h-auto rounded-lg"
-            priority
-          />
+        {/* Product photo — sticker treatment */}
+        <div className={`shrink-0 w-16 md:w-20 ${rotate}`}>
+          <div className="bg-white rounded-2xl p-1.5 shadow-xl">
+            <Image
+              src={image}
+              alt={name}
+              width={300}
+              height={300}
+              className="w-full h-auto rounded-lg"
+              priority
+            />
+          </div>
         </div>
       </div>
 
-      {/* Buy chip */}
-      <div className="absolute bottom-6 left-6 w-11 h-11 rounded-full bg-white shadow-md flex items-center justify-center transition-colors group-hover:bg-[#C4622D]">
-        <svg className="w-4 h-4 text-[#1C1C1C] group-hover:text-white transition-colors" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M17 7 7 17M7 7h10v10" />
-        </svg>
+      <div className="mt-6">
+        <SwipeToBuy label={swipeLabel} doneLabel={swipeDone} trackColor="#C4622D" onComplete={onBuy} />
       </div>
-    </motion.button>
+    </motion.div>
   );
 }
 
@@ -206,6 +209,8 @@ export function NewLandingClient({
             bg="#E4E1D8"
             fg="#1C1C1C"
             rotate="rotate-[6deg]"
+            swipeLabel={t.swipeLabel}
+            swipeDone={t.swipeDone}
             onBuy={() => buyNow(charcoal)}
           />
           <ProductCard
@@ -217,6 +222,8 @@ export function NewLandingClient({
             bg="#F6E2A8"
             fg="#5A3E12"
             rotate="rotate-[-6deg]"
+            swipeLabel={t.swipeLabel}
+            swipeDone={t.swipeDone}
             onBuy={() => buyNow(haldi)}
           />
         </div>
@@ -272,19 +279,15 @@ export function NewLandingClient({
 
           <div className="text-center">
             <p className="text-[#6B6B6B] text-xs mb-5">{t.freeShipping}</p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
-              <button
-                onClick={() => buyNow(charcoal)}
-                className="flex-1 bg-[#1C1C1C] hover:bg-black text-white font-bold py-3.5 rounded-xl text-sm transition-colors"
-              >
-                {t.buyPrefix} {copy.charcoal.name}
-              </button>
-              <button
-                onClick={() => buyNow(haldi)}
-                className="flex-1 bg-[#1C1C1C] hover:bg-black text-white font-bold py-3.5 rounded-xl text-sm transition-colors"
-              >
-                {t.buyPrefix} {copy.haldi.name}
-              </button>
+            <div className="max-w-md mx-auto space-y-4">
+              <div>
+                <p className="text-xs font-semibold text-[#1C1C1C] mb-2">{copy.charcoal.name}</p>
+                <SwipeToBuy label={t.swipeLabel} doneLabel={t.swipeDone} trackColor="#1C1C1C" onComplete={() => buyNow(charcoal)} />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-[#1C1C1C] mb-2">{copy.haldi.name}</p>
+                <SwipeToBuy label={t.swipeLabel} doneLabel={t.swipeDone} trackColor="#1C1C1C" onComplete={() => buyNow(haldi)} />
+              </div>
             </div>
           </div>
         </div>

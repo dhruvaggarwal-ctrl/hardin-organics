@@ -64,6 +64,12 @@ h1, h2, h3, h4, h5, h6, button, input, label {
   display: inline-block;
 }
 
+@keyframes swipeShimmer {
+  0% { transform: translateX(-150%); }
+  100% { transform: translateX(450%); }
+}
+.animate-swipe-shimmer { animation: swipeShimmer 2.2s ease-in-out infinite; }
+
 @keyframes pulse-green {
   0%, 100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.4); }
   50% { box-shadow: 0 0 0 10px rgba(37, 211, 102, 0); }
